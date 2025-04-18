@@ -1,0 +1,82 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  
+  .auth-modal {
+    background: #2F2F2F;
+    padding: 30px;
+    border-radius: 16px;
+    width: 400px;
+    color: #DADADA;
+    position: relative;
+  }
+  
+  .auth-modal h2 {
+    margin-bottom: 20px;
+    font-size: 22px;
+  }
+  
+  .auth-modal input {
+    width: -webkit-fill-available;
+    padding: 12px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 16px;
+  }
+  
+  .auth-modal p {
+    margin-top: 12px;
+    font-size: 14px;
+  }
+  
+  .auth-modal span {
+    color: #FFB200;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+  .error {
+    font-size: 13px;
+    color: red;
+    margin-bottom: 8px;
+    display: block;
+  }
+  
+  .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    font-size: 18px;
+    background: none;
+    border: none;
+    color: #aaa;
+    cursor: pointer;
+  }
+
+  .button-enter {
+    width: 100%;
+    padding: 12px 24px;
+    font-size: 18px;
+    background-color: #facc15;
+    color: black;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .button-enter:hover {
+    background-color: #fde047;
+    transform: scale(1.05);
+  }
+  

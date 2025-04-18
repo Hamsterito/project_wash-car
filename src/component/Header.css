@@ -1,0 +1,90 @@
+.header {
+    background-color: #2F2F2F;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  .logo {
+    font-size: 24px;
+    color: #DADADA;
+    font-weight: bold;
+  }
+  
+  .nav {
+    display: flex;
+    gap: 30px;
+  }
+  
+  .nav a {
+    color: #DADADA;
+    text-decoration: none;
+    font-size: 16px;
+    transition: color 0.3s;
+  }
+  
+  .nav a:hover {
+    color: #FFB200;
+  }
+  
+.city-selector {
+    position: relative;
+  }
+  
+  .dropdown {
+    position: absolute;
+    top: 110%;
+    right: 0;
+    background-color: #2F2F2F;
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 8px 0;
+    list-style: none;
+    margin: 0;
+    width: 180px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 10;
+  }
+  
+  .dropdown li {
+    padding: 10px 16px;
+    color: #DADADA;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .dropdown li:hover {
+    background-color: #FFB200;
+    color: #3D3D3D;
+  }
+
+  .city-selector .auth-btn {
+    padding: 12px 24px;
+    font-size: 18px;
+    background-color: #facc15;
+    color: black;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+  }
+
+  .booking-button {
+    padding: 12px 24px;
+    font-size: 18px;
+    background-color: #facc15;
+    color: black;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .booking-button:hover {
+    background-color: #fde047;
+    transform: scale(1.05);
+  }
+  
+  
