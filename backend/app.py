@@ -1,14 +1,12 @@
 from flask import Flask, request, render_template, redirect, url_for, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
+from fun_without_route import send_verification_email, send_verification_sms, generate_code, allowed_file, delete_expired_codes
 from bd_car import conn, cursor
 import uuid
 import os
 from datetime import datetime, timedelta
 from flask_cors import CORS
-from apscheduler.schedulers.background import BackgroundScheduler
-from mailjet_rest import Client
-from twilio.rest import Client
 import random
 import string
 
@@ -20,67 +18,7 @@ app.secret_key = '12345'
 app.config['UPLOAD_FOLDER'] = 'static/img'
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
 
-MAILJET_API_KEY = 'e3795767bd8df869a57aaea2c4556b5a'
-MAILJET_API_SECRET = '21066bcc2548ee6db5d583ff8355d39c'
-FROM_EMAIL = 'kabdrashev111@gmail.com'
-
-TWILIO_ACCOUNT_SID = 'ACed6d1607e45a69d350acf5be934500c9'
-TWILIO_AUTH_TOKEN = 'c8a4f20273cbfa93416eae272c51220d'
-TWILIO_PHONE_NUMBER = '+17078656357'
-
-def send_verification_email(to_email, code):
-    mailjet = Client(auth=(MAILJET_API_KEY, MAILJET_API_SECRET), version='v3.1')
-    data = {
-        'Messages': [
-            {
-                "From": {
-                    "Email": FROM_EMAIL,
-                    "Name": "Поддержка"
-                },
-                "To": [
-                    {
-                        "Email": to_email,
-                        "Name": "Пользователь"
-                    }
-                ],
-                "Subject": "Код подтверждения",
-                "TextPart": f"Ваш код подтверждения: {code}",
-            }
-        ]
-    }
-    result = mailjet.send.create(data=data)
-    return result.status_code in [200, 201]
-
-def send_verification_sms(to_phone, code):
-    client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
-    try:
-        message = client.messages.create(
-            body=f"Ваш код подтверждения: {code}",
-            from_=TWILIO_PHONE_NUMBER,
-            to=to_phone  
-        )
-        return message.status == 'queued' or message.status == 'sent'
-    except Exception as e:
-        print(f"Ошибка при отправке SMS: {e}")
-        return False
-    
-def generate_code(length=6):
-    return ''.join(random.choices(string.digits, k=length))
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
-
-def delete_expired_codes():
-    cursor.execute("""
-        DELETE FROM verification_codes 
-        WHERE expires_at < %s
-    """, (datetime.now(),))
-    conn.commit()
-
-scheduler = BackgroundScheduler()
-scheduler.add_job(delete_expired_codes, 'interval', minutes=1)
-scheduler.start()
-
+# регистрация
 @app.route("/api/register", methods=["POST"])
 def register():
     data = request.get_json()
@@ -116,8 +54,27 @@ def register():
 
     return jsonify({"success": True})
 
+# авторизоваться
+@app.route("/api/login", methods=["POST"])
+def api_login():
+    data = request.get_json()
+    contact = data.get('contact')
+    password = data.get('password')
 
+    if '@' in contact:
+        cursor.execute("SELECT id, password FROM clients WHERE email = %s", (contact,))
+    else:
+        cursor.execute("SELECT id, password FROM clients WHERE phone = %s", (contact,))
+    
+    result = cursor.fetchone()
 
+    if result and check_password_hash(result[1], password):
+        session['client_id'] = result[0]
+        return jsonify({'success': True})
+    else:
+        return jsonify({'success': False, 'message': 'Неверные данные'}), 401
+
+# верификация
 @app.route("/api/verify-code", methods=["POST"])
 def verify_code():
     data = request.get_json()
@@ -147,7 +104,7 @@ def verify_code():
     else:
         return jsonify({"success": False, "error": "Код или контакт неверны"}), 400
 
-
+# отправка кода
 @app.route("/api/send-code", methods=["POST"])
 def send_code():
     data = request.get_json()
@@ -185,7 +142,8 @@ def send_code():
         return jsonify({"success": True, "message": "Код отправлен только по SMS"})
     else:
         return jsonify({"success": False, "error": "Не удалось отправить код"}), 500
-
+    
+# сохранение юзера
 @app.route("/api/save-user", methods=["POST"])
 def save_user():
     data = request.get_json()
@@ -217,28 +175,7 @@ def save_user():
         conn.rollback()
         return jsonify({"success": False, "error": "Ошибка при сохранении"}), 500
 
-    
-
-@app.route("/api/login", methods=["POST"])
-def api_login():
-    data = request.get_json()
-    contact = data.get('contact')
-    password = data.get('password')
-
-    if '@' in contact:
-        cursor.execute("SELECT id, password FROM clients WHERE email = %s", (contact,))
-    else:
-        cursor.execute("SELECT id, password FROM clients WHERE phone = %s", (contact,))
-    
-    result = cursor.fetchone()
-
-    if result and check_password_hash(result[1], password):
-        session['client_id'] = result[0]
-        return jsonify({'success': True})
-    else:
-        return jsonify({'success': False, 'message': 'Неверные данные'}), 401
-
-
+# Код не с фронтом
 @app.route("/book", methods=["GET", "POST"])
 def book():
     if request.method == "POST":
