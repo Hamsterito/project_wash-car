@@ -25,11 +25,10 @@ const AuthModal = ({ onClose }) => {
             newErrors.contact = 'Введите номер или почту';
         }
 
-        if (isPhone && !/^(?:\+7|8)[0-9]{9}$/.test(formData.phone)) {
-            newErrors.phone = 'Неверный формат номера KZ (+7XXXXXXXXX или 8XXXXXXXXX)';
+        if (isPhone && !/^(?:\+7|8)[0-9]{10}$/.test(formData.phone)) {
+            newErrors.phone = 'Неверный формат номера KZ (+7XXXXXXXXXX или 8XXXXXXXXXX)';
         }
-          
-
+        
         if (isEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
             newErrors.email = 'Введите корректную почту';
         }
