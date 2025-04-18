@@ -6,6 +6,15 @@ CREATE TABLE clients (
     email TEXT NOT NULL
 );
 
+CREATE TABLE verification_codes (
+    id serial PRIMARY KEY,
+    code text,
+    client_id integer,
+    created_at timestamp,
+    expires_at timestamp 
+);
+
+
 CREATE TABLE book(
     id SERIAL PRIMARY KEY,
 	client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE,
