@@ -10,7 +10,6 @@ from flask_cors import CORS
 import random
 import string
 
-
 app = Flask(__name__)
 CORS(app)
 app.secret_key = '12345'
