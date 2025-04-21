@@ -1,8 +1,10 @@
 from flask import Flask, request, render_template, redirect, url_for, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from fun_without_route import send_verification_email, send_verification_sms, generate_code, allowed_file, delete_expired_codes
 from bd_car import conn, cursor
+from apscheduler.schedulers.background import BackgroundScheduler
+from mailjet_rest import Client as MailjetClient
+from twilio.rest import Client as TwilioClient
 import uuid
 import os
 from datetime import datetime, timedelta
@@ -16,6 +18,66 @@ app.secret_key = '12345'
 
 app.config['UPLOAD_FOLDER'] = 'static/img'
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
+
+MAILJET_API_KEY = 'e3795767bd8df869a57aaea2c4556b5a'
+MAILJET_API_SECRET = '68bd297d7841a93c2b3ce9aa0275abb2'
+FROM_EMAIL = 'Kabdrashev111@gmail.com'
+
+TWILIO_ACCOUNT_SID = 'ACed6d1607e45a69d350acf5be934500c9'
+TWILIO_AUTH_TOKEN = 'c8a4f20273cbfa93416eae272c51220d'
+TWILIO_PHONE_NUMBER = '+17078656357'
+
+def send_verification_email(to_email, code):
+    mailjet = MailjetClient(auth=(MAILJET_API_KEY, MAILJET_API_SECRET), version='v3.1')
+    data = {
+        'Messages': [
+            {
+                "From": {
+                    "Email": FROM_EMAIL,
+                    "Name": "Поддержка"
+                },
+                "To": [
+                    {
+                        "Email": to_email,
+                        "Name": "Пользователь"
+                    }
+                ],
+                "Subject": "Код подтверждения",
+                "TextPart": f"Ваш код подтверждения: {code}",
+            }
+        ]
+    }
+    result = mailjet.send.create(data=data)
+    return result.status_code in [200, 201]
+
+def send_verification_sms(to_phone, code):
+    client = TwilioClient(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+    try:
+        message = client.messages.create(
+            body=f"Ваш код подтверждения: {code}",
+            from_=TWILIO_PHONE_NUMBER,
+            to=to_phone  
+        )
+        return message.status == 'queued' or message.status == 'sent'
+    except Exception as e:
+        print(f"Ошибка при отправке SMS: {e}")
+        return False
+    
+def generate_code(length=6):
+    return ''.join(random.choices(string.digits, k=length))
+
+
+def delete_expired_codes():
+    cursor.execute("""
+        DELETE FROM verification_codes 
+        WHERE expires_at < %s
+    """, (datetime.now(),))
+    conn.commit()
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(delete_expired_codes, 'interval', minutes=1)
+scheduler.start()
+
 
 # регистрация
 @app.route("/api/register", methods=["POST"])
@@ -34,9 +96,10 @@ def register():
     verification_code = ''.join(random.choices(string.digits, k=6))
     expires_at = datetime.now() + timedelta(minutes=5)
 
+
     cursor.execute(
-        "INSERT INTO clients (phone, email, password) VALUES (%s, %s, %s) RETURNING id",
-        (phone, email, generate_password_hash(password))
+        "INSERT INTO clients (phone, email) VALUES (%s, %s) RETURNING id",
+        (phone, email)
     )
     client_id = cursor.fetchone()[0]
 
