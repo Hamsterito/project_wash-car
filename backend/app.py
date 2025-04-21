@@ -5,12 +5,15 @@ from bd_car import conn, cursor
 from apscheduler.schedulers.background import BackgroundScheduler
 from mailjet_rest import Client as MailjetClient
 from twilio.rest import Client as TwilioClient
-import uuid
+from dotenv import load_dotenv
 import os
+import uuid
 from datetime import datetime, timedelta
 from flask_cors import CORS
 import random
 import string
+
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), 'api.env'))
 
 app = Flask(__name__)
 CORS(app)
@@ -19,13 +22,13 @@ app.secret_key = '12345'
 app.config['UPLOAD_FOLDER'] = 'static/img'
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
 
-MAILJET_API_KEY = 'e3795767bd8df869a57aaea2c4556b5a'
-MAILJET_API_SECRET = '68bd297d7841a93c2b3ce9aa0275abb2'
-FROM_EMAIL = 'Kabdrashev111@gmail.com'
+MAILJET_API_KEY = os.getenv('MAILJET_API_KEY')
+MAILJET_API_SECRET = os.getenv('MAILJET_API_SECRET')
+FROM_EMAIL = os.getenv('FROM_EMAIL')
 
-TWILIO_ACCOUNT_SID = 'ACed6d1607e45a69d350acf5be934500c9'
-TWILIO_AUTH_TOKEN = 'c8a4f20273cbfa93416eae272c51220d'
-TWILIO_PHONE_NUMBER = '+17078656357'
+TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
+TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER')
 
 def send_verification_email(to_email, code):
     mailjet = MailjetClient(auth=(MAILJET_API_KEY, MAILJET_API_SECRET), version='v3.1')
@@ -117,6 +120,7 @@ def register():
         return jsonify({"success": True})
     except Exception as e:
         print(f"Ошибка при регистраций: {e}")
+        return jsonify({"success": False})
 
 # авторизоваться
 @app.route("/api/login", methods=["POST"])
