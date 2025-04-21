@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './Header.css';
 import AuthModal from './AuthModal';
 import userIcon from '../assets/user-icon.png';
-import logo from '../assets/logo.png';
+import logo from '../assets/logo.svg';
 
 
 const Header = () => {
