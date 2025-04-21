@@ -159,8 +159,11 @@ def verify_code():
         return jsonify({"success": False, "error": "Код или контакт неверны"}), 400
 
     if result:
-        _, expires_at = result
+        client_id, expires_at = result
         if expires_at < datetime.now():
+            cursor.execute("DELETE FROM verification_codes WHERE client_id = %s", (client_id,))
+            cursor.execute("DELETE FROM clients WHERE id = %s", (client_id,))
+            conn.commit()
             return jsonify({"success": False, "error": "Код истёк"}), 400
         return jsonify({"success": True})
     else:
