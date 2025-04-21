@@ -96,25 +96,27 @@ def register():
     verification_code = ''.join(random.choices(string.digits, k=6))
     expires_at = datetime.now() + timedelta(minutes=5)
 
+    try:
+        cursor.execute(
+            "INSERT INTO clients (phone, email) VALUES (%s, %s) RETURNING id",
+            (phone, email)
+        )
+        client_id = cursor.fetchone()[0]
 
-    cursor.execute(
-        "INSERT INTO clients (phone, email) VALUES (%s, %s) RETURNING id",
-        (phone, email)
-    )
-    client_id = cursor.fetchone()[0]
+        cursor.execute(
+            "INSERT INTO verification_codes (client_id, code, expires_at) VALUES (%s, %s, %s)",
+            (client_id, verification_code, expires_at)
+        )
+        conn.commit()
 
-    cursor.execute(
-        "INSERT INTO verification_codes (client_id, code, expires_at) VALUES (%s, %s, %s)",
-        (client_id, verification_code, expires_at)
-    )
-    conn.commit()
+        if is_email:
+            send_verification_email(email, verification_code)
+        elif phone:
+            send_verification_sms(phone, verification_code)
 
-    if is_email:
-        send_verification_email(email, verification_code)
-    elif phone:
-        send_verification_sms(phone, verification_code)
-
-    return jsonify({"success": True})
+        return jsonify({"success": True})
+    except Exception as e:
+        print(f"Ошибка при регистраций: {e}")
 
 # авторизоваться
 @app.route("/api/login", methods=["POST"])
@@ -147,27 +149,30 @@ def verify_code():
     if not code or not (phone or email):
         return jsonify({"success": False, "error": "Не хватает данных"}), 400
 
-    query = """
-        SELECT c.id, v.expires_at FROM clients c
-        JOIN verification_codes v ON c.id = v.client_id
-        WHERE v.code = %s AND (%s IS NULL OR c.phone = %s) AND (%s IS NULL OR c.email = %s)
-    """
-    cursor.execute(query, (code, phone, phone, email, email))
-    result = cursor.fetchone()
+    try:
+        query = """
+            SELECT c.id, v.expires_at FROM clients c
+            JOIN verification_codes v ON c.id = v.client_id
+            WHERE v.code = %s AND (%s IS NULL OR c.phone = %s) AND (%s IS NULL OR c.email = %s)
+        """
+        cursor.execute(query, (code, phone, phone, email, email))
+        result = cursor.fetchone()
 
-    if not result:
-        return jsonify({"success": False, "error": "Код или контакт неверны"}), 400
+        if not result:
+            return jsonify({"success": False, "error": "Код или контакт неверны"}), 400
 
-    if result:
-        client_id, expires_at = result
-        if expires_at < datetime.now():
-            cursor.execute("DELETE FROM verification_codes WHERE client_id = %s", (client_id,))
-            cursor.execute("DELETE FROM clients WHERE id = %s", (client_id,))
-            conn.commit()
-            return jsonify({"success": False, "error": "Код истёк"}), 400
-        return jsonify({"success": True})
-    else:
-        return jsonify({"success": False, "error": "Код или контакт неверны"}), 400
+        if result:
+            client_id, expires_at = result
+            if expires_at < datetime.now():
+                cursor.execute("DELETE FROM verification_codes WHERE client_id = %s", (client_id,))
+                cursor.execute("DELETE FROM clients WHERE id = %s", (client_id,))
+                conn.commit()
+                return jsonify({"success": False, "error": "Код истёк"}), 400
+            return jsonify({"success": True})
+        else:
+            return jsonify({"success": False, "error": "Код или контакт неверны"}), 400
+    except Exception as e:
+        print(f"Ошибка верификаций {e}")
 
 # отправка кода
 @app.route("/api/send-code", methods=["POST"])
@@ -191,9 +196,7 @@ def send_code():
     client_id = client[0]
     code = generate_code()
     expires_at = datetime.now() + timedelta(minutes=10)
-
-    cursor.execute("DELETE FROM verification_codes WHERE client_id = %s", (client_id,))
-
+    
     cursor.execute(
         "INSERT INTO verification_codes (code, client_id, expires_at) VALUES (%s, %s, %s)",
         (code, client_id, expires_at)
