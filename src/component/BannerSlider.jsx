@@ -36,7 +36,7 @@ export default function BannerSlider() {
     <div className="banner-container">
       <Swiper
         loop={true}
-        autoplay={{ delay: 3000, disableOnInteraction: false }}
+        autoplay={{ delay: 3111000, disableOnInteraction: false }}
         modules={[Autoplay]}
         className="swiper-wrapper"
       >
