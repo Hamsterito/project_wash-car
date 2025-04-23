@@ -1,27 +1,26 @@
 import React, { useState } from 'react';
 import './Header.css';
 import AuthModal from './AuthModal';
+import userIcon from '../assets/user-icon.png';
+import logo from '../assets/logo.png';
+
 
 const Header = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false); //true-если зашел в учетную запись, то выбераешь город(потому что так красивее, а не под банером). false-естественно, вход/регестрация
-  const [selectedCity, setSelectedCity] = useState('');
-  const [showDropdown, setShowDropdown] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [showAuth, setShowAuth] = useState(false);
-  
 
-  const cities = ['Астана', 'Алматы', 'Экибастуз', 'Варшава'];
-
-  const toggleDropdown = () => setShowDropdown(!showDropdown);
-
-  const handleCitySelect = (city) => {
-    setSelectedCity(city);
-    setShowDropdown(false);
+  const handleProfileClick = () => {
+    window.location.href = '/account'; 
   };
 
   return (
     <>
       <header className="header">
-        <div className="logo">LOGO</div>
+        <div className="logo">
+          <img src={logo} alt="Логотип" />
+        </div>
+
+
         <nav className="nav">
           <a href="#home">Главная</a>
           <a href="#about">О нас</a>
@@ -29,20 +28,12 @@ const Header = () => {
         </nav>
         <div className="auth-buttons">
           {isLoggedIn ? (
-            <div className="city-selector">
-              <button className="auth-btn" onClick={toggleDropdown}>
-                {selectedCity || 'Выберите город'}
-              </button>
-              {showDropdown && (
-                <ul className="dropdown">
-                  {cities.map((city) => (
-                    <li key={city} onClick={() => handleCitySelect(city)}>
-                      {city}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+            <img
+              src={userIcon}
+              alt="User Icon"
+              className="user-icon"
+              onClick={handleProfileClick}
+            />
           ) : (
             <button className="booking-button" onClick={() => setShowAuth(true)}>
               Вход / Регистрация
@@ -51,7 +42,7 @@ const Header = () => {
         </div>
       </header>
       {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
-    </>  
+    </>
   );
 };
 
