@@ -1,14 +1,19 @@
 from flask import Flask, request, render_template, redirect, url_for, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from fun_without_route import send_verification_email, send_verification_sms, generate_code, allowed_file, delete_expired_codes
 from bd_car import conn, cursor
-import uuid
+from apscheduler.schedulers.background import BackgroundScheduler
+from mailjet_rest import Client as MailjetClient
+from twilio.rest import Client as TwilioClient
+from dotenv import load_dotenv
 import os
+import uuid
 from datetime import datetime, timedelta
 from flask_cors import CORS
 import random
 import string
+
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), 'api.env'))
 
 app = Flask(__name__)
 CORS(app)
@@ -16,6 +21,66 @@ app.secret_key = '12345'
 
 app.config['UPLOAD_FOLDER'] = 'static/img'
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
+
+MAILJET_API_KEY = os.getenv('MAILJET_API_KEY')
+MAILJET_API_SECRET = os.getenv('MAILJET_API_SECRET')
+FROM_EMAIL = os.getenv('FROM_EMAIL')
+
+TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
+TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER')
+
+def send_verification_email(to_email, code):
+    mailjet = MailjetClient(auth=(MAILJET_API_KEY, MAILJET_API_SECRET), version='v3.1')
+    data = {
+        'Messages': [
+            {
+                "From": {
+                    "Email": FROM_EMAIL,
+                    "Name": "Поддержка"
+                },
+                "To": [
+                    {
+                        "Email": to_email,
+                        "Name": "Пользователь"
+                    }
+                ],
+                "Subject": "Код подтверждения",
+                "TextPart": f"Ваш код подтверждения: {code}",
+            }
+        ]
+    }
+    result = mailjet.send.create(data=data)
+    return result.status_code in [200, 201]
+
+def send_verification_sms(to_phone, code):
+    client = TwilioClient(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+    try:
+        message = client.messages.create(
+            body=f"Ваш код подтверждения: {code}",
+            from_=TWILIO_PHONE_NUMBER,
+            to=to_phone  
+        )
+        return message.status == 'queued' or message.status == 'sent'
+    except Exception as e:
+        print(f"Ошибка при отправке SMS: {e}")
+        return False
+    
+def generate_code(length=6):
+    return ''.join(random.choices(string.digits, k=length))
+
+
+def delete_expired_codes():
+    cursor.execute("""
+        DELETE FROM verification_codes 
+        WHERE expires_at < %s
+    """, (datetime.now(),))
+    conn.commit()
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(delete_expired_codes, 'interval', minutes=1)
+scheduler.start()
+
 
 # регистрация
 @app.route("/api/register", methods=["POST"])
@@ -34,24 +99,28 @@ def register():
     verification_code = ''.join(random.choices(string.digits, k=6))
     expires_at = datetime.now() + timedelta(minutes=5)
 
-    cursor.execute(
-        "INSERT INTO clients (phone, email, password) VALUES (%s, %s, %s) RETURNING id",
-        (phone, email, generate_password_hash(password))
-    )
-    client_id = cursor.fetchone()[0]
+    try:
+        cursor.execute(
+            "INSERT INTO clients (phone, email) VALUES (%s, %s) RETURNING id",
+            (phone, email)
+        )
+        client_id = cursor.fetchone()[0]
 
-    cursor.execute(
-        "INSERT INTO verification_codes (client_id, code, expires_at) VALUES (%s, %s, %s)",
-        (client_id, verification_code, expires_at)
-    )
-    conn.commit()
+        cursor.execute(
+            "INSERT INTO verification_codes (client_id, code, expires_at) VALUES (%s, %s, %s)",
+            (client_id, verification_code, expires_at)
+        )
+        conn.commit()
 
-    if is_email:
-        send_verification_email(email, verification_code)
-    elif phone:
-        send_verification_sms(phone, verification_code)
+        if is_email:
+            send_verification_email(email, verification_code)
+        elif phone:
+            send_verification_sms(phone, verification_code)
 
-    return jsonify({"success": True})
+        return jsonify({"success": True})
+    except Exception as e:
+        print(f"Ошибка при регистраций: {e}")
+        return jsonify({"success": False})
 
 # авторизоваться
 @app.route("/api/login", methods=["POST"])
@@ -84,24 +153,30 @@ def verify_code():
     if not code or not (phone or email):
         return jsonify({"success": False, "error": "Не хватает данных"}), 400
 
-    query = """
-        SELECT c.id, v.expires_at FROM clients c
-        JOIN verification_codes v ON c.id = v.client_id
-        WHERE v.code = %s AND (%s IS NULL OR c.phone = %s) AND (%s IS NULL OR c.email = %s)
-    """
-    cursor.execute(query, (code, phone, phone, email, email))
-    result = cursor.fetchone()
+    try:
+        query = """
+            SELECT c.id, v.expires_at FROM clients c
+            JOIN verification_codes v ON c.id = v.client_id
+            WHERE v.code = %s AND (%s IS NULL OR c.phone = %s) AND (%s IS NULL OR c.email = %s)
+        """
+        cursor.execute(query, (code, phone, phone, email, email))
+        result = cursor.fetchone()
 
-    if not result:
-        return jsonify({"success": False, "error": "Код или контакт неверны"}), 400
+        if not result:
+            return jsonify({"success": False, "error": "Код или контакт неверны"}), 400
 
-    if result:
-        _, expires_at = result
-        if expires_at < datetime.now():
-            return jsonify({"success": False, "error": "Код истёк"}), 400
-        return jsonify({"success": True})
-    else:
-        return jsonify({"success": False, "error": "Код или контакт неверны"}), 400
+        if result:
+            client_id, expires_at = result
+            if expires_at < datetime.now():
+                cursor.execute("DELETE FROM verification_codes WHERE client_id = %s", (client_id,))
+                cursor.execute("DELETE FROM clients WHERE id = %s", (client_id,))
+                conn.commit()
+                return jsonify({"success": False, "error": "Код истёк"}), 400
+            return jsonify({"success": True})
+        else:
+            return jsonify({"success": False, "error": "Код или контакт неверны"}), 400
+    except Exception as e:
+        print(f"Ошибка верификаций {e}")
 
 # отправка кода
 @app.route("/api/send-code", methods=["POST"])
@@ -125,9 +200,7 @@ def send_code():
     client_id = client[0]
     code = generate_code()
     expires_at = datetime.now() + timedelta(minutes=10)
-
-    cursor.execute("DELETE FROM verification_codes WHERE client_id = %s", (client_id,))
-
+    
     cursor.execute(
         "INSERT INTO verification_codes (code, client_id, expires_at) VALUES (%s, %s, %s)",
         (code, client_id, expires_at)

@@ -15,7 +15,7 @@ CREATE TABLE verification_codes (
 );
 
 truncate clients cascade
-select * from clients
+select * from verification_codes
 
 CREATE TABLE book(
     id SERIAL PRIMARY KEY,
