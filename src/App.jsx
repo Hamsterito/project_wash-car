@@ -4,6 +4,7 @@ import BannerSlider from "./component/BannerSlider";
 import Footer from "./component/Footer";
 import CitySelector from './component/CitySelector';
 import CarWashGrid from './component/CarWashGrid';
+import AboutUs from './component/AboutUs';
 
 
 const App = () => {
@@ -13,6 +14,7 @@ const App = () => {
       <BannerSlider/>
       <CitySelector />
       <CarWashGrid />
+      <AboutUs />
       <Footer/>
     </div>
   );
