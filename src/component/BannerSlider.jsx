@@ -32,11 +32,17 @@ const slides = [
 ];
 
 export default function BannerSlider() {
+  const handleScroll = () => {
+    const target = document.getElementById("car-wash-grid");
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth" });
+    }
+  };
   return (
-    <div className="banner-container">
+    <div className="banner-container" id="home">
       <Swiper
         loop={true}
-        autoplay={{ delay: 3111000, disableOnInteraction: false }}
+        autoplay={{ delay: 3000, disableOnInteraction: false }}
         modules={[Autoplay]}
         className="swiper-wrapper"
       >
@@ -58,7 +64,7 @@ export default function BannerSlider() {
       </Swiper>
 
       <div className="fixed-booking-button">
-        <button className="booking-button">Забронировать</button>
+        <button className="booking-button" onClick={handleScroll}>Забронировать</button>
       </div>
     </div>
   );

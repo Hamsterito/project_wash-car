@@ -24,7 +24,7 @@ const Header = () => {
         <nav className="nav">
           <a href="#home">Главная</a>
           <a href="#about">О нас</a>
-          <a href="#booking">Бронь</a>
+          <a href="#car-wash-grid">Бронь</a>
         </nav>
         <div className="auth-buttons">
           {isLoggedIn ? (
