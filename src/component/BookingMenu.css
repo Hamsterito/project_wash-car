@@ -1,11 +1,11 @@
 .booking-menu {
+  font-family: 'Prosto One', sans-serif;
   position: fixed;
   top: 0;
   right: 0;
   width: 400px;
   height: 100%;
   background: #fff;
-  /* padding: 20px; */
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -31,37 +31,67 @@
 }
 
 .section-title {
-  background: #eaeaea;
+  background: #dfdede;
   padding: 10px 15px;
   border-radius: 10px;
-  margin-bottom: 10px;
+  font-size: 20px;
+  font-weight: bold;
+  margin-top: 5px;
+  margin-bottom: 20px;
   box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.334);
 }
 
+.text_section{
+  background-color: #dfdede;
+  padding: 10px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
 .select-btn {
-  background: orange;
+  font-family: 'Prosto One', sans-serif;
+  background: #FFB200;
   color: black;
   font-weight: bold;
+  font-size: 16px;
   border: none;
   border-radius: 10px;
   margin: 5px 0;
-  padding: 10px;
+  padding: 20px;
   width: 100%;
   cursor: pointer;
-  box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.334);
+  box-shadow: 3px 4px 5px rgba(0, 0, 0, 0.334);
+  transition: background 0.2s ease;
+}
+
+.select-btn:hover{
+  background-color: #d49500;
 }
 
 .next-btn,
 .back-btn,
 .btn.confirm {
-  padding: 10px;
-  background: orange;
+  font-family: 'Prosto One', sans-serif;
+  padding: 20px;
+  font-size: 16px;
+  background: #FFB200;
   border: none;
   border-radius: 10px;
   font-weight: bold;
   cursor: pointer;
   width: 360px;
   box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.334);
+  transition: background 0.2s ease;
+}
+
+.next-btn:hover,
+.back-btn:hover,
+.btn.confirm:hover{
+  background-color: #d49500;
+}
+
+.back-btn{
+  margin-top: -20px;
 }
 
 input {

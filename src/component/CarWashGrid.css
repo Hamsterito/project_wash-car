@@ -69,7 +69,7 @@ body {
 }
 
 .btn {
-  background-color: #facc15;
+  background-color: #FFB200;
   font-family: 'Prosto One', sans-serif;
   width: 295px;
   height: 55px;
@@ -85,5 +85,5 @@ body {
 }
 
 .btn:hover {
-  background-color: #d5a21f;
+  background-color: #d49500;
 }

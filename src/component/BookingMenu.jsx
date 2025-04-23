@@ -154,6 +154,7 @@ export default function BookingMenu({ wash, onClose, services }) {
       {step === 4 && (
         <div className="group">
           <h3 className="section-title">Чек</h3>
+          <div className="text_section">
           <p>
             <strong>Автомойка:</strong> {wash.name}
           </p>
@@ -174,8 +175,12 @@ export default function BookingMenu({ wash, onClose, services }) {
               <li key={i}>{service}</li>
             ))}
           </ul>
+          </div>
           <button className="btn confirm" onClick={onClose}>
             Подтвердить
+          </button>
+          <button className="back-btn" onClick={handleBack}>
+            Назад
           </button>
         </div>
       )}

@@ -1,0 +1,13 @@
+.help {
+    background-image: url('src/assets/car_help.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    width: 100%;
+    height: 328px;
+    color: white;
+}
+
+.need_help_text{
+    margin: 0px;
+}
