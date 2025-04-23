@@ -1,16 +1,15 @@
-import React, { useState } from 'react';
-import './Header.css';
-import AuthModal from './AuthModal';
-import userIcon from '../assets/user-icon.png';
-import logo from '../assets/logo.svg';
-
+import React, { useState } from "react";
+import "./Header.css";
+import AuthModal from "./AuthModal";
+import userIcon from "../assets/user-icon.png";
+import logo from "../assets/logo.svg";
 
 const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [showAuth, setShowAuth] = useState(false);
 
   const handleProfileClick = () => {
-    window.location.href = '/account'; 
+    window.location.href = "/account";
   };
 
   return (
@@ -19,7 +18,6 @@ const Header = () => {
         <div className="logo">
           <img src={logo} alt="Логотип" />
         </div>
-
 
         <nav className="nav">
           <a href="#home">Главная</a>
@@ -35,7 +33,10 @@ const Header = () => {
               onClick={handleProfileClick}
             />
           ) : (
-            <button className="booking-button" onClick={() => setShowAuth(true)}>
+            <button
+              className="booking-button"
+              onClick={() => setShowAuth(true)}
+            >
               Вход / Регистрация
             </button>
           )}

@@ -1,7 +1,7 @@
-import './AboutUs.css';
-import AUs1 from '../assets/AUs1.png';
-import AUs2 from '../assets/AUs2.png';
-import AUs3 from '../assets/AUs3.png';
+import "./AboutUs.css";
+import AUs1 from "../assets/AUs1.png";
+import AUs2 from "../assets/AUs2.png";
+import AUs3 from "../assets/AUs3.png";
 
 const AboutUs = () => {
   return (

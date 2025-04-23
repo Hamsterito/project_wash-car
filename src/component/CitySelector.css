@@ -1,61 +1,62 @@
 .city-selector-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 30px auto;
-    width: fit-content;
-    font-size: 18px;
-    font-weight: 500;
-  }
-  
-  .city-label {
-    color: #333;
-    font-family: 'Prosto One', sans-serif;
-    text-align: center;
-    font-size: 30px;
-    font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 30px auto;
+  width: fit-content;
+  font-size: 18px;
+  font-weight: 500;
 }
-  
-  .city-dropdown {
-    position: relative;
-  }
-  
-  .city-button {
-    background-color: #e0e0e0;
-    border: none;
-    padding: 8px 14px;
-    border-radius: 12px;
-    font-size: 16px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-  }
-  
-  .arrow {
-    margin-left: 8px;
-  }
-  
-  .city-list {
-    position: absolute;
-    top: 40px;
-    left: 0;
-    background-color: white;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    z-index: 10;
-    width: 100%;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  }
-  
-  .city-list li {
-    padding: 10px;
-    cursor: pointer;
-  }
-  
-  .city-list li:hover {
-    background-color: #f0f0f0;
-  }
-  
+
+.city-label {
+  color: #333;
+  font-family: 'Prosto One', sans-serif;
+  text-align: center;
+  font-size: 30px;
+  font-weight: bold;
+}
+
+.city-dropdown {
+  position: relative;
+}
+
+.city-button {
+  background-color: #e0e0e0;
+  border: none;
+  font-family: "Prosto One", sans-serif;
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.arrow {
+  margin-left: 8px;
+}
+
+.city-list {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  z-index: 10;
+  font-size: 16px;
+  width: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.city-list li {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.city-list li:hover {
+  background-color: #f0f0f0;
+}

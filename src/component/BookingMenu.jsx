@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import "./BookingMenu.css";
 
-
 export default function BookingMenu({ wash, onClose, services }) {
   const [step, setStep] = useState(1);
   const [carType, setCarType] = useState("");
@@ -10,13 +9,12 @@ export default function BookingMenu({ wash, onClose, services }) {
   const [service, setService] = useState("");
   const [selectedServices, setSelectedServices] = useState([]);
   const totalPrice = (services || [])
-  .filter(s => selectedServices.includes(s.name))
-  .reduce((sum, s) => sum + s.price, 0);
+    .filter((s) => selectedServices.includes(s.name))
+    .reduce((sum, s) => sum + s.price, 0);
 
-const totalTime = (services || [])
-  .filter(s => selectedServices.includes(s.name))
-  .reduce((sum, s) => sum + s.duration_minutes, 0);
-
+  const totalTime = (services || [])
+    .filter((s) => selectedServices.includes(s.name))
+    .reduce((sum, s) => sum + s.duration_minutes, 0);
 
   const handleNext = () => {
     setStep(step + 1);
@@ -27,7 +25,7 @@ const totalTime = (services || [])
   };
 
   const handleSubmit = () => {
-    setStep(4); 
+    setStep(4);
   };
 
   return (
@@ -37,13 +35,15 @@ const totalTime = (services || [])
           <h2>{wash.name}</h2>
           <p>{wash.address}</p>
         </div>
-        <button className="close-btn" onClick={onClose}>✕</button>
+        <button className="close-btn" onClick={onClose}>
+          ✕
+        </button>
       </div>
 
       {/* выбор машины */}
       {step === 1 && (
-        <div className="group"> 
-            {/* Добавить padding */}
+        <div className="group">
+          {/* Добавить padding */}
           <h3 className="section-title">Выбор машины:</h3>
           {[
             "Представительский класс.",
@@ -51,7 +51,7 @@ const totalTime = (services || [])
             "Малые внедорожники.",
             "Полноразмерные внедорожники.",
             "Сверхбольшие внедорожники и микроавтобусы",
-            "Грузовые (тип Газель)."
+            "Грузовые (тип Газель).",
           ].map((type, i) => (
             <button
               key={i}
@@ -71,9 +71,21 @@ const totalTime = (services || [])
       {step === 2 && (
         <div className="group">
           <h3 className="section-title">Выберите дату и время:</h3>
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-          <input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
-          <button className="next-btn" onClick={handleNext} disabled={!date || !time}>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+          <input
+            type="time"
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+          />
+          <button
+            className="next-btn"
+            onClick={handleNext}
+            disabled={!date || !time}
+          >
             Далее
           </button>
         </div>
@@ -109,20 +121,24 @@ const totalTime = (services || [])
                   className="service-item"
                   onClick={() => {
                     if (isSelected) {
-                      setSelectedServices(selectedServices.filter(name => name !== s.name));
+                      setSelectedServices(
+                        selectedServices.filter((name) => name !== s.name)
+                      );
                     } else {
                       setSelectedServices([...selectedServices, s.name]);
                     }
                   }}
                 >
-                  <span className="checkbox">{isSelected ? "☑" : "☐"}</span> 
+                  <span className="checkbox">{isSelected ? "☑" : "☐"}</span>
                   {s.name} — {s.price}₸ ({s.duration_minutes} мин.)
                 </li>
               );
             })}
           </ul>
           <div className="summary">
-            <p><strong>Итог:</strong> {totalPrice}₸, {totalTime} мин.</p>
+            <p>
+              <strong>Итог:</strong> {totalPrice}₸, {totalTime} мин.
+            </p>
             <button
               className="next-btn"
               onClick={handleSubmit}
@@ -134,31 +150,42 @@ const totalTime = (services || [])
         </div>
       )}
 
-
-
       {/* Чек */}
       {step === 4 && (
         <div className="group">
           <h3 className="section-title">Чек</h3>
-          <p><strong>Автомойка:</strong> {wash.name}</p>
-          <p><strong>Машина:</strong> {carType}</p>
-          <p><strong>Дата:</strong> {date}</p>
-          <p><strong>Время:</strong> {time}</p>
-          <p><strong>Услуги:</strong></p>
+          <p>
+            <strong>Автомойка:</strong> {wash.name}
+          </p>
+          <p>
+            <strong>Машина:</strong> {carType}
+          </p>
+          <p>
+            <strong>Дата:</strong> {date}
+          </p>
+          <p>
+            <strong>Время:</strong> {time}
+          </p>
+          <p>
+            <strong>Услуги:</strong>
+          </p>
           <ul>
             {selectedServices.map((service, i) => (
               <li key={i}>{service}</li>
             ))}
           </ul>
-          <button className="btn confirm" onClick={onClose}>Подтвердить</button>
+          <button className="btn confirm" onClick={onClose}>
+            Подтвердить
+          </button>
         </div>
       )}
 
-
-
       {step > 1 && step < 4 && (
         <div className="group">
-        <button className="back-btn" onClick={handleBack}>Назад</button></div>
+          <button className="back-btn" onClick={handleBack}>
+            Назад
+          </button>
+        </div>
       )}
     </div>
   );
