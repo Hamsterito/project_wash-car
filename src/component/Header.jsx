@@ -3,6 +3,7 @@ import './Header.css';
 import AuthModal from './AuthModal';
 import userIcon from '../assets/user-icon.png';
 import logo from '../assets/logo.svg';
+import { Link } from "react-router-dom";
 
 
 const Header = () => {
@@ -17,7 +18,7 @@ const Header = () => {
     <>
       <header className="header">
         <div className="logo">
-          <img src={logo} alt="Логотип" />
+          <img src={logo} alt="Логотип" /> 
         </div>
 
 
@@ -28,12 +29,13 @@ const Header = () => {
         </nav>
         <div className="auth-buttons">
           {isLoggedIn ? (
-            <img
-              src={userIcon}
-              alt="User Icon"
-              className="user-icon"
-              onClick={handleProfileClick}
-            />
+              <Link to="/profile">
+                <img
+                  src={userIcon}
+                  alt="User Icon"
+                  className="user-icon"
+                />
+              </Link>
           ) : (
             <button className="booking-button" onClick={() => setShowAuth(true)}>
               Вход / Регистрация

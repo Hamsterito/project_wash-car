@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./BookingMenu.css";
 
 
+
 export default function BookingMenu({ wash, onClose, services }) {
   const [step, setStep] = useState(1);
   const [carType, setCarType] = useState("");
@@ -79,24 +80,6 @@ const totalTime = (services || [])
         </div>
       )}
 
-      {/* Услуги */}
-      {/* {step === 3 && (
-        <div className="group">
-          <h3 className="section-title">Выберите услугу:</h3>
-          {services.map((s, i) => (
-            <button
-              key={i}
-              className="select-btn"
-              onClick={() => {
-                setService(s.name);
-                handleSubmit();
-              }}
-            >
-              {s.name} — {s.price}₸ ({s.duration_minutes} мин.)
-            </button>
-          ))}
-        </div>
-      )} */}
       {step === 3 && (
         <div className="group">
           <h3 className="section-title">Выберите услуги:</h3>
