@@ -246,6 +246,18 @@ def save_user():
     except Exception as e:
         conn.rollback()
         return jsonify({"success": False, "error": "Ошибка при сохранении"}), 500
+    
+@app.route('/api/wash_boxes', methods=['GET'])
+def get_wash_boxes():
+    cursor.execute('SELECT id, name, location, image_url FROM wash_boxes;')
+    rows = cursor.fetchall()
+
+    boxes = [
+        {"id": row[0], "name": row[1], "address": row[2], "image": row[3]}
+        for row in rows
+    ]
+    return jsonify(boxes)
+
 
 # Код не с фронтом
 @app.route("/book", methods=["GET", "POST"])

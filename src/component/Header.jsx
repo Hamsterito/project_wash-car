@@ -5,7 +5,6 @@ import userIcon from '../assets/user-icon.png';
 import logo from '../assets/logo.svg';
 import { Link } from 'react-router-dom';
 
-//dima
 const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [showAuth, setShowAuth] = useState(false);
