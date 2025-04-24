@@ -1,11 +1,6 @@
 import React, { useState } from "react";
 import "./BookingMenu.css";
 
-<<<<<<< HEAD
-
-
-=======
->>>>>>> d3088f60f9227cf6dca593a68263d3c4d43533e9
 export default function BookingMenu({ wash, onClose, services }) {
   const [step, setStep] = useState(1);
   const [carType, setCarType] = useState("");

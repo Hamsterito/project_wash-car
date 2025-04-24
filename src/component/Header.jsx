@@ -25,24 +25,7 @@ const Header = () => {
           <a href="#about">О нас</a>
           <a href="#car-wash-grid">Бронь</a>
         </nav>
-        <div className="auth-buttons">
-          {isLoggedIn ? (
-              <Link to="/profile">
-                <img
-                  src={userIcon}
-                  alt="User Icon"
-                  className="user-icon"
-                />
-              </Link>
-          ) : (
-            <button
-              className="booking-button"
-              onClick={() => setShowAuth(true)}
-            >
-              Вход / Регистрация
-            </button>
-          )}
-        </div>
+
       </header>
       {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
     </>
