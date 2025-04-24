@@ -1,9 +1,9 @@
 CREATE TABLE clients (
     id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
-	password TEXT NOT NULL,
-    phone TEXT UNIQUE NOT NULL,
-    email TEXT NOT NULL
+    name TEXT,
+	password TEXT ,
+    phone TEXT UNIQUE,
+    email TEXT
 );
 
 CREATE TABLE verification_codes (
@@ -14,6 +14,8 @@ CREATE TABLE verification_codes (
     expires_at timestamp 
 );
 
+truncate clients cascade
+select * from verification_codes
 
 CREATE TABLE book(
     id SERIAL PRIMARY KEY,
