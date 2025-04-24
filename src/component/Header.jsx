@@ -3,6 +3,8 @@ import './Header.css';
 import AuthModal from './AuthModal';
 import userIcon from '../assets/user-icon.png';
 import logo from '../assets/logo.svg';
+import { Link } from 'react-router-dom';
+
 
 const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
