@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "./AuthModal.css";
 import CodeVerification from "./CodeVerification";
 
-const AuthModal = ({ onClose }) => {
+const AuthModal = ({  onClose, onSuccess  }) => {
   const [mode, setMode] = useState("login");
   const [formData, setFormData] = useState({
     phone: "",
@@ -69,7 +69,7 @@ const AuthModal = ({ onClose }) => {
       if (data.success) {
         setMode("code");
       } else {
-        setErrors({ contact: data.message || "Ошибка при отправке кода" });
+        setErrors({ contact: data.message || "Почта или номер уже существуют, если у вас есть аккаунт нажмите кнопку войти" });
       }
     } else if (mode === "login") {
       const newErrors = {};
@@ -95,7 +95,7 @@ const AuthModal = ({ onClose }) => {
       const data = await response.json();
 
       if (data.success) {
-        alert("Вход выполнен успешно");
+        onSuccess();
         onClose();
       } else {
         setErrors({ contact: data.message || "Неверный логин или пароль" });
@@ -221,7 +221,7 @@ const AuthModal = ({ onClose }) => {
             setCode={(newCode) => setFormData({ ...formData, code: newCode })}
             password={formData.password}
             onSuccess={() => {
-              alert("Регистрация завершена!");
+              onSuccess();
               onClose();
             }}
           />
@@ -230,5 +230,6 @@ const AuthModal = ({ onClose }) => {
     </div>
   );
 };
+
 
 export default AuthModal;
