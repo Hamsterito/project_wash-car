@@ -4,7 +4,6 @@ import AuthModal from './AuthModal';
 import userIcon from '../assets/user-icon.png';
 import logo from '../assets/logo.svg';
 
-// dima
 const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [showAuth, setShowAuth] = useState(false);
