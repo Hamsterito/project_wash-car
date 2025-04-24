@@ -1,6 +1,11 @@
 import React, { useState } from "react";
 import "./BookingMenu.css";
 
+<<<<<<< HEAD
+
+
+=======
+>>>>>>> d3088f60f9227cf6dca593a68263d3c4d43533e9
 export default function BookingMenu({ wash, onClose, services }) {
   const [step, setStep] = useState(1);
   const [carType, setCarType] = useState("");
@@ -91,24 +96,6 @@ export default function BookingMenu({ wash, onClose, services }) {
         </div>
       )}
 
-      {/* Услуги */}
-      {/* {step === 3 && (
-        <div className="group">
-          <h3 className="section-title">Выберите услугу:</h3>
-          {services.map((s, i) => (
-            <button
-              key={i}
-              className="select-btn"
-              onClick={() => {
-                setService(s.name);
-                handleSubmit();
-              }}
-            >
-              {s.name} — {s.price}₸ ({s.duration_minutes} мин.)
-            </button>
-          ))}
-        </div>
-      )} */}
       {step === 3 && (
         <div className="group">
           <h3 className="section-title">Выберите услуги:</h3>

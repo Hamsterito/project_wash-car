@@ -1,8 +1,9 @@
-import React, { useState } from "react";
-import "./Header.css";
-import AuthModal from "./AuthModal";
-import userIcon from "../assets/user-icon.png";
-import logo from "../assets/logo.svg";
+import React, { useState } from 'react';
+import './Header.css';
+import AuthModal from './AuthModal';
+import userIcon from '../assets/user-icon.png';
+import logo from '../assets/logo.svg';
+
 
 const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
@@ -16,7 +17,7 @@ const Header = () => {
     <>
       <header className="header">
         <div className="logo">
-          <img src={logo} alt="Логотип" />
+          <img src={logo} alt="Логотип" /> 
         </div>
 
         <nav className="nav">
@@ -26,12 +27,13 @@ const Header = () => {
         </nav>
         <div className="auth-buttons">
           {isLoggedIn ? (
-            <img
-              src={userIcon}
-              alt="User Icon"
-              className="user-icon"
-              onClick={handleProfileClick}
-            />
+              <Link to="/profile">
+                <img
+                  src={userIcon}
+                  alt="User Icon"
+                  className="user-icon"
+                />
+              </Link>
           ) : (
             <button
               className="booking-button"
