@@ -1,103 +1,134 @@
 .booking-menu {
-    position: fixed;
-    top: 0;
-    right: 0;
-    width: 400px;
-    height: 100%;
-    background: #fff;
-    /* padding: 20px; */
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .headermenu {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #222;
-    color: white;
-    padding: 25px;
-    border-radius: 0px 0px 20px 20px;
-    box-shadow: 2px 4px 6px rgb(0 0 0 / 40%);
-  }
-  
-  .close-btn {
-    background: transparent;
-    color: white;
-    font-size: 20px;
-    border: none;
-    cursor: pointer;
-  }
-  
-  .section-title {
-    background: #eaeaea;
-    padding: 10px 15px;
-    border-radius: 10px;
-    margin-bottom: 10px;
-    box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.334);  
-  }
+  font-family: 'Prosto One', sans-serif;
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 400px;
+  height: 100%;
+  background: #fff;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
 
-  .select-btn {
-    background: orange;
-    color: black;
-    font-weight: bold;
-    border: none;
-    border-radius: 10px;
-    margin: 5px 0;
-    padding: 10px;
-    width: 100%;
-    cursor: pointer;
-    box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.334);
-  }
-  
-  .next-btn, .back-btn, .btn.confirm {
-    padding: 10px;
-    background: orange;
-    border: none;
-    border-radius: 10px;
-    font-weight: bold;
-    cursor: pointer;
-    width: 360px;
-    box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.334);
-  }
-  
-  input {
-    display: block;
-    width: 100%;
-    margin: 10px 0;
-    padding: 8px;
-    font-size: 16px;
-  }
+.headermenu {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #222;
+  color: white;
+  padding: 25px;
+  border-radius: 0px 0px 20px 20px;
+  box-shadow: 2px 4px 6px rgb(0 0 0 / 40%);
+}
 
-  .group {
-    padding: 20px;
-  }
-  
+.close-btn {
+  background: transparent;
+  color: white;
+  font-size: 20px;
+  border: none;
+  cursor: pointer;
+}
 
-  .service-list {
-    list-style: none;
-    padding: 0;
-  }
-  
-  .service-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-    font-size: 16px;
-    cursor: pointer;
-  }
-  
-  .checkbox {
-    font-size: 20px;
-    margin-right: 10px;
-  }
-  
+.section-title {
+  background: #dfdede;
+  padding: 10px 15px;
+  border-radius: 10px;
+  font-size: 20px;
+  font-weight: bold;
+  margin-top: 5px;
+  margin-bottom: 20px;
+  box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.334);
+}
 
-  .summary {
-    margin-top: 20px;
-    font-size: 18px;
-    font-weight: bold;
-    text-align: right;
-  }
-  
+.text_section{
+  background-color: #dfdede;
+  padding: 10px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
+.select-btn {
+  font-family: 'Prosto One', sans-serif;
+  background: #FFB200;
+  color: black;
+  font-weight: bold;
+  font-size: 16px;
+  border: none;
+  border-radius: 10px;
+  margin: 5px 0;
+  padding: 20px;
+  width: 100%;
+  cursor: pointer;
+  box-shadow: 3px 4px 5px rgba(0, 0, 0, 0.334);
+  transition: background 0.2s ease;
+}
+
+.select-btn:hover{
+  background-color: #d49500;
+}
+
+.next-btn,
+.back-btn,
+.btn.confirm {
+  font-family: 'Prosto One', sans-serif;
+  padding: 20px;
+  font-size: 16px;
+  background: #FFB200;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  width: 360px;
+  box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.334);
+  transition: background 0.2s ease;
+}
+
+.next-btn:hover,
+.back-btn:hover,
+.btn.confirm:hover{
+  background-color: #d49500;
+}
+
+.back-btn{
+  margin-top: -20px;
+}
+
+input {
+  display: block;
+  width: 100%;
+  margin: 10px 0;
+  padding: 8px;
+  font-size: 16px;
+}
+
+.group {
+  padding: 20px;
+}
+
+
+.service-list {
+  list-style: none;
+  padding: 0;
+}
+
+.service-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.checkbox {
+  font-size: 20px;
+  margin-right: 10px;
+}
+
+
+.summary {
+  margin-top: 20px;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: right;
+}

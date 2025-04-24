@@ -1,35 +1,40 @@
 .about-us {
-    background-color: #FFB200;
-    padding: 60px 20px;
-    text-align: center;
-    font-family: 'Prosto One', sans-serif;
-  }
-  
-  .about-us__title {
-    font-size: 64px;
-    margin-bottom: 40px;
-    color: #000;
-  }
-  
-  .about-us__blocks {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 40px;
-  }
-  
-  .about-us__block {
-    max-width: 320px;
-  }
-  
-  .about-us__image {
-    width: 80%;
-    border-radius: 30px;
-    margin-bottom: 20px;
-  }
-  
-  .about-us__text {
-    font-size: 28px;
-    color: #000;
-  }
-  
+  background-color: #FFB200;
+  padding: 60px;
+  height: 820px;
+  text-align: center;
+  font-family: 'Prosto One', sans-serif;
+}
+
+.about-us__title {
+  font-size: 64px;
+  margin-top: -20px;
+  font-weight: lighter;
+  margin-bottom: 100px;
+  color: #000000;
+}
+
+.about-us__blocks {
+  margin-top: 200px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 200px;
+}
+
+.about-us__image {
+  width: 320px;
+  height: 320px;
+  border-radius: 30px;
+  margin-bottom: -30px;
+}
+
+#center_img{
+  margin-top: -100px;
+}
+
+.about-us__text {
+  width: 367px;
+  font-size: 32px;
+  color: #000000;
+}

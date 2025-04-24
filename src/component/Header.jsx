@@ -3,7 +3,6 @@ import './Header.css';
 import AuthModal from './AuthModal';
 import userIcon from '../assets/user-icon.png';
 import logo from '../assets/logo.svg';
-import { Link } from "react-router-dom";
 
 
 const Header = () => {
@@ -11,7 +10,7 @@ const Header = () => {
   const [showAuth, setShowAuth] = useState(false);
 
   const handleProfileClick = () => {
-    window.location.href = '/account'; 
+    window.location.href = "/account";
   };
 
   return (
@@ -20,7 +19,6 @@ const Header = () => {
         <div className="logo">
           <img src={logo} alt="Логотип" /> 
         </div>
-
 
         <nav className="nav">
           <a href="#home">Главная</a>
@@ -37,7 +35,10 @@ const Header = () => {
                 />
               </Link>
           ) : (
-            <button className="booking-button" onClick={() => setShowAuth(true)}>
+            <button
+              className="booking-button"
+              onClick={() => setShowAuth(true)}
+            >
               Вход / Регистрация
             </button>
           )}
