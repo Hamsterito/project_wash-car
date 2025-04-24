@@ -8,30 +8,7 @@ const carWashes = Array(9).fill({
 });
 
 const services = [
-  {
-    name: "Мойка кузова",
-    description: "Полная мойка внешней части автомобиля",
-    price: 500,
-    duration_minutes: 20,
-  },
-  {
-    name: "Химчистка салона",
-    description: "Глубокая чистка сидений и обивки",
-    price: 1500,
-    duration_minutes: 60,
-  },
-  {
-    name: "Полировка фар",
-    description: "Полировка передних фар",
-    price: 800,
-    duration_minutes: 30,
-  },
-  {
-    name: "Комплексная мойка",
-    description: "Мойка кузова и салона",
-    price: 2000,
-    duration_minutes: 90,
-  },
+
 ];
 
 export default function CarWashGrid() {
