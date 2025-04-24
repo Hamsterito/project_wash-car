@@ -97,9 +97,35 @@ body {
 }
 
 .booking-button:hover {
-  background-color: #fde047;
+  background-color: #d49500;
   transform: scale(1.05);
 }
+
+.auth-buttons {
+  display: flex;
+  gap: 40px;
+}
+
+.exit-button {
+  margin-top: 2px;
+  font-family: 'Prosto One', sans-serif;
+  transform: scale(1.05);
+  font-size: 18px;
+  width: 100px;
+  height: 40px;
+  background-color: #FFB200;
+  color: black;
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.exit-button:hover {
+  background-color: #d49500;
+  transform: scale(1.05);
+}
+
 
 .auto-button {
   font-family: 'Prosto One', sans-serif;
@@ -127,4 +153,27 @@ body {
   cursor: pointer;
   border-radius: 50%;
   object-fit: cover;
+}
+
+.user_name {
+  position: relative;
+  display: inline-block;
+}
+
+.text_name {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: -5px;
+  color: #FFFFFF;
+  text-decoration: none;
+  font-size: 16px;
+  transition: color 0.3s;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.user_name:hover .text_name {
+  color: #FFB200;
 }
