@@ -3,14 +3,18 @@ import './Header.css';
 import AuthModal from './AuthModal';
 import userIcon from '../assets/user-icon.png';
 import logo from '../assets/logo.png';
+import { useNavigate } from 'react-router-dom';
+
 
 
 const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [showAuth, setShowAuth] = useState(false);
 
+  const navigate = useNavigate();
+
   const handleProfileClick = () => {
-    window.location.href = '/account'; 
+    navigate('/account');
   };
 
   return (
