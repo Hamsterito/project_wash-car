@@ -9,7 +9,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 40px;
+  padding: 20px 40px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
@@ -29,13 +29,16 @@ body {
 
 .nav {
   display: flex;
+  width: 100%;
+  justify-content: flex-start;
+  margin-left: 50px;
   gap: 30px;
 }
 
 .nav a {
-  color: #DADADA;
+  color: #FFFFFF;
   text-decoration: none;
-  font-size: 16px;
+  font-size: 20px;
   transition: color 0.3s;
 }
 
