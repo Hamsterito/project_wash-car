@@ -13,7 +13,7 @@ from flask_cors import CORS
 import random
 import string
 
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), 'api.env'))
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), 'app.env'))
 
 app = Flask(__name__)
 CORS(app)
@@ -119,8 +119,9 @@ def register():
 
         return jsonify({"success": True})
     except Exception as e:
-        print(f"Ошибка при регистраций: {e}")
-        return jsonify({"success": False})
+        conn.rollback()
+        print(f"[register] Ошибка: {e}")
+        return jsonify({"success": False, "message": "Ошибка при регистрации"}), 500
 
 # авторизоваться
 @app.route("/api/login", methods=["POST"])
@@ -233,10 +234,11 @@ def save_user():
 
     try:
         cursor.execute(
-            "DELETE FROM clients WHERE %s OR %s)",
-            ("", phone, email)
+            "DELETE FROM clients WHERE phone = %s OR email = %s",
+            (phone, email)
         )
         conn.commit()
+        
         cursor.execute(
             "INSERT INTO clients (name, phone, password, email) VALUES (%s, %s, %s, %s)",
             ("", phone, password_hash, email)
