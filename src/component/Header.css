@@ -110,7 +110,7 @@ body {
   margin-top: 2px;
   font-family: 'Prosto One', sans-serif;
   transform: scale(1.05);
-  font-size: 18px;
+  font-size: 16px;
   width: 100px;
   height: 40px;
   background-color: #FFB200;
@@ -168,7 +168,7 @@ body {
   margin-top: -5px;
   color: #FFFFFF;
   text-decoration: none;
-  font-size: 16px;
+  font-size: 18px;
   transition: color 0.3s;
   cursor: pointer;
   white-space: nowrap;
