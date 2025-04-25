@@ -1,6 +1,7 @@
 CREATE TABLE clients (
     id SERIAL PRIMARY KEY,
-    name TEXT,
+    first_name TEXT,
+	last_name TEXT,
 	password TEXT ,
     phone TEXT UNIQUE,
     email TEXT
@@ -23,15 +24,6 @@ CREATE TABLE book(
 	status TEXT CHECK (status IN ('забронировано', 'свободно'))
 	DEFAULT 'свободно'
 );
-
-DROP TABLE clients
-
-INSERT INTO clients (name,password,phone,email)
-VALUES('dima',123,'12345678','email')
-
-SELECT * FROM book
-
-TRUNCATE clients CASCADE
 
 CREATE TABLE services (
     id SERIAL PRIMARY KEY,
@@ -76,11 +68,12 @@ INSERT INTO services (name, description, price, duration_minutes) VALUES
 
 -- Мойки (боксы)
 INSERT INTO wash_boxes (name, location, image_url) VALUES
-('Бокс №1', 'Центральная мойка', 'img/images.jpeg'),
-('Бокс №2', 'Северная мойка', 'img/images.jpeg'),
-('Бокс №3', 'Южная мойка', 'img/images.jpeg');
+('Бокс №1', 'Центральная мойка', '/images/carwash.png'),
+('Бокс №2', 'Северная мойка', '/images/carwash.png'),
+('Бокс №3', 'Южная мойка', '/images/carwash.png');
 
 select * from wash_boxes
+
 
 -- Бронирования
 INSERT INTO bookings (client_id, service_id, box_id, start_time, end_time, status) VALUES

@@ -20,8 +20,7 @@
   margin-top: 180px;
   display: flex;
   justify-content: space-between;
-  flex-wrap: wrap;
-  padding: 0 250px;
+  padding: 0px 50px;
 }
 
 .about-us__image {
