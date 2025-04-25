@@ -8,6 +8,7 @@ import CitySelector from './component/CitySelector';
 import CarWashGrid from './component/CarWashGrid';
 import AboutUs from './component/AboutUs';
 import Profil from './component/Profil'; 
+import ContactUs from './component/ContactUs';
 
 const App = () => {
   return (
@@ -20,6 +21,7 @@ const App = () => {
             <CitySelector />
             <CarWashGrid />
             <AboutUs />
+            <ContactUs />
             <Footer />
           </>
         } />
