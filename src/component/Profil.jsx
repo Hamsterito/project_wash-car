@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './Profil.css';
 import { useNavigate } from 'react-router-dom';
+import defaultImage from '../assets/carwash.png';
 
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
@@ -61,6 +62,30 @@ export default function ProfilePage() {
     navigate('/');  // Перенаправляем на главную страницу
   };
 
+  const [washHistory, setWashHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const response = await fetch('API_URL');
+      const data = await response.json();
+      setWashHistory(data);
+    } catch (error) {
+      console.error('Ошибка загрузки данных:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <p>Загрузка...</p>;
+  }
+
+
   return (
     <div className="profile-page">
       <h1 className="titleq">Личный кабинет:</h1>
@@ -68,25 +93,32 @@ export default function ProfilePage() {
       <div className="main-section">
         <div className="history-section">
           <h2 className="subtitle">История:</h2>
-
           <div className="history-cards">
-            {[1, 2, 3].map((item) => (
-              <div key={item} className="history-card">
+            {washHistory.map((wash) => (
+              <div
+                key={wash.id}
+                className="history-card"
+                style={{
+                  backgroundImage: `url(${wash.image || defaultImage})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }}
+              >
                 <div className="card-header">
-                  Название мойки<br />улица:
+                  {wash.name}<br />{wash.street}
                 </div>
                 <div className="card-body">
-                  <p>Назначенное время:</p>
-                  <p>Вид транспорта:</p>
-                  <p>Выбранные услуги:</p>
-                  <p>Цена:</p>
+                  <p>Назначенное время: {wash.appointmentTime}</p>
+                  <p>Вид транспорта: {wash.vehicleType}</p>
+                  <p>Выбранные услуги: {wash.selectedServices.join(', ')}</p>
+                  <p>Цена: {wash.price}</p>
                 </div>
               </div>
             ))}
           </div>
-
           <button className="btnq more">Ещё ↓</button>
         </div>
+
 
         <div className="profile-section">
           <img
@@ -167,3 +199,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+
