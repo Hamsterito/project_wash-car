@@ -1,0 +1,165 @@
+:root {
+    --bg-dark: #2d2d2d;
+    --text-light: #ffffff;
+    --input-bg: #e0e0e0;
+    --accent-yellow: #ffc107;
+    --accent-red: #d32f2f;
+    --accent-green: #4caf50;
+  }
+  
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+  }
+  
+  .profile-container {
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+    padding: 40px 24px;
+    border-radius: 20px;
+    max-width: 1100px;
+    margin: 40px auto;
+  }
+  
+  .profile-title {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 24px;
+  }
+  
+  .profile-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    margin-bottom: 40px;
+  }
+  
+  .profile-info {
+    flex: 1;
+    min-width: 260px;
+  }
+  
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .input {
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: none;
+    background-color: var(--input-bg);
+    font-size: 16px;
+    color: #000;
+  }
+  
+  .profile-card {
+    background-color: #1f1f1f;
+    border-radius: 16px;
+    padding: 24px;
+    width: 260px;
+    text-align: center;
+  }
+  
+  .status {
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+  
+  .avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 16px;
+  }
+  
+  .btn {
+    padding: 10px 20px;
+    font-size: 14px;
+    border: none;
+    border-radius: 30px;
+    margin: 6px 0;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+  
+  .btn.yellow {
+    background-color: var(--accent-yellow);
+    color: #000;
+  }
+  
+  .btn.yellow:hover {
+    background-color: #ffdd57;
+  }
+  
+  .btn.red {
+    background-color: var(--accent-red);
+    color: #fff;
+  }
+  
+  .btn.red:hover {
+    background-color: #f44336;
+  }
+  
+  .btn.large {
+    padding: 12px 28px;
+    font-size: 16px;
+  }
+  
+  .section {
+    margin-bottom: 40px;
+  }
+  
+  .section-title {
+    font-size: 22px;
+    margin-bottom: 16px;
+  }
+  
+  .history-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  
+  .history-card {
+    background-color: #eeeeee;
+    border-radius: 10px;
+    overflow: hidden;
+    flex: 1 1 200px;
+    max-width: 300px;
+    min-height: 140px;
+  }
+  
+  .history-card-top {
+    background-color: var(--accent-yellow);
+    height: 40px;
+  }
+  
+  .history-card-body {
+    height: 100px;
+  }
+  
+  .business-call {
+    background-color: #fff;
+    color: #000;
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .business-call .text {
+    font-size: 18px;
+  }
+  
+  .green {
+    color: var(--accent-green);
+    font-weight: 700;
+  }
+  
