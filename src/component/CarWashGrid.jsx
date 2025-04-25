@@ -10,9 +10,17 @@ export default function CarWashGrid() {
   const [selectedWash, setSelectedWash] = useState(null);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/wash_boxes")
-      .then((res) => res.json())
-      .then((data) => setCarWashes(data));
+    const fetchData = () => {
+      fetch("http://localhost:5000/api/wash_boxes")
+        .then((res) => res.json())
+        .then((data) => setCarWashes(data));
+    };
+    
+    fetchData();
+    
+    const intervalId = setInterval(fetchData, 5000);
+    
+    return () => clearInterval(intervalId);
   }, []);
 
   const [currentPage, setCurrentPage] = useState(1);
