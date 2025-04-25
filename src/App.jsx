@@ -8,7 +8,7 @@ import CarWashGrid from './component/CarWashGrid';
 import AboutUs from './component/AboutUs';
 import Profil from './component/Profil'; 
 import ContactUs from "./component/ContactUs";
-// 
+import ListBooking from "./component/ListBooking"; 
 
 const App = () => {
   return (
@@ -25,6 +25,7 @@ const App = () => {
             <Footer />
           </>
         } />
+        <Route path="/list-booking" element={<ListBooking />} /> 
         <Route path="/profile" element={<Profil />} />
       </Routes>
     </Router>
