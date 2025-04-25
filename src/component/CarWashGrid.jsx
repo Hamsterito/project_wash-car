@@ -54,7 +54,7 @@ export default function CarWashGrid() {
             }}
           >
             <div className="overlay">
-              <div>
+              <div className="text_carwash">
                 <h2 className="name">{wash.name}</h2>
                 <p className="address">Адрес: {wash.address}</p>
               </div>

@@ -55,8 +55,14 @@ body {
   font-family: 'Prosto One', sans-serif;
   padding-top: 32px;
   font-size: 24px;
+  text-align: left;
   font-weight: lighter;
   margin-bottom: 4px;
+}
+
+.text_carwash{
+  width: 100%;
+  padding-left: 70px;
 }
 
 .address {

@@ -72,11 +72,13 @@ export default function BookingMenu({ wash, onClose, services }) {
         <div className="group">
           <h3 className="section-title">Выберите дату и время:</h3>
           <input
+            id="book_input"
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
           />
           <input
+            id="book_input"
             type="time"
             value={time}
             onChange={(e) => setTime(e.target.value)}
@@ -137,26 +139,26 @@ export default function BookingMenu({ wash, onClose, services }) {
         <div className="group">
           <h3 className="section-title">Чек</h3>
           <div className="text_section">
-          <p>
-            <strong>Автомойка:</strong> {wash.name}
-          </p>
-          <p>
-            <strong>Машина:</strong> {carType}
-          </p>
-          <p>
-            <strong>Дата:</strong> {date}
-          </p>
-          <p>
-            <strong>Время:</strong> {time}
-          </p>
-          <p>
-            <strong>Услуги:</strong>
-          </p>
-          <ul>
-            {selectedServices.map((service, i) => (
-              <li key={i}>{service}</li>
-            ))}
-          </ul>
+            <p>
+              <strong>Автомойка:</strong> {wash.name}
+            </p>
+            <p>
+              <strong>Машина:</strong> {carType}
+            </p>
+            <p>
+              <strong>Дата:</strong> {date}
+            </p>
+            <p>
+              <strong>Время:</strong> {time}
+            </p>
+            <p>
+              <strong>Услуги:</strong>
+            </p>
+            <ul>
+              {selectedServices.map((service, i) => (
+                <li key={i}>{service}</li>
+              ))}
+            </ul>
           </div>
           <button className="btn confirm" onClick={onClose}>
             Подтвердить

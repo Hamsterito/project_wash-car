@@ -6,7 +6,7 @@ import logo from "../assets/logo.svg";
 import { Link } from "react-router-dom";
 
 const Header = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
 
   useEffect(() => {
@@ -46,12 +46,11 @@ const Header = () => {
         <div className="auth-buttons">
           {isLoggedIn ? (
             <>
-              <div className="user_name">
+              <div className="user_name" onClick={handleProfileClick}>
                 <img
                   src={userIcon}
                   alt="User Icon"
                   className="user-icon"
-                  onClick={handleProfileClick}
                 />
                 <p className="text_name">Профиль</p>
               </div>
