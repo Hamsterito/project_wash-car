@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import './ListBooking.css';
 
 const ListBooking = () => {
+  const location = useLocation();
+  const carWashName = location.state?.carWashName || 'Название автомойки';
+
   const [selectedClient, setSelectedClient] = useState(null);
 
   const bookings = [
@@ -20,7 +24,7 @@ const ListBooking = () => {
 
   return (
     <div className="list-booking">
-      <h1 className="car-wash-name">Название автомойки</h1>
+      <h1 className="car-wash-name">{carWashName}</h1>
       {bookings.map((booking, index) => (
         <div key={index} className="booking-section">
           <h2 className="time-slot">{booking.time}</h2>

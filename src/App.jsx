@@ -9,6 +9,7 @@ import AboutUs from './component/AboutUs';
 import Profil from './component/Profil'; 
 import ContactUs from "./component/ContactUs";
 import ListBooking from "./component/ListBooking"; 
+import CarWashesList from "./component/CarWashesList";
 
 const App = () => {
   return (
@@ -27,6 +28,7 @@ const App = () => {
         } />
         <Route path="/list-booking" element={<ListBooking />} /> 
         <Route path="/profile" element={<Profil />} />
+        <Route path="/car-washes-list" element={<CarWashesList />} />
       </Routes>
     </Router>
   );

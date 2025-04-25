@@ -32,7 +32,7 @@ const ProfileDashboard = () => {
       </div>
       <div className="business-offer">
         <p>Хочешь открыть свою автомойку?<br/>Создай <span className="highlight">бизнес аккаунт!</span></p>
-        <button className="create-btn" onClick={() => navigate('/list-booking')}>Создать!</button>
+        <button className="create-btn" onClick={() => navigate('/car-washes-list')}>Создать!</button>
       </div>
     </div>
   );
