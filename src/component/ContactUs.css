@@ -48,7 +48,8 @@
 }
 
 .help_text,
-.сontacts {
+.сontacts,
+#logo_contact {
   z-index: 2;
 }
 

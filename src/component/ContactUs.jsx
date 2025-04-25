@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./ContactUs.css";
+import logo from "../assets/logo.svg";
 
 const ContactUs = () => {
   const [formData, setFormData] = useState({
@@ -13,6 +14,11 @@ const ContactUs = () => {
         <h1 className="need_help_text">Нужна помощь?</h1>
         <p className="contact_us">Свяжитесь с нами!</p>
       </div>
+
+      <div className="logo" id="logo_contact">
+        <img src={logo} alt="Логотип" />
+      </div>
+
       <div className="сontacts">
         <h1>Наши контакты</h1>
         <p>- +7 777 001 57 43</p>
