@@ -1,165 +1,232 @@
 :root {
-    --bg-dark: #2d2d2d;
-    --text-light: #ffffff;
-    --input-bg: #e0e0e0;
-    --accent-yellow: #ffc107;
-    --accent-red: #d32f2f;
-    --accent-green: #4caf50;
-  }
-  
-  body {
-    margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-  }
-  
-  .profile-container {
-    background-color: var(--bg-dark);
-    color: var(--text-light);
-    padding: 40px 24px;
-    border-radius: 20px;
-    max-width: 1100px;
-    margin: 40px auto;
-  }
-  
-  .profile-title {
-    font-size: 32px;
-    font-weight: 700;
-    margin-bottom: 24px;
-  }
-  
-  .profile-content {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 32px;
-    margin-bottom: 40px;
-  }
-  
-  .profile-info {
-    flex: 1;
-    min-width: 260px;
-  }
-  
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  
-  .input {
-    padding: 12px 16px;
-    border-radius: 10px;
-    border: none;
-    background-color: var(--input-bg);
-    font-size: 16px;
-    color: #000;
-  }
-  
-  .profile-card {
-    background-color: #1f1f1f;
-    border-radius: 16px;
-    padding: 24px;
-    width: 260px;
-    text-align: center;
-  }
-  
-  .status {
-    font-size: 14px;
-    margin-bottom: 16px;
-  }
-  
-  .avatar {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-bottom: 16px;
-  }
-  
-  .btn {
-    padding: 10px 20px;
-    font-size: 14px;
-    border: none;
-    border-radius: 30px;
-    margin: 6px 0;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.2s ease;
-  }
-  
-  .btn.yellow {
-    background-color: var(--accent-yellow);
-    color: #000;
-  }
-  
-  .btn.yellow:hover {
-    background-color: #ffdd57;
-  }
-  
-  .btn.red {
-    background-color: var(--accent-red);
-    color: #fff;
-  }
-  
-  .btn.red:hover {
-    background-color: #f44336;
-  }
-  
-  .btn.large {
-    padding: 12px 28px;
-    font-size: 16px;
-  }
-  
-  .section {
-    margin-bottom: 40px;
-  }
-  
-  .section-title {
-    font-size: 22px;
-    margin-bottom: 16px;
-  }
-  
-  .history-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-  }
-  
-  .history-card {
-    background-color: #eeeeee;
-    border-radius: 10px;
-    overflow: hidden;
-    flex: 1 1 200px;
-    max-width: 300px;
-    min-height: 140px;
-  }
-  
-  .history-card-top {
-    background-color: var(--accent-yellow);
-    height: 40px;
-  }
-  
-  .history-card-body {
-    height: 100px;
-  }
-  
-  .business-call {
-    background-color: #fff;
-    color: #000;
-    border-radius: 16px;
-    padding: 24px;
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 20px;
-  }
-  
-  .business-call .text {
-    font-size: 18px;
-  }
-  
-  .green {
-    color: var(--accent-green);
-    font-weight: 700;
-  }
-  
+  --bg-dark: #333;
+  --bg-light: #fff;
+  --accent-yellow: #ffc107;
+  --accent-red: #d32f2f;
+  --text-dark: #000;
+  --accent-green: #28a745; 
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.profile-page {
+  background-color: var(--bg-dark);
+  color: var(--bg-light);
+  padding: 30px;
+  border-radius: 15px;
+  max-width: 1100px;
+  margin: 40px auto;
+}
+
+.title {
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+.main-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  margin-bottom: 40px;
+}
+
+.history-section {
+  flex: 2;
+}
+
+.subtitle {
+  background-color: #555;
+  padding: 10px 15px;
+  border-radius: 10px;
+  font-size: 20px;
+  margin-bottom: 20px;
+}
+
+.history-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.history-card {
+  background-color: var(--bg-light);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid #ccc;
+}
+
+.card-header {
+  background-color: var(--accent-yellow);
+  padding: 10px;
+  font-weight: bold;
+  color: var(--text-dark);
+}
+
+.card-body {
+  padding: 10px;
+  color: var(--text-dark);
+}
+
+.profile-section {
+  flex: 1;
+  background-color: #e0e0e0;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  color: var(--text-dark);
+}
+
+.avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.user-info {
+  margin: 20px 0;
+  font-size: 14px;
+}
+
+.user-status {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.btnq {
+  display: block;
+  width: 100%;
+  padding: 10px 0;
+  border: 2px solid;
+  border-radius: 25px;
+  font-weight: bold;
+  margin-top: 10px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.btnq.edit {
+  background-color: transparent;
+  border-color: var(--bg-dark);
+  color: var(--bg-dark);
+}
+
+.btnq.edit:hover {
+  background-color: var(--bg-dark);
+  color: var(--bg-light);
+}
+
+.btnq.logout {
+  background-color: transparent;
+  border-color: var(--accent-red);
+  color: var(--accent-red);
+}
+
+.btnq.logout:hover {
+  background-color: var(--accent-red);
+  color: var(--bg-light);
+}
+
+.btnq.more {
+  background-color: transparent;
+  color: var(--bg-light);
+  border: none;
+  font-size: 18px;
+  margin: 20px auto 0;
+}
+
+.business-section {
+  background-color: var(--bg-light);
+  color: var(--text-dark);
+  padding: 20px;
+  border-radius: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.business-text {
+  font-size: 18px;
+}
+
+.green {
+  color: var(--accent-green);
+  font-weight: bold;
+}
+
+.btnq.create {
+  background-color: var(--accent-yellow);
+  border: none;
+  padding: 12px 30px;
+  font-size: 18px;
+  border-radius: 30px;
+  color: var(--text-dark);
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btnq.create:hover {
+  background-color: #ffdb4d;
+}
+
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.edit-form input {
+  padding: 10px;
+  border: 1px solid #bbb;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+input {
+  display: block;
+  margin: 10px -10px;
+  padding: 8px;
+  font-size: 16px;
+}
+
+.btnq.phot {
+  background-color: transparent;
+  border-color: var(--bg-dark);
+  color: var(--bg-dark);
+}
+
+.btnq.phot:hover {
+  background-color: var(--bg-dark);
+  color: var(--bg-light);
+}
+
+.btnq.save {
+  background-color: transparent;
+  border-color: var(--accent-green);
+  color: var(--accent-green);
+}
+
+.btnq.save:hover {
+  background-color: var(--accent-green);
+  color: var(--bg-light);
+}
+
+.btnq.cancel {
+  background-color: transparent;
+  border-color: var(--accent-red);
+  color: var(--accent-red);
+}
+
+.btnq.cancel:hover {
+  background-color: var(--accent-red);
+  color: var(--bg-light);
+}
