@@ -18,25 +18,25 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: -55px; /* Поднимаем блок на 25 пикселей */
+    margin-top: -55px;
   }
   
   .status {
     font-size: 16px;
     font-weight: bold;
-    margin-bottom: 10px; /* Отступ от изображения */
-    color: #ffffff; /* Белый цвет текста */
+    margin-bottom: 10px;
+    color: #ffffff;
   }
   
   .form-section {
-    flex: 1; /* Занимает оставшееся пространство */
-    margin-right: 20px; /* Отступ от фото профиля */
+    flex: 1;
+    margin-right: 20px;
   }
   
   .form-section input {
-    width: 90%; /* Уменьшить ширину, чтобы не занимало слишком много места */
+    width: 90%;
     padding: 8px;
-    margin-bottom: 10px; /* Отступ между полями */
+    margin-bottom: 10px;
     border-radius: 8px;
     border: none;
     font-size: 14px;
