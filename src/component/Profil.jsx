@@ -2,73 +2,121 @@ import React, { useState } from 'react';
 import './Profil.css';
 
 export default function ProfilePage() {
-  const [avatar, setAvatar] = useState('https://via.placeholder.com/150');
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    lastName: '',
+    firstName: '',
+    phone: '',
+    email: '',
+  });
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setAvatar(imageUrl);
-    }
+  const handleChange = (e) => {
+    setFormData({...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleSave = () => {
+    setIsEditing(false);
+    console.log('Сохранено:', formData);
   };
 
   return (
-    <div className="profile-container">
-      <h1 className="profile-title">Личный кабинет</h1>
+    <div className="profile-page">
+      <h1 className="title">Личный кабинет:</h1>
 
-      <div className="profile-content">
-        <div className="profile-info">
-          <div className="form-group">
-            <input type="text" placeholder="Имя" className="input" />
-            <input type="text" placeholder="Фамилия" className="input" />
-            <input type="text" placeholder="Номер" className="input" />
-            <input type="email" placeholder="Email" className="input" />
+      <div className="main-section">
+        <div className="history-section">
+          <h2 className="subtitle">История:</h2>
+
+          <div className="history-cards">
+            {[1, 2, 3].map((item) => (
+              <div key={item} className="history-card">
+                <div className="card-header">
+                  Название мойки<br />улица:
+                </div>
+                <div className="card-body">
+                  <p>Назначенное время:</p>
+                  <p>Вид транспорта:</p>
+                  <p>Выбранные услуги:</p>
+                  <p>Цена:</p>
+                </div>
+              </div>
+            ))}
           </div>
+
+          <button className="btnq more">Ещё ▼</button>
         </div>
 
-        <div className="profile-card">
-          <p className="status">Статус: <span>пользователь</span></p>
+        <div className="profile-section">
           <img
-            src={avatar}
+            src="https://via.placeholder.com/150"
             alt="Фото профиля"
             className="avatar"
           />
 
-          <div className="upload-button-wrapper">
-            <input
-              type="file"
-              accept="image/*"
-              id="upload-avatar"
-              style={{ display: 'none' }}
-              onChange={handleImageChange}
-            />
-            <label htmlFor="upload-avatar" className="btn yellow upload-btn">
-              Сменить фото
-            </label>
-          </div>
-          
-          <button className="btn red">Выйти</button>
+          {!isEditing ? (
+            <>
+              <div className="user-info">
+                <p className="user-status">Статус пользователя:<br /><span>Пользователь</span></p>
+                <p>Фамилия</p>
+                <p>Имя</p>
+                <p>Номер</p>
+                <p>Email</p>
+              </div>
+
+              <button className="btnq edit" onClick={handleEdit}>Изменить</button>
+              <button className="btnq logout">Выйти</button>
+            </>
+          ) : (
+            <>
+              <div className="edit-form">
+                <input
+                  type="text"
+                  name="lastName"
+                  placeholder="Фамилия"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                />
+                <input
+                  type="text"
+                  name="firstName"
+                  placeholder="Имя"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                />
+                <input
+                  type="text"
+                  name="phone"
+                  placeholder="Номер телефона"
+                  value={formData.phone}
+                  onChange={handleChange}
+                />
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+
+                <button className="btnq phot">Изменить фото профиля</button>
+                <button className="btnq save" onClick={handleSave}>Сохранить изменения</button>
+                <button className="btnq cancel" onClick={() => setIsEditing(false)}>Отменить</button>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
-      <div className="section">
-        <h2 className="section-title">История</h2>
-        <div className="history-list">
-          {[1, 2, 3].map((item) => (
-            <div key={item} className="history-card">
-              <div className="history-card-top" />
-              <div className="history-card-body" />
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="business-call">
-        <div className="text">
+      <div className="business-section">
+        <div className="business-text">
           <p>Хочешь открыть свою автомойку?</p>
           <p>Создай <span className="green">бизнес аккаунт</span>!</p>
         </div>
-        <button className="btn yellow large">Создать</button>
+        <button className="btnq create">Создать!</button>
       </div>
     </div>
   );
