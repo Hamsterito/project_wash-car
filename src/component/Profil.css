@@ -133,11 +133,11 @@ body {
 }
 
 .btnq.more {
-  background-color: transparent;
+  background-color: #ffffff20;
   color: var(--bg-light);
   border: none;
   font-size: 18px;
-  margin: 20px auto 0;
+  box-shadow: 3px 4px 5px rgba(0, 0, 0, 0.334);
 }
 
 .business-section {

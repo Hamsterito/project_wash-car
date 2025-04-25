@@ -42,6 +42,7 @@ export default function ProfilePage() {
   const handleEdit = () => {
     setIsEditing(true);
   };
+  
 
   const handleSave = () => {
     setIsEditing(false);
@@ -84,7 +85,7 @@ export default function ProfilePage() {
             ))}
           </div>
 
-          <button className="btnq more">Ещё ▼</button>
+          <button className="btnq more">Ещё ↓</button>
         </div>
 
         <div className="profile-section">
