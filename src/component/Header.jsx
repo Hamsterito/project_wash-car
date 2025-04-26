@@ -22,8 +22,8 @@ const Header = () => {
         </div>
 
         <nav className="nav">
-          <a href="#home">Главная</a>
-          <a href="#about">О нас</a>
+        <Link to="/">Главная</Link>
+        <a href="#about">О нас</a>
           <a href="#car-wash-grid">Бронь</a>
         </nav>
         <div className="auth-buttons">
