@@ -8,50 +8,58 @@ import right from "../assets/right.svg";
 export default function CarWashGrid() {
   const [carWashes, setCarWashes] = useState([]);
   const [selectedWash, setSelectedWash] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const itemsPerPage = 9;
 
   useEffect(() => {
     const fetchData = () => {
       fetch("http://localhost:5000/api/wash_boxes")
-        .then((res) => res.json())
-        .then((data) => setCarWashes(data));
+        .then((res) => {
+          if (!res.ok) throw new Error("Ошибка загрузки данных");
+          return res.json();
+        })
+        .then((data) => {
+          // Гарантируем, что данные - массив
+          if (Array.isArray(data)) {
+            setCarWashes(data);
+          } else {
+            throw new Error("Некорректный формат данных");
+          }
+        })
+        .catch((err) => {
+          setError(err.message);
+          setCarWashes([]);
+        })
+        .finally(() => setIsLoading(false));
     };
-    
+
     fetchData();
-    
     const intervalId = setInterval(fetchData, 5000);
-    
     return () => clearInterval(intervalId);
   }, []);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 9;
-
+  // Безопасные вычисления для пагинации
+  const safeCarWashes = Array.isArray(carWashes) ? carWashes : [];
+  const totalPages = Math.ceil(safeCarWashes.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentWashes = carWashes.slice(indexOfFirstItem, indexOfLastItem);
+  const currentWashes = safeCarWashes.slice(indexOfFirstItem, indexOfLastItem);
 
-  const totalPages = Math.ceil(carWashes.length / itemsPerPage);
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 850, behavior: "smooth" });
-  };
-  const pageButtons = [];
-  for (let i = 1; i <= totalPages; i++) {
-    pageButtons.push(i);
-  }
+  if (isLoading) return <div className="loading">Загрузка...</div>;
+  if (error) return <div className="error" id="error_carwash">Ошибка: {error}</div>;
 
   return (
     <div className="container" id="car-wash-grid">
       <h1 className="title">Выберите ближайшую автомойку для вас!</h1>
+      
       <div className="grid">
         {currentWashes.map((wash) => (
           <div
             key={wash.id}
             className="card"
-            style={{
-              backgroundImage: `url(${wash.image || defaultImage})`,
-            }}
+            style={{ backgroundImage: `url(${wash.image || defaultImage})` }}
           >
             <div className="overlay">
               <div className="text_carwash">
@@ -69,38 +77,43 @@ export default function CarWashGrid() {
         ))}
       </div>
 
-      <div className="pagination">
-        {currentPage > 1 && (
-          <button
-            className="page-nav prev"
-            onClick={() => handlePageChange(currentPage - 1)}
-          >
-            <img src={left} alt="Вперёд" />
-          </button>
-        )}
-        {pageButtons.map((page) => (
-          <button
-            key={page}
-            className={`page-number ${currentPage === page ? "active" : ""}`}
-            onClick={() => handlePageChange(page)}
-          >
-            {page}
-          </button>
-        ))}
-        {currentPage < totalPages && (
-          <button
-            className="page-nav next"
-            onClick={() => handlePageChange(currentPage + 1)}
-          >
-            <img src={right} alt="Вперёд" />
-          </button>
-        )}
-      </div>
+      {/* Пагинация */}
+      {totalPages > 1 && (
+        <div className="pagination">
+          {currentPage > 1 && (
+            <button
+              className="page-nav prev"
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            >
+              <img src={left} alt="Назад" />
+            </button>
+          )}
+          
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <button
+              key={page}
+              className={`page-number ${currentPage === page ? "active" : ""}`}
+              onClick={() => setCurrentPage(page)}
+            >
+              {page}
+            </button>
+          ))}
+          
+          {currentPage < totalPages && (
+            <button
+              className="page-nav next"
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            >
+              <img src={right} alt="Вперёд" />
+            </button>
+          )}
+        </div>
+      )}
 
       {selectedWash && (
         <BookingMenu
           wash={selectedWash}
-          services={[]}
+          services={selectedWash?.services || []}
           onClose={() => setSelectedWash(null)}
         />
       )}

@@ -90,8 +90,12 @@
   background-color: #d49500;
 }
 
-.back-btn{
-  margin-top: -20px;
+.next-btn{
+  margin-bottom: -50px;
+}
+
+.btn.confirm{
+  margin-bottom: 20px;
 }
 
 #book_input {

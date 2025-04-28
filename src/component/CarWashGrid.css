@@ -51,6 +51,17 @@ body {
   justify-content: space-between;
 }
 
+#error_carwash {
+  margin: 0 auto;
+  width: 300px; 
+}
+
+.loading{
+  margin: 0 auto;
+  width: 100px; 
+  margin-bottom: 50px;
+}
+
 .name {
   font-family: 'Prosto One', sans-serif;
   padding-top: 32px;
