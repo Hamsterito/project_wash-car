@@ -252,49 +252,60 @@ def save_user():
 @app.route('/api/wash_boxes', methods=['GET'])
 def get_wash_boxes():
     try:
-            cursor.execute('''
-                SELECT 
-                    wb.id,
-                    wb.name,
-                    wb.location AS address,
-                    wb.image_url AS image,
-                    COALESCE(
-                        jsonb_agg(
-                            jsonb_build_object(
-                                'id', s.id,
-                                'name', s.name,
-                                'description', s.description,
-                                'price', s.price,
-                                'duration', s.duration_minutes
-                            ) 
-                            ORDER BY s.price
-                        ) FILTER (WHERE s.id IS NOT NULL),
-                        '[]'::jsonb
-                    ) AS services
-                FROM wash_boxes wb
-                LEFT JOIN services s ON wb.id = s.wash_boxes_id
-                GROUP BY wb.id
-                ORDER BY wb.name;
-            ''')
-            result = cursor.fetchall()
+        cursor.execute('''
+            SELECT 
+                wb.id,
+                wb.name,
+                wb.location AS address,
+                wb.image_url AS image,
+                COALESCE(
+                    jsonb_agg(
+                        jsonb_build_object(
+                            'id', s.id,
+                            'name', s.name,
+                            'description', s.description,
+                            'price', s.price,
+                            'duration_minutes', s.duration_minutes
+                        ) 
+                        ORDER BY s.price
+                    ) FILTER (WHERE s.id IS NOT NULL),
+                    '[]'::jsonb
+                ) AS services
+            FROM wash_boxes wb
+            LEFT JOIN services s ON wb.id = s.wash_box_id
+            GROUP BY wb.id
+            ORDER BY wb.name;
+        ''')
+        
+        result = cursor.fetchall()
+        boxes = []
+        
+        for row in result:
+            box = {
+                'id': row[0],
+                'name': row[1],
+                'address': row[2],
+                'image': row[3],
+                'services': []
+            }
             
-            boxes = [dict(row) for row in result]
+            if row[4]:
+                for service in row[4]:
+                    service['price'] = float(service['price'])
+                    service['duration_minutes'] = int(service['duration_minutes'])
+                    box['services'].append(service)
             
-            for box in boxes:
-                for service in box['services']:
-                    if 'price' in service:
-                        service['price'] = float(service['price'])
-            
-            return jsonify(boxes)
+            boxes.append(box)
+        
+        return jsonify(boxes)
             
     except Exception as e:
-        app.logger.error(f"Ошибка при получении боксов: {str(e)}")
-        return jsonify({"error": "Internal server error"}), 500
+        return jsonify({"error": "Ошибка сервера"}), 500
         
     finally:
         if 'conn' in locals():
             conn.close()
-
+            
 # Код не с фронтом
 @app.route("/book", methods=["GET", "POST"])
 def book():
