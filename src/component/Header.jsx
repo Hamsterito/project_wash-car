@@ -29,7 +29,8 @@ const Header = () => {
 
   const handleProfileClick = () => {
     window.location.href = "/profile"; 
-  };
+  }; 
+
 
   return (
     <>
@@ -39,7 +40,7 @@ const Header = () => {
         </div>
 
         <nav className="nav">
-          <a href="#home">Главная</a>
+          <a href="#home" onClick={handleLogout} >Главная</a>
           <a href="#about">О нас</a>
           <a href="#car-wash-grid">Бронь</a>
         </nav>
@@ -54,9 +55,6 @@ const Header = () => {
                 />
                 <p className="text_name">Профиль</p>
               </div>
-              <button className="exit-button" onClick={handleLogout}>
-                Выйти
-              </button>
             </>
           ) : (
             <button className="auto-button" onClick={() => setShowAuth(true)}>

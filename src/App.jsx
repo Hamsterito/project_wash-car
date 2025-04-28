@@ -7,8 +7,8 @@ import Footer from "./component/Footer";
 import CitySelector from './component/CitySelector';
 import CarWashGrid from './component/CarWashGrid';
 import AboutUs from './component/AboutUs';
-import Profil from './component/Profil'; 
 import ContactUs from './component/ContactUs';
+import ProfilePage from './component/ProfilePage'; 
 
 const App = () => {
   return (
@@ -25,7 +25,7 @@ const App = () => {
             <Footer />
           </>
         } />
-        <Route path="/profile" element={<Profil />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Routes>
     </Router>
   );
