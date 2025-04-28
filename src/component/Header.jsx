@@ -55,9 +55,6 @@ const Header = () => {
                 />
                 <p className="text_name">Профиль</p>
               </div>
-              <button className="exit-button" onClick={handleLogout}>
-                Выйти
-              </button>
             </>
           ) : (
             <button className="auto-button" onClick={() => setShowAuth(true)}>
