@@ -6,7 +6,7 @@ import logo from "../assets/logo.svg";
 import { Link } from "react-router-dom";
 
 const Header = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
 
   useEffect(() => {

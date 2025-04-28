@@ -29,6 +29,7 @@ FROM_EMAIL = os.getenv('FROM_EMAIL')
 TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
 TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
 TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER')
+print(MAILJET_API_KEY, MAILJET_API_SECRET, FROM_EMAIL, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER)
 
 def send_verification_email(to_email, code):
     mailjet = MailjetClient(auth=(MAILJET_API_KEY, MAILJET_API_SECRET), version='v3.1')
@@ -249,51 +250,51 @@ def save_user():
         conn.rollback()
         return jsonify({"success": False, "error": "Ошибка при сохранении"}), 500
     
-@app.route('/api/wash_boxes', methods=['GET'])
-def get_wash_boxes():
-    try:
-            cursor.execute('''
-                SELECT 
-                    wb.id,
-                    wb.name,
-                    wb.location AS address,
-                    wb.image_url AS image,
-                    COALESCE(
-                        jsonb_agg(
-                            jsonb_build_object(
-                                'id', s.id,
-                                'name', s.name,
-                                'description', s.description,
-                                'price', s.price,
-                                'duration', s.duration_minutes
-                            ) 
-                            ORDER BY s.price
-                        ) FILTER (WHERE s.id IS NOT NULL),
-                        '[]'::jsonb
-                    ) AS services
-                FROM wash_boxes wb
-                LEFT JOIN services s ON wb.id = s.wash_boxes_id
-                GROUP BY wb.id
-                ORDER BY wb.name;
-            ''')
-            result = cursor.fetchall()
+# @app.route('/api/wash_boxes', methods=['GET'])
+# def get_wash_boxes():
+#     try:
+#             cursor.execute('''
+#                 SELECT 
+#                     wb.id,
+#                     wb.name,
+#                     wb.location AS address,
+#                     wb.image_url AS image,
+#                     COALESCE(
+#                         jsonb_agg(
+#                             jsonb_build_object(
+#                                 'id', s.id,
+#                                 'name', s.name,
+#                                 'description', s.description,
+#                                 'price', s.price,
+#                                 'duration', s.duration_minutes
+#                             ) 
+#                             ORDER BY s.price
+#                         ) FILTER (WHERE s.id IS NOT NULL),
+#                         '[]'::jsonb
+#                     ) AS services
+#                 FROM wash_boxes wb
+#                 LEFT JOIN services s ON wb.id = s.wash_boxes_id
+#                 GROUP BY wb.id
+#                 ORDER BY wb.name;
+#             ''')
+#             result = cursor.fetchall()
             
-            boxes = [dict(row) for row in result]
+#             boxes = [dict(row) for row in result]
             
-            for box in boxes:
-                for service in box['services']:
-                    if 'price' in service:
-                        service['price'] = float(service['price'])
+#             for box in boxes:
+#                 for service in box['services']:
+#                     if 'price' in service:
+#                         service['price'] = float(service['price'])
             
-            return jsonify(boxes)
+#             return jsonify(boxes)
             
-    except Exception as e:
-        app.logger.error(f"Ошибка при получении боксов: {str(e)}")
-        return jsonify({"error": "Internal server error"}), 500
+#     except Exception as e:
+#         app.logger.error(f"Ошибка при получении боксов: {str(e)}")
+#         return jsonify({"error": "Internal server error"}), 500
         
-    finally:
-        if 'conn' in locals():
-            conn.close()
+#     finally:
+#         if 'conn' in locals():
+#             conn.close()
 
 # Код не с фронтом
 @app.route("/book", methods=["GET", "POST"])
