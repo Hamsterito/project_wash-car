@@ -1,12 +1,17 @@
 CREATE TABLE clients (
     id SERIAL PRIMARY KEY,
     first_name TEXT,
-	last_name TEXT,
-	password TEXT ,
+    last_name TEXT,
+    password TEXT,
     phone TEXT UNIQUE,
-    email TEXT
+    email TEXT,
+    status TEXT DEFAULT 'Пользователь',
+    photo_url TEXT,
+    booking_history_id INTEGER REFERENCES bookings(id) ON DELETE SET NULL
 );
+select * from clients
 
+CREATE TABLE booking_history
 CREATE TABLE verification_codes (
     id serial PRIMARY KEY,
     code text,
@@ -75,8 +80,10 @@ INSERT INTO wash_boxes (name, location, image_url) VALUES
 select * from wash_boxes
 
 
--- Бронирования
+-- Бронирования 
 INSERT INTO bookings (client_id, service_id, box_id, start_time, end_time, status) VALUES
 (Null, 1, 1, '2025-04-15 10:00:00', '2025-04-15 10:20:00', 'свободно'),
 (Null, 2, 2, '2025-04-15 11:00:00', '2025-04-15 12:00:00', 'свободно'),
 (Null, 3, 3, '2025-04-15 12:30:00', '2025-04-15 13:00:00', 'свободно');
+
+select * from bookings
