@@ -1,10 +1,22 @@
 CREATE TABLE clients (
     id SERIAL PRIMARY KEY,
     first_name TEXT,
-	last_name TEXT,
-	password TEXT ,
+    last_name TEXT,
+    password TEXT,
     phone TEXT UNIQUE,
-    email TEXT
+    email TEXT,
+    status TEXT DEFAULT 'Пользователь',
+    photo_url TEXT,
+    booking_history_id INTEGER REFERENCES bookings(id) ON DELETE SET NULL
+);
+select * from clients
+
+CREATE TABLE booking_history (
+    id SERIAL PRIMARY KEY,
+    client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE,
+    start_time TIMESTAMP NOT NULL,
+    end_time TIMESTAMP NOT NULL,
+	status TEXT DEFAULT 'Активно' CHECK (status IN ('Активно', 'Просроченно', 'Завершено'))
 );
 
 CREATE TABLE verification_codes (
@@ -85,3 +97,27 @@ CREATE TABLE admins (
 	password TEXT NOT NULL,
     phone TEXT
 );
+
+-- Услуги
+INSERT INTO services (name, description, price, duration_minutes) VALUES
+('Мойка кузова', 'Полная мойка внешней части автомобиля', 500.00, 20),
+('Химчистка салона', 'Глубокая чистка сидений и обивки', 1500.00, 60),
+('Полировка фар', 'Полировка передних фар', 800.00, 30),
+('Комплексная мойка', 'Мойка кузова и салона', 2000.00, 90);
+
+-- Мойки (боксы)
+INSERT INTO wash_boxes (name, location, image_url) VALUES
+('Бокс №1', 'Центральная мойка', '/images/carwash.png'),
+('Бокс №2', 'Северная мойка', '/images/carwash.png'),
+('Бокс №3', 'Южная мойка', '/images/carwash.png');
+
+select * from wash_boxes
+
+
+-- Бронирования 
+INSERT INTO bookings (client_id, service_id, box_id, start_time, end_time, status) VALUES
+(Null, 1, 1, '2025-04-15 10:00:00', '2025-04-15 10:20:00', 'свободно'),
+(Null, 2, 2, '2025-04-15 11:00:00', '2025-04-15 12:00:00', 'свободно'),
+(Null, 3, 3, '2025-04-15 12:30:00', '2025-04-15 13:00:00', 'свободно');
+
+select * from bookings
