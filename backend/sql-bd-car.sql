@@ -11,7 +11,14 @@ CREATE TABLE clients (
 );
 select * from clients
 
-CREATE TABLE booking_history
+CREATE TABLE booking_history (
+    id SERIAL PRIMARY KEY,
+    client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE,
+    start_time TIMESTAMP NOT NULL,
+    end_time TIMESTAMP NOT NULL,
+	status TEXT DEFAULT 'Активно' CHECK (status IN ('Активно', 'Просроченно', 'Завершено'))
+);
+
 CREATE TABLE verification_codes (
     id serial PRIMARY KEY,
     code text,
