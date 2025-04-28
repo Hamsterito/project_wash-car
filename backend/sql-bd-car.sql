@@ -59,8 +59,13 @@ CREATE TABLE bookings (
     start_time TIMESTAMP NOT NULL,
     end_time TIMESTAMP NOT NULL,
     status TEXT CHECK (status IN ('забронировано', 'свободно'))
-	DEFAULT 'свободно'
+	DEFAULT 'свободно',
+	type_car TEXT CHECK (status IN ('Представительский класс'
+	,'Легковой автомобиль','Малые внедорожники','Полноразмерные внедорожники',
+	'Сверхбольшие внедорожники и микроавтобусы','Грузовые'))
 );
+
+drop table bookings cascade
 
 -- Тест
 -- Вставляем мойки
@@ -78,6 +83,7 @@ INSERT INTO services (wash_box_id, name, description, price, duration_minutes) V
 (2, 'Стандартная мойка', 'Базовая очистка', 800.00, 45);
 
 select * from services
+delete from 
 
 -- Вставляем бронирования
 INSERT INTO bookings (box_id, start_time, end_time, status) VALUES
