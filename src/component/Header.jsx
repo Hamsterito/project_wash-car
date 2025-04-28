@@ -6,7 +6,7 @@ import logo from "../assets/logo.svg";
 import { Link } from "react-router-dom";
 
 const Header = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [showAuth, setShowAuth] = useState(false);
 
   useEffect(() => {
@@ -29,7 +29,8 @@ const Header = () => {
 
   const handleProfileClick = () => {
     window.location.href = "/profile"; 
-  };
+  }; 
+
 
   return (
     <>
@@ -39,7 +40,7 @@ const Header = () => {
         </div>
 
         <nav className="nav">
-          <a href="#home">Главная</a>
+          <a href="#home" onClick={handleLogout} >Главная</a>
           <a href="#about">О нас</a>
           <a href="#car-wash-grid">Бронь</a>
         </nav>
