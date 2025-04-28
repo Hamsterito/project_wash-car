@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import './Profil.css';
 import { useNavigate } from 'react-router-dom';
 import defaultImage from '../assets/carwash.png';
+import CreateBusinessModal from './CreateBusinessModal';
 
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
@@ -12,9 +13,15 @@ export default function ProfilePage() {
     email: '',
   });
   const [avatar, setAvatar] = useState('https://via.placeholder.com/150');
+  const [washHistory, setWashHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
   
+  const [isModalOpen, setIsModalOpen] = useState(false); 
+
   const fileInputRef = useRef(null);
-  const navigate = useNavigate();  
+  const navigate = useNavigate();
+
+
 
   const fetchUserData = async () => {
     try {
@@ -31,6 +38,8 @@ export default function ProfilePage() {
       console.error('Ошибка при загрузке данных:', error);
     }
   };
+
+
 
   useEffect(() => {
     fetchUserData(); 
@@ -62,8 +71,6 @@ export default function ProfilePage() {
     navigate('/');  // Перенаправляем на главную страницу
   };
 
-  const [washHistory, setWashHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchData();
@@ -90,7 +97,7 @@ export default function ProfilePage() {
     <div className="profile-page">
       <h1 className="titleq">Личный кабинет:</h1>
 
-      <div className="main-section">
+      <div className="main-section">        
         <div className="history-section">
           <h2 className="subtitle">История:</h2>
           <div className="history-cards">
@@ -194,10 +201,16 @@ export default function ProfilePage() {
           <p>Хочешь открыть свою автомойку?</p>
           <p>Создай <span className="green">бизнес аккаунт</span>!</p>
         </div>
-        <button className="btnq create">Создать!</button>
+        <button className="btnq create" onClick={() => setIsModalOpen(true)}>
+          Создать!
+        </button>
+
+        {isModalOpen && <CreateBusinessModal onClose={() => setIsModalOpen(false)} />}
       </div>
+
     </div>
   );
 }
+
 
 
