@@ -144,7 +144,6 @@ export default function ProfilePage() {
               </div>
 
               <button className="btnq edit" onClick={handleEdit}>Изменить</button>
-              <button className="btnq logout" onClick={handleLogout}>Выйти</button>
             </>
           ) : (
             <>
