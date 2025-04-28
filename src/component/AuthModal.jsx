@@ -147,7 +147,7 @@ const AuthModal = ({  onClose, onSuccess  }) => {
             </button>
             <p>
               Нет учётной записи?{" "}
-              <span onClick={() => setMode("register")}>создай её</span>
+              <span onClick={() => setMode("register")}>Cоздай её</span>
             </p>
           </>
         )}
