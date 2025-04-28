@@ -26,9 +26,10 @@
 }
 
 .auth-modal input {
+  font-family: 'Prosto One', sans-serif;
   width: -webkit-fill-available;
   padding: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   border-radius: 8px;
   border: none;
   font-size: 16px;
@@ -40,15 +41,19 @@
 }
 
 .auth-modal span {
-  color: #FFB200;
+  color: #d49500;
   cursor: pointer;
-  font-weight: bold;
+  font-weight: lighter;
+}
+
+.auth-modal span:hover {
+  color: #FFB200;
 }
 
 .error {
-  font-size: 13px;
+  font-size: 16px;
   color: red;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   display: block;
 }
 
@@ -64,9 +69,10 @@
 }
 
 .button-enter {
+  font-family: 'Prosto One', sans-serif;
   width: 100%;
   padding: 12px 24px;
-  font-size: 18px;
+  font-size: 16px;
   background-color: #FFB200;
   color: black;
   border: none;
@@ -76,6 +82,5 @@
 }
 
 .button-enter:hover {
-  background-color: #fde047;
-  transform: scale(1.05);
+  background-color: #d49500;
 }

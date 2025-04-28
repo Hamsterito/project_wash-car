@@ -2,15 +2,18 @@ from flask import Flask, request, render_template, redirect, url_for, session, j
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from bd_car import conn, cursor
-import uuid
+from apscheduler.schedulers.background import BackgroundScheduler
+from mailjet_rest import Client as MailjetClient
+from twilio.rest import Client as TwilioClient
+from dotenv import load_dotenv
 import os
+import uuid
 from datetime import datetime, timedelta
 from flask_cors import CORS
-from apscheduler.schedulers.background import BackgroundScheduler
-from mailjet_rest import Client
 import random
 import string
 
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), 'app.env'))
 
 app = Flask(__name__)
 CORS(app)
@@ -19,92 +22,16 @@ app.secret_key = '12345'
 app.config['UPLOAD_FOLDER'] = 'static/img'
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
 
-MAILJET_API_KEY = 'e3795767bd8df869a57aaea2c4556b5a'
-MAILJET_API_SECRET = '21066bcc2548ee6db5d583ff8355d39c'
-FROM_EMAIL = 'kabdrashev111@gmail.com'
+MAILJET_API_KEY = os.getenv('MAILJET_API_KEY')
+MAILJET_API_SECRET = os.getenv('MAILJET_API_SECRET')
+FROM_EMAIL = os.getenv('FROM_EMAIL')
 
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
-
-def delete_expired_codes():
-    cursor.execute("""
-        DELETE FROM verification_codes 
-        WHERE expires_at < %s
-    """, (datetime.now(),))
-    conn.commit()
-
-scheduler = BackgroundScheduler()
-scheduler.add_job(delete_expired_codes, 'interval', minutes=1)
-scheduler.start()
-
-@app.route("/api/register", methods=["POST"])
-def register():
-    data = request.get_json()
-    contact = data.get("contact")
-    password = data.get("password")
-
-    if not contact or not password:
-        return jsonify({"success": False, "message": "Нет данных"}), 400
-
-    is_email = "@" in contact
-    email = contact if is_email else None
-    phone = contact if not is_email else None
-
-    verification_code = ''.join(random.choices(string.digits, k=6))
-    expires_at = datetime.now() + timedelta(minutes=5)
-
-    cursor.execute(
-        "INSERT INTO clients (phone, email, password) VALUES (%s, %s, %s) RETURNING id",
-        (phone, email, generate_password_hash(password))
-    )
-    client_id = cursor.fetchone()[0]
-
-    cursor.execute(
-        "INSERT INTO verification_codes (client_id, code, expires_at) VALUES (%s, %s, %s)",
-        (client_id, verification_code, expires_at)
-    )
-    conn.commit()
-
-    if is_email:
-        send_verification_email(email, verification_code)
-    else:
-        pass
-
-    return jsonify({"success": True})
-
-
-
-@app.route("/api/verify-code", methods=["POST"])
-def verify_code():
-    data = request.get_json()
-    code = data.get("code")
-    phone = data.get("phone")
-    email = data.get("email")
-
-    if not code or not (phone or email):
-        return jsonify({"success": False, "error": "Не хватает данных"}), 400
-
-    query = """
-        SELECT c.id, v.expires_at FROM clients c
-        JOIN verification_codes v ON c.id = v.client_id
-        WHERE v.code = %s AND (%s IS NULL OR c.phone = %s) AND (%s IS NULL OR c.email = %s)
-    """
-    cursor.execute(query, (code, phone, phone, email, email))
-    result = cursor.fetchone()
-
-    if not result:
-        return jsonify({"success": False, "error": "Код или контакт неверны"}), 400
-
-    if result:
-        _, expires_at = result
-        if expires_at < datetime.now():
-            return jsonify({"success": False, "error": "Код истёк"}), 400
-        return jsonify({"success": True})
-    else:
-        return jsonify({"success": False, "error": "Код или контакт неверны"}), 400
+TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
+TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER')
 
 def send_verification_email(to_email, code):
-    mailjet = Client(auth=(MAILJET_API_KEY, MAILJET_API_SECRET), version='v3.1')
+    mailjet = MailjetClient(auth=(MAILJET_API_KEY, MAILJET_API_SECRET), version='v3.1')
     data = {
         'Messages': [
             {
@@ -126,73 +53,77 @@ def send_verification_email(to_email, code):
     result = mailjet.send.create(data=data)
     return result.status_code in [200, 201]
 
+def send_verification_sms(to_phone, code):
+    client = TwilioClient(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+    try:
+        message = client.messages.create(
+            body=f"Ваш код подтверждения: {code}",
+            from_=TWILIO_PHONE_NUMBER,
+            to=to_phone  
+        )
+        return message.status == 'queued' or message.status == 'sent'
+    except Exception as e:
+        print(f"Ошибка при отправке SMS: {e}")
+        return False
+    
 def generate_code(length=6):
     return ''.join(random.choices(string.digits, k=length))
 
-@app.route("/api/send-code", methods=["POST"])
-def send_code():
-    data = request.get_json()
-    email = data.get("email")
 
-    if not email:
-        return jsonify({"success": False, "error": "Email обязателен"}), 400
-
-    cursor.execute("SELECT id FROM clients WHERE email = %s", (email,))
-    client = cursor.fetchone()
-
-    if not client:
-        return jsonify({"success": False, "error": "Клиент не найден"}), 404
-
-    client_id = client[0]
-    code = generate_code()
-    expires_at = datetime.now() + timedelta(minutes=10)
-
-    cursor.execute("DELETE FROM verification_codes WHERE client_id = %s", (client_id,))
-
-    cursor.execute(
-        "INSERT INTO verification_codes (code, client_id, expires_at) VALUES (%s, %s, %s)",
-        (code, client_id, expires_at)
-    )
+def delete_expired_codes():
+    cursor.execute("""
+        DELETE FROM verification_codes 
+        WHERE expires_at < %s
+    """, (datetime.now(),))
     conn.commit()
 
-    if send_verification_email(email, code):
-        return jsonify({"success": True, "message": "Код отправлен на почту"})
-    else:
-        return jsonify({"success": False, "error": "Не удалось отправить письмо"}), 500
+scheduler = BackgroundScheduler()
+scheduler.add_job(delete_expired_codes, 'interval', minutes=1)
+scheduler.start()
 
-@app.route("/api/save-user", methods=["POST"])
-def save_user():
+
+# регистрация
+@app.route("/api/register", methods=["POST"])
+def register():
     data = request.get_json()
     contact = data.get("contact")
     password = data.get("password")
-    contact_type = data.get("type")
 
-    if not contact or not password or not contact_type:
-        return jsonify({"success": False, "error": "Недостаточно данных"}), 400
+    if not contact or not password:
+        return jsonify({"success": False, "message": "Нет данных"}), 400
 
-    phone = contact if contact_type == "phone" else None
-    email = contact if contact_type == "email" else None
+    is_email = "@" in contact
+    email = contact if is_email else None
+    phone = contact if not is_email else None
 
-    password_hash = generate_password_hash(password)
+    verification_code = ''.join(random.choices(string.digits, k=6))
+    expires_at = datetime.now() + timedelta(minutes=5)
 
     try:
         cursor.execute(
-            "DELETE FROM clients WHERE %s OR %s)",
-            ("", phone, email)
+            "INSERT INTO clients (phone, email) VALUES (%s, %s) RETURNING id",
+            (phone, email)
         )
-        conn.commit()
+        client_id = cursor.fetchone()[0]
+
         cursor.execute(
-            "INSERT INTO clients (name, phone, password, email) VALUES (%s, %s, %s, %s)",
-            ("", phone, password_hash, email)
+            "INSERT INTO verification_codes (client_id, code, expires_at) VALUES (%s, %s, %s)",
+            (client_id, verification_code, expires_at)
         )
         conn.commit()
+
+        if is_email:
+            send_verification_email(email, verification_code)
+        elif phone:
+            send_verification_sms(phone, verification_code)
+
         return jsonify({"success": True})
     except Exception as e:
         conn.rollback()
-        return jsonify({"success": False, "error": "Ошибка при сохранении"}), 500
+        print(f"[register] Ошибка: {e}")
+        return jsonify({"success": False, "message": "Ошибка при регистрации"}), 500
 
-    
-
+# авторизоваться
 @app.route("/api/login", methods=["POST"])
 def api_login():
     data = request.get_json()
@@ -212,7 +143,159 @@ def api_login():
     else:
         return jsonify({'success': False, 'message': 'Неверные данные'}), 401
 
+# верификация
+@app.route("/api/verify-code", methods=["POST"])
+def verify_code():
+    data = request.get_json()
+    code = data.get("code")
+    phone = data.get("phone")
+    email = data.get("email")
 
+    if not code or not (phone or email):
+        return jsonify({"success": False, "error": "Не хватает данных"}), 400
+
+    try:
+        query = """
+            SELECT c.id, v.expires_at FROM clients c
+            JOIN verification_codes v ON c.id = v.client_id
+            WHERE v.code = %s AND (%s IS NULL OR c.phone = %s) AND (%s IS NULL OR c.email = %s)
+        """
+        cursor.execute(query, (code, phone, phone, email, email))
+        result = cursor.fetchone()
+
+        if not result:
+            return jsonify({"success": False, "error": "Код или контакт неверны"}), 400
+
+        if result:
+            client_id, expires_at = result
+            if expires_at < datetime.now():
+                cursor.execute("DELETE FROM verification_codes WHERE client_id = %s", (client_id,))
+                cursor.execute("DELETE FROM clients WHERE id = %s", (client_id,))
+                conn.commit()
+                return jsonify({"success": False, "error": "Код истёк"}), 400
+            return jsonify({"success": True})
+        else:
+            return jsonify({"success": False, "error": "Код или контакт неверны"}), 400
+    except Exception as e:
+        print(f"Ошибка верификаций {e}")
+
+# отправка кода
+@app.route("/api/send-code", methods=["POST"])
+def send_code():
+    data = request.get_json()
+    email = data.get("email")
+    phone = data.get("phone")
+
+    cursor.execute("SELECT id FROM clients WHERE email = %s", (email,))
+    client = cursor.fetchone()
+    
+    cursor.execute("SELECT id FROM clients WHERE phone = %s", (phone,))
+    phone_client = cursor.fetchone()
+    
+    if not phone_client :
+        return jsonify({"success": False, "error": "Клиент не найден"}), 404
+
+    if not client :
+        return jsonify({"success": False, "error": "Клиент не найден"}), 404
+
+    client_id = client[0]
+    code = generate_code()
+    expires_at = datetime.now() + timedelta(minutes=10)
+    
+    cursor.execute(
+        "INSERT INTO verification_codes (code, client_id, expires_at) VALUES (%s, %s, %s)",
+        (code, client_id, expires_at)
+    )
+    conn.commit()
+
+
+    if send_verification_email(email, code):
+        return jsonify({"success": True, "message": "Код отправлен только на почту"})
+    elif send_verification_sms(phone, code):
+        return jsonify({"success": True, "message": "Код отправлен только по SMS"})
+    else:
+        return jsonify({"success": False, "error": "Не удалось отправить код"}), 500
+    
+# сохранение юзера
+@app.route("/api/save-user", methods=["POST"])
+def save_user():
+    data = request.get_json()
+    contact = data.get("contact")
+    password = data.get("password")
+    contact_type = data.get("type")
+
+    if not contact or not password or not contact_type:
+        return jsonify({"success": False, "error": "Недостаточно данных"}), 400
+
+    phone = contact if contact_type == "phone" else None
+    email = contact if contact_type == "email" else None
+
+    password_hash = generate_password_hash(password)
+
+    try:
+        cursor.execute(
+            "DELETE FROM clients WHERE phone = %s OR email = %s",
+            (phone, email)
+        )
+        conn.commit()
+        
+        cursor.execute(
+            "INSERT INTO clients (name, phone, password, email) VALUES (%s, %s, %s, %s)",
+            ("", phone, password_hash, email)
+        )
+        conn.commit()
+        return jsonify({"success": True})
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"success": False, "error": "Ошибка при сохранении"}), 500
+    
+@app.route('/api/wash_boxes', methods=['GET'])
+def get_wash_boxes():
+    try:
+            cursor.execute('''
+                SELECT 
+                    wb.id,
+                    wb.name,
+                    wb.location AS address,
+                    wb.image_url AS image,
+                    COALESCE(
+                        jsonb_agg(
+                            jsonb_build_object(
+                                'id', s.id,
+                                'name', s.name,
+                                'description', s.description,
+                                'price', s.price,
+                                'duration', s.duration_minutes
+                            ) 
+                            ORDER BY s.price
+                        ) FILTER (WHERE s.id IS NOT NULL),
+                        '[]'::jsonb
+                    ) AS services
+                FROM wash_boxes wb
+                LEFT JOIN services s ON wb.id = s.wash_boxes_id
+                GROUP BY wb.id
+                ORDER BY wb.name;
+            ''')
+            result = cursor.fetchall()
+            
+            boxes = [dict(row) for row in result]
+            
+            for box in boxes:
+                for service in box['services']:
+                    if 'price' in service:
+                        service['price'] = float(service['price'])
+            
+            return jsonify(boxes)
+            
+    except Exception as e:
+        app.logger.error(f"Ошибка при получении боксов: {str(e)}")
+        return jsonify({"error": "Internal server error"}), 500
+        
+    finally:
+        if 'conn' in locals():
+            conn.close()
+
+# Код не с фронтом
 @app.route("/book", methods=["GET", "POST"])
 def book():
     if request.method == "POST":
@@ -253,7 +336,7 @@ def book():
                 return "Нет активного бронирования для отмены"
             
             cursor.execute('''
-             UPDATE bookings SET client_id = NULL, status = 'свободно'
+            UPDATE bookings SET client_id = NULL, status = 'свободно'
             WHERE client_id = %s AND status = 'забронировано'
             ''', (client_id,))
             conn.commit() 
@@ -326,10 +409,10 @@ def change_box():
             image_url = f"img/{unique_filename}"
 
             cursor.execute("UPDATE wash_boxes SET name = %s, location = %s, image_url = %s WHERE id = %s",
-                           (name, location, image_url, box_id))
+                        (name, location, image_url, box_id))
         else:
             cursor.execute("UPDATE wash_boxes SET name = %s, location = %s WHERE id = %s",
-                           (name, location, box_id))
+                        (name, location, box_id))
 
         conn.commit()
     return redirect(url_for("add_cart"))

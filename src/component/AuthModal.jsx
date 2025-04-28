@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "./AuthModal.css";
 import CodeVerification from "./CodeVerification";
 
-const AuthModal = ({ onClose }) => {
+const AuthModal = ({  onClose, onSuccess  }) => {
   const [mode, setMode] = useState("login");
   const [formData, setFormData] = useState({
     phone: "",
@@ -24,14 +24,13 @@ const AuthModal = ({ onClose }) => {
         newErrors.contact = "Введите номер или почту";
       }
 
-      if (isPhone && !/^(?:\+7|8)[0-9]{9}$/.test(formData.phone)) {
-        newErrors.phone =
-          "Неверный формат номера KZ (+7XXXXXXXXX или 8XXXXXXXXX)";
-      }
-
-      if (isEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-        newErrors.email = "Введите корректную почту";
-      }
+        if (isPhone && !/^(?:\+7|8)[0-9]{10}$/.test(formData.phone)) {
+            newErrors.phone = 'Неверный формат номера KZ (+7XXXXXXXXXX или 8XXXXXXXXXX)';
+        }
+        
+        if (isEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+            newErrors.email = 'Введите корректную почту';
+        }
 
       if (!/^[a-zA-Z0-9]+$/.test(formData.password)) {
         newErrors.password = "Пароль должен содержать только буквы и цифры";
@@ -70,7 +69,7 @@ const AuthModal = ({ onClose }) => {
       if (data.success) {
         setMode("code");
       } else {
-        setErrors({ contact: data.message || "Ошибка при отправке кода" });
+        setErrors({ contact: data.message || "Почта или номер уже существуют, если у вас есть аккаунт нажмите кнопку войти" });
       }
     } else if (mode === "login") {
       const newErrors = {};
@@ -96,7 +95,7 @@ const AuthModal = ({ onClose }) => {
       const data = await response.json();
 
       if (data.success) {
-        alert("Вход выполнен успешно");
+        onSuccess();
         onClose();
       } else {
         setErrors({ contact: data.message || "Неверный логин или пароль" });
@@ -148,7 +147,7 @@ const AuthModal = ({ onClose }) => {
             </button>
             <p>
               Нет учётной записи?{" "}
-              <span onClick={() => setMode("register")}>создай её</span>
+              <span onClick={() => setMode("register")}>Cоздай её</span>
             </p>
           </>
         )}
@@ -222,7 +221,7 @@ const AuthModal = ({ onClose }) => {
             setCode={(newCode) => setFormData({ ...formData, code: newCode })}
             password={formData.password}
             onSuccess={() => {
-              alert("Регистрация завершена!");
+              onSuccess();
               onClose();
             }}
           />
@@ -231,5 +230,6 @@ const AuthModal = ({ onClose }) => {
     </div>
   );
 };
+
 
 export default AuthModal;
