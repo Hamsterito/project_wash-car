@@ -14,30 +14,24 @@ export default function CarWashGrid() {
   const itemsPerPage = 9;
 
   useEffect(() => {
-    const fetchData = () => {
-      fetch("http://localhost:5000/api/wash_boxes")
-        .then((res) => {
-          if (!res.ok) throw new Error("Ошибка загрузки данных");
-          return res.json();
-        })
-        .then((data) => {
-          // Гарантируем, что данные - массив
-          if (Array.isArray(data)) {
-            setCarWashes(data);
-          } else {
-            throw new Error("Некорректный формат данных");
-          }
-        })
-        .catch((err) => {
-          setError(err.message);
-          setCarWashes([]);
-        })
-        .finally(() => setIsLoading(false));
-    };
-
-    fetchData();
-    const intervalId = setInterval(fetchData, 5000);
-    return () => clearInterval(intervalId);
+    fetch("http://localhost:5000/api/wash_boxes")
+      .then((res) => {
+        if (!res.ok) throw new Error("Ошибка загрузки данных");
+        return res.json();
+      })
+      .then((data) => {
+        // Гарантируем, что данные - массив
+        if (Array.isArray(data)) {
+          setCarWashes(data);
+        } else {
+          throw new Error("Некорректный формат данных");
+        }
+      })
+      .catch((err) => {
+        setError(err.message);
+        setCarWashes([]);
+      })
+      .finally(() => setIsLoading(false));
   }, []);
 
   // Безопасные вычисления для пагинации
@@ -48,12 +42,17 @@ export default function CarWashGrid() {
   const currentWashes = safeCarWashes.slice(indexOfFirstItem, indexOfLastItem);
 
   if (isLoading) return <div className="loading">Загрузка...</div>;
-  if (error) return <div className="error" id="error_carwash">Ошибка: {error}</div>;
+  if (error)
+    return (
+      <div className="error" id="error_carwash">
+        Ошибка: {error}
+      </div>
+    );
 
   return (
     <div className="container" id="car-wash-grid">
       <h1 className="title">Выберите ближайшую автомойку для вас!</h1>
-      
+
       <div className="grid">
         {currentWashes.map((wash) => (
           <div
@@ -83,12 +82,12 @@ export default function CarWashGrid() {
           {currentPage > 1 && (
             <button
               className="page-nav prev"
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             >
               <img src={left} alt="Назад" />
             </button>
           )}
-          
+
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
             <button
               key={page}
@@ -98,11 +97,11 @@ export default function CarWashGrid() {
               {page}
             </button>
           ))}
-          
+
           {currentPage < totalPages && (
             <button
               className="page-nav next"
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             >
               <img src={right} alt="Вперёд" />
             </button>
