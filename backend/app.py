@@ -233,18 +233,18 @@ def save_user():
 
     try:
         cursor.execute(
-            "DELETE FROM clients WHERE phone = %s OR email = %s",
-            (phone, email)
+            "DELETE FROM clients WHERE (phone = %s OR email = %s) AND password IS NULL",
+        (phone, email)
         )
-        conn.commit()
         
         cursor.execute(
-            "INSERT INTO clients (name, phone, password, email) VALUES (%s, %s, %s, %s)",
-            ("", phone, password_hash, email)
+            "INSERT INTO clients (phone, password, email) VALUES (%s, %s, %s)",
+            (phone, password_hash, email)
         )
         conn.commit()
         return jsonify({"success": True})
     except Exception as e:
+        print(f"Ошибка при сохранении пользователя: {e}")
         conn.rollback()
         return jsonify({"success": False, "error": "Ошибка при сохранении"}), 500
     
@@ -299,6 +299,7 @@ def get_wash_boxes():
         return jsonify(boxes)
             
     except Exception as e:
+        print ('Ошибка при получении боксов:', e)
         return jsonify({"error": "Ошибка сервера"}), 500
         
     finally:
