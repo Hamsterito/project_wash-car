@@ -1,13 +1,11 @@
 from flask import Flask, request, render_template, redirect, url_for, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.utils import secure_filename
 from bd_car import conn, cursor
 from apscheduler.schedulers.background import BackgroundScheduler
 from mailjet_rest import Client as MailjetClient
 from twilio.rest import Client as TwilioClient
 from dotenv import load_dotenv
 import os
-import uuid
 from datetime import datetime, timedelta
 from flask_cors import CORS
 import random
@@ -29,7 +27,6 @@ FROM_EMAIL = os.getenv('FROM_EMAIL')
 TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
 TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
 TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER')
-print(MAILJET_API_KEY, MAILJET_API_SECRET, FROM_EMAIL, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER)
 
 def send_verification_email(to_email, code):
     mailjet = MailjetClient(auth=(MAILJET_API_KEY, MAILJET_API_SECRET), version='v3.1')
@@ -139,8 +136,9 @@ def api_login():
     result = cursor.fetchone()
 
     if result and check_password_hash(result[1], password):
-        session['client_id'] = result[0]
-        return jsonify({'success': True})
+        client_id = result[0]
+        session['client_id'] = client_id
+        return jsonify({'success': True, 'client_id': client_id}) 
     else:
         return jsonify({'success': False, 'message': 'Неверные данные'}), 401
 
@@ -250,174 +248,115 @@ def save_user():
         conn.rollback()
         return jsonify({"success": False, "error": "Ошибка при сохранении"}), 500
     
-# @app.route('/api/wash_boxes', methods=['GET'])
-# def get_wash_boxes():
-#     try:
-#             cursor.execute('''
-#                 SELECT 
-#                     wb.id,
-#                     wb.name,
-#                     wb.location AS address,
-#                     wb.image_url AS image,
-#                     COALESCE(
-#                         jsonb_agg(
-#                             jsonb_build_object(
-#                                 'id', s.id,
-#                                 'name', s.name,
-#                                 'description', s.description,
-#                                 'price', s.price,
-#                                 'duration', s.duration_minutes
-#                             ) 
-#                             ORDER BY s.price
-#                         ) FILTER (WHERE s.id IS NOT NULL),
-#                         '[]'::jsonb
-#                     ) AS services
-#                 FROM wash_boxes wb
-#                 LEFT JOIN services s ON wb.id = s.wash_boxes_id
-#                 GROUP BY wb.id
-#                 ORDER BY wb.name;
-#             ''')
-#             result = cursor.fetchall()
-            
-#             boxes = [dict(row) for row in result]
-            
-#             for box in boxes:
-#                 for service in box['services']:
-#                     if 'price' in service:
-#                         service['price'] = float(service['price'])
-            
-#             return jsonify(boxes)
-            
-#     except Exception as e:
-#         app.logger.error(f"Ошибка при получении боксов: {str(e)}")
-#         return jsonify({"error": "Internal server error"}), 500
+@app.route('/api/wash_boxes', methods=['GET'])
+def get_wash_boxes():
+    try:
+        cursor.execute('''
+            SELECT 
+                wb.id,
+                wb.name,
+                wb.location AS address,
+                wb.image_url AS image,
+                COALESCE(
+                    jsonb_agg(
+                        jsonb_build_object(
+                            'id', s.id,
+                            'name', s.name,
+                            'description', s.description,
+                            'price', s.price,
+                            'duration_minutes', s.duration_minutes
+                        ) 
+                        ORDER BY s.price
+                    ) FILTER (WHERE s.id IS NOT NULL),
+                    '[]'::jsonb
+                ) AS services
+            FROM wash_boxes wb
+            LEFT JOIN services s ON wb.id = s.wash_box_id
+            GROUP BY wb.id
+            ORDER BY wb.name;
+        ''')
         
-#     finally:
-#         if 'conn' in locals():
-#             conn.close()
-
-# Код не с фронтом
-@app.route("/book", methods=["GET", "POST"])
-def book():
-    if request.method == "POST":
-        action = request.form.get('book_btn')
-        service_id = request.form.get('service')
-
-        client_id = session.get('client_id') 
-        if not client_id:
-            return "Клиент не авторизован"
-
-        cursor.execute("SELECT status FROM bookings WHERE client_id = %s", (client_id,))
-        current_status = cursor.fetchone()
-
-        if action == "book":
-            if current_status and current_status[0] == "забронировано":
-                return "Вы уже забронировали место"
-
-            cursor.execute('''
-                SELECT id FROM bookings 
-                WHERE service_id = %s AND status = 'свободно'
-                LIMIT 1
-            ''', (service_id,))
-            free_booking = cursor.fetchone()
-
-            if not free_booking:
-                return "Нет доступных слотов для выбранной услуги"
-
-            booking_id = free_booking[0]
-
-            cursor.execute('''
-                UPDATE bookings SET client_id = %s, status = 'забронировано'
-                WHERE id = %s
-            ''', (client_id, booking_id))
-            conn.commit()
-            return "Бронирование успешно!"
-        elif action == "cancel_book":
-            if not current_status or current_status[0] != "забронировано":
-                return "Нет активного бронирования для отмены"
+        result = cursor.fetchall()
+        boxes = []
+        
+        for row in result:
+            box = {
+                'id': row[0],
+                'name': row[1],
+                'address': row[2],
+                'image': row[3],
+                'services': []
+            }
             
-            cursor.execute('''
-            UPDATE bookings SET client_id = NULL, status = 'свободно'
-            WHERE client_id = %s AND status = 'забронировано'
-            ''', (client_id,))
-            conn.commit() 
-
-            return "Бронирование отменено!"
-    
-    cursor.execute("SELECT id, name FROM services")
-    services = cursor.fetchall()
-
-    return render_template("book.html", services=services)
-
-@app.route("/add_card", methods=["GET", "POST"])
-def add_cart():
-    if request.method == "POST":
-        name = request.form.get('name')
-        location = request.form.get('location')
-        image_file = request.files.get('image_file')
+            if row[4]:
+                for service in row[4]:
+                    service['price'] = float(service['price'])
+                    service['duration_minutes'] = int(service['duration_minutes'])
+                    box['services'].append(service)
+            
+            boxes.append(box)
         
-        if image_file and image_file.filename != "":
-            original_filename = secure_filename(image_file.filename)
-            ext = os.path.splitext(original_filename)[1]
-            unique_filename = f"{uuid.uuid4().hex}{ext}"
-            image_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-            image_file.save(image_path)
-            image_url = f"img/{unique_filename}"
-
-            cursor.execute("INSERT INTO wash_boxes (name, location, image_url) VALUES (%s, %s, %s)", 
-                        (name, location, image_url))
-            conn.commit()
-        else:
-            return "Файл не был загружен"
-
-    cursor.execute("SELECT * FROM wash_boxes")
-    wash_boxes = cursor.fetchall()
-    return render_template("add_cart.html", wash_boxes=wash_boxes)
-
-@app.route("/delete_box", methods=["POST"])
-def delete_box():
-    box_id = request.form.get("box_id")
-    
-    if box_id:
-        cursor.execute("SELECT image_url FROM wash_boxes WHERE id = %s", (box_id,))
-        result = cursor.fetchone()
-        if result and result[0]:
-            image_path = os.path.join(app.config['UPLOAD_FOLDER'], os.path.basename(result[0]))
-            if os.path.exists(image_path):
-                os.remove(image_path)
+        return jsonify(boxes)
+            
+    except Exception as e:
+        return jsonify({"error": "Ошибка сервера"}), 500
         
-        cursor.execute("DELETE FROM bookings WHERE box_id = %s", (box_id,))
-        cursor.execute("DELETE FROM wash_boxes WHERE id = %s", (box_id,))
-        conn.commit()
-    
-    return redirect(url_for("add_cart"))
+    finally:
+        if 'conn' in locals():
+            conn.close()
 
+@app.route("/api/book", methods=["POST"])
+def create_booking():
+    data = request.get_json()
+    car_type = data.get("carType")
+    date = data.get("date")
+    time = data.get("time")
+    service_names = data.get("selectedServices")
+    box_id = data.get("boxId")
+    client_id = data.get("clientId")
 
-@app.route("/change_box", methods=["GET", "POST"])
-def change_box():
-    if request.method == "POST":
-        name = request.form.get('name')
-        location = request.form.get('location')
-        image_file = request.files.get('image_file')
-        box_id = request.form.get("box_id")
+    if not all([car_type, date, time, service_names, box_id]):
+        return jsonify({"error": "Недостаточно данных"}), 400
 
-        if image_file and image_file.filename != "":
-            original_filename = secure_filename(image_file.filename)
-            ext = os.path.splitext(original_filename)[1]
-            unique_filename = f"{uuid.uuid4().hex}{ext}"
-            image_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-            image_file.save(image_path)
-            image_url = f"img/{unique_filename}"
+    try:
+        placeholders = ','.join(['%s'] * len(service_names))
+        cursor.execute(
+            f"SELECT id, duration_minutes FROM services WHERE name IN ({placeholders})",
+            service_names
+        )
+        service_rows = cursor.fetchall()
 
-            cursor.execute("UPDATE wash_boxes SET name = %s, location = %s, image_url = %s WHERE id = %s",
-                        (name, location, image_url, box_id))
-        else:
-            cursor.execute("UPDATE wash_boxes SET name = %s, location = %s WHERE id = %s",
-                        (name, location, box_id))
+        if not service_rows:
+            return jsonify({"error": "Услуги не найдены"}), 400
+
+        total_minutes = sum(row[1] for row in service_rows)
+        start_time = datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M")
+        end_time = start_time + timedelta(minutes=total_minutes)
+
+        cursor.execute(
+            """
+            INSERT INTO bookings (client_id, box_id, start_time, end_time, status, type_car)
+            VALUES (%s, %s, %s, %s, 'забронировано',%s) RETURNING id
+            """,
+            (client_id, box_id, start_time, end_time, car_type)
+        )
+        booking_id = cursor.fetchone()[0]
+
+        for service_id, _ in service_rows:
+            cursor.execute(
+                "INSERT INTO booking_services (booking_id, service_id) VALUES (%s, %s)",
+                (booking_id, service_id)
+            )
 
         conn.commit()
-    return redirect(url_for("add_cart"))
 
-        
+        return jsonify({"message": "Бронирование успешно", "booking_id": booking_id}), 201
+
+    except Exception as e:
+        conn.rollback()
+        print(e)
+        return jsonify({"error": str(e)}), 500
+
+              
 if __name__ == "__main__":
     app.run(debug=True)
