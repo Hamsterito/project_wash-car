@@ -46,6 +46,8 @@ CREATE TABLE wash_boxes (
 	image_url TEXT
 );
 
+select * from wash_boxes
+
 CREATE TABLE booking_services (
     booking_id INTEGER NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
     service_id INTEGER NOT NULL REFERENCES services(id),
@@ -60,12 +62,13 @@ CREATE TABLE bookings (
     end_time TIMESTAMP NOT NULL,
     status TEXT CHECK (status IN ('забронировано', 'свободно'))
 	DEFAULT 'свободно',
-	type_car TEXT CHECK (status IN ('Представительский класс'
+	type_car TEXT CHECK (type_car  IN ('Представительский класс'
 	,'Легковой автомобиль','Малые внедорожники','Полноразмерные внедорожники',
 	'Сверхбольшие внедорожники и микроавтобусы','Грузовые'))
 );
 
 drop table bookings cascade
+select * from bookings
 
 -- Тест
 -- Вставляем мойки
