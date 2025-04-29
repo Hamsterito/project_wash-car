@@ -1,13 +1,11 @@
 from flask import Flask, request, render_template, redirect, url_for, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.utils import secure_filename
 from bd_car import conn, cursor
 from apscheduler.schedulers.background import BackgroundScheduler
 from mailjet_rest import Client as MailjetClient
 from twilio.rest import Client as TwilioClient
 from dotenv import load_dotenv
 import os
-import uuid
 from datetime import datetime, timedelta
 from flask_cors import CORS
 import random
@@ -138,8 +136,9 @@ def api_login():
     result = cursor.fetchone()
 
     if result and check_password_hash(result[1], password):
-        session['client_id'] = result[0]
-        return jsonify({'success': True})
+        client_id = result[0]
+        session['client_id'] = client_id
+        return jsonify({'success': True, 'client_id': client_id}) 
     else:
         return jsonify({'success': False, 'message': 'Неверные данные'}), 401
 
@@ -305,129 +304,59 @@ def get_wash_boxes():
     finally:
         if 'conn' in locals():
             conn.close()
-            
-# Код не с фронтом
-@app.route("/book", methods=["GET", "POST"])
-def book():
-    if request.method == "POST":
-        action = request.form.get('book_btn')
-        service_id = request.form.get('service')
 
-        client_id = session.get('client_id') 
-        if not client_id:
-            return "Клиент не авторизован"
+@app.route("/api/book", methods=["POST"])
+def create_booking():
+    data = request.get_json()
+    car_type = data.get("carType")
+    date = data.get("date")
+    time = data.get("time")
+    service_names = data.get("selectedServices")
+    box_id = data.get("boxId")
+    client_id = data.get("clientId")
 
-        cursor.execute("SELECT status FROM bookings WHERE client_id = %s", (client_id,))
-        current_status = cursor.fetchone()
+    if not all([car_type, date, time, service_names, box_id]):
+        return jsonify({"error": "Недостаточно данных"}), 400
 
-        if action == "book":
-            if current_status and current_status[0] == "забронировано":
-                return "Вы уже забронировали место"
+    try:
+        placeholders = ','.join(['%s'] * len(service_names))
+        cursor.execute(
+            f"SELECT id, duration_minutes FROM services WHERE name IN ({placeholders})",
+            service_names
+        )
+        service_rows = cursor.fetchall()
 
-            cursor.execute('''
-                SELECT id FROM bookings 
-                WHERE service_id = %s AND status = 'свободно'
-                LIMIT 1
-            ''', (service_id,))
-            free_booking = cursor.fetchone()
+        if not service_rows:
+            return jsonify({"error": "Услуги не найдены"}), 400
 
-            if not free_booking:
-                return "Нет доступных слотов для выбранной услуги"
+        total_minutes = sum(row[1] for row in service_rows)
+        start_time = datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M")
+        end_time = start_time + timedelta(minutes=total_minutes)
 
-            booking_id = free_booking[0]
+        cursor.execute(
+            """
+            INSERT INTO bookings (client_id, box_id, start_time, end_time, status, type_car)
+            VALUES (%s, %s, %s, %s, 'забронировано',%s) RETURNING id
+            """,
+            (client_id, box_id, start_time, end_time, car_type)
+        )
+        booking_id = cursor.fetchone()[0]
 
-            cursor.execute('''
-                UPDATE bookings SET client_id = %s, status = 'забронировано'
-                WHERE id = %s
-            ''', (client_id, booking_id))
-            conn.commit()
-            return "Бронирование успешно!"
-        elif action == "cancel_book":
-            if not current_status or current_status[0] != "забронировано":
-                return "Нет активного бронирования для отмены"
-            
-            cursor.execute('''
-            UPDATE bookings SET client_id = NULL, status = 'свободно'
-            WHERE client_id = %s AND status = 'забронировано'
-            ''', (client_id,))
-            conn.commit() 
-
-            return "Бронирование отменено!"
-    
-    cursor.execute("SELECT id, name FROM services")
-    services = cursor.fetchall()
-
-    return render_template("book.html", services=services)
-
-@app.route("/add_card", methods=["GET", "POST"])
-def add_cart():
-    if request.method == "POST":
-        name = request.form.get('name')
-        location = request.form.get('location')
-        image_file = request.files.get('image_file')
-        
-        if image_file and image_file.filename != "":
-            original_filename = secure_filename(image_file.filename)
-            ext = os.path.splitext(original_filename)[1]
-            unique_filename = f"{uuid.uuid4().hex}{ext}"
-            image_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-            image_file.save(image_path)
-            image_url = f"img/{unique_filename}"
-
-            cursor.execute("INSERT INTO wash_boxes (name, location, image_url) VALUES (%s, %s, %s)", 
-                        (name, location, image_url))
-            conn.commit()
-        else:
-            return "Файл не был загружен"
-
-    cursor.execute("SELECT * FROM wash_boxes")
-    wash_boxes = cursor.fetchall()
-    return render_template("add_cart.html", wash_boxes=wash_boxes)
-
-@app.route("/delete_box", methods=["POST"])
-def delete_box():
-    box_id = request.form.get("box_id")
-    
-    if box_id:
-        cursor.execute("SELECT image_url FROM wash_boxes WHERE id = %s", (box_id,))
-        result = cursor.fetchone()
-        if result and result[0]:
-            image_path = os.path.join(app.config['UPLOAD_FOLDER'], os.path.basename(result[0]))
-            if os.path.exists(image_path):
-                os.remove(image_path)
-        
-        cursor.execute("DELETE FROM bookings WHERE box_id = %s", (box_id,))
-        cursor.execute("DELETE FROM wash_boxes WHERE id = %s", (box_id,))
-        conn.commit()
-    
-    return redirect(url_for("add_cart"))
-
-
-@app.route("/change_box", methods=["GET", "POST"])
-def change_box():
-    if request.method == "POST":
-        name = request.form.get('name')
-        location = request.form.get('location')
-        image_file = request.files.get('image_file')
-        box_id = request.form.get("box_id")
-
-        if image_file and image_file.filename != "":
-            original_filename = secure_filename(image_file.filename)
-            ext = os.path.splitext(original_filename)[1]
-            unique_filename = f"{uuid.uuid4().hex}{ext}"
-            image_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-            image_file.save(image_path)
-            image_url = f"img/{unique_filename}"
-
-            cursor.execute("UPDATE wash_boxes SET name = %s, location = %s, image_url = %s WHERE id = %s",
-                        (name, location, image_url, box_id))
-        else:
-            cursor.execute("UPDATE wash_boxes SET name = %s, location = %s WHERE id = %s",
-                        (name, location, box_id))
+        for service_id, _ in service_rows:
+            cursor.execute(
+                "INSERT INTO booking_services (booking_id, service_id) VALUES (%s, %s)",
+                (booking_id, service_id)
+            )
 
         conn.commit()
-    return redirect(url_for("add_cart"))
 
-        
+        return jsonify({"message": "Бронирование успешно", "booking_id": booking_id}), 201
+
+    except Exception as e:
+        conn.rollback()
+        print(e)
+        return jsonify({"error": str(e)}), 500
+
+              
 if __name__ == "__main__":
     app.run(debug=True)

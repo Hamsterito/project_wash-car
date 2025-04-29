@@ -3,12 +3,18 @@
   position: fixed;
   top: 0;
   right: 0;
+  z-index: 3;
   width: 400px;
   height: 100%;
   background: #fff;
   overflow-y: auto;
   display: flex;
+  box-shadow: 2px 4px 6px rgb(0 0 0 / 40%);
   flex-direction: column;
+}
+
+.name_book {
+  font-size: 24px;
 }
 
 .headermenu {
@@ -41,11 +47,19 @@
   box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.334);
 }
 
-.text_section{
+.text_section {
   background-color: #dfdede;
   padding: 10px;
   border-radius: 12px;
   margin-bottom: 10px;
+}
+
+.text_section p {
+  padding: 7px;
+}
+
+.text_section li {
+  padding: 0;
 }
 
 .select-btn {
@@ -64,7 +78,7 @@
   transition: background 0.2s ease;
 }
 
-.select-btn:hover{
+.select-btn:hover {
   background-color: #d49500;
 }
 
@@ -86,15 +100,15 @@
 
 .next-btn:hover,
 .back-btn:hover,
-.btn.confirm:hover{
+.btn.confirm:hover {
   background-color: #d49500;
 }
 
-.next-btn{
+.next-btn {
   margin-bottom: -50px;
 }
 
-.btn.confirm{
+.btn.confirm {
   margin-bottom: 20px;
 }
 

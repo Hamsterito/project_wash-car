@@ -1,3 +1,8 @@
+* {
+  margin: 0;
+  box-sizing: border-box;
+}
+
 body {
   font-family: 'Prosto One', sans-serif;
 }
@@ -14,6 +19,7 @@ body {
   color: #646464;
   font-weight: lighter !important;
   margin-top: -20px;
+  margin-bottom: 40px;
   font-family: 'Prosto One', sans-serif;
   text-align: center;
   font-size: 45px;
@@ -21,6 +27,7 @@ body {
 }
 
 .grid {
+  margin-top: 10px ;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(367px, 1fr));
   max-width: 1300px;
@@ -64,7 +71,7 @@ body {
 
 .name {
   font-family: 'Prosto One', sans-serif;
-  padding-top: 32px;
+  padding-top: 40px;
   font-size: 24px;
   text-align: left;
   font-weight: lighter;
@@ -73,14 +80,16 @@ body {
 
 .text_carwash{
   width: 100%;
-  padding-left: 70px;
+  line-height: 1;
+  padding-left: 40px;
 }
 
 .address {
   font-family: 'Prosto One', sans-serif;
   text-align: left;
   font-weight: lighter;
-  line-height: 0;
+  margin-top: 10px;
+  line-height: 1;
   font-size: 16px;
 }
 

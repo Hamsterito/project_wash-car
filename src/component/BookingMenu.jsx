@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./BookingMenu.css";
 
 export default function BookingMenu({ wash, onClose, services }) {
@@ -7,6 +7,7 @@ export default function BookingMenu({ wash, onClose, services }) {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [service, setService] = useState("");
+  const clientId = localStorage.getItem("client_id");
   const [selectedServices, setSelectedServices] = useState([]);
   const totalPrice = (services || [])
     .filter((s) => selectedServices.includes(s.name))
@@ -23,16 +24,40 @@ export default function BookingMenu({ wash, onClose, services }) {
   const handleBack = () => {
     setStep(step - 1);
   };
-
-  const handleSubmit = () => {
-    setStep(4);
+  
+  const handleSubmit = async () => {
+    const bookingData = {
+      clientId: clientId,
+      boxId: wash.id,
+      carType: carType,
+      date: date,
+      time: time,
+      selectedServices: selectedServices,
+    };
+    try {
+      const res = await fetch("http://localhost:5000/api/book", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bookingData),
+      });
+  
+      if (res.ok) {
+        onClose()
+      } else {
+        const errorData = await res.json();
+        alert("Ошибка при бронировании: " + errorData.message);
+      }
+    } catch (err) {
+      alert("Сервер недоступен. Попробуйте позже.");
+    }
   };
+  
 
   return (
     <div className="booking-menu">
       <div className="headermenu">
         <div>
-          <h2>{wash.name}</h2>
+          <h1 className="name_book">{wash.name}</h1>
           <p>{wash.address}</p>
         </div>
         <button className="close-btn" onClick={onClose}>
@@ -123,7 +148,7 @@ export default function BookingMenu({ wash, onClose, services }) {
             </p>
             <button
               className="next-btn"
-              onClick={handleSubmit}
+              onClick={handleNext}
               disabled={selectedServices.length === 0}
             >
               Далее
@@ -158,7 +183,7 @@ export default function BookingMenu({ wash, onClose, services }) {
               ))}
             </ul>
           </div>
-          <button className="btn confirm" onClick={onClose}>
+          <button className="btn confirm" onClick={handleSubmit}>
             Подтвердить
           </button>
           <button className="back-btn" onClick={handleBack}>
