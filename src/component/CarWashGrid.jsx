@@ -20,7 +20,6 @@ export default function CarWashGrid() {
         return res.json();
       })
       .then((data) => {
-        // Гарантируем, что данные - массив
         if (Array.isArray(data)) {
           setCarWashes(data);
         } else {
@@ -34,7 +33,6 @@ export default function CarWashGrid() {
       .finally(() => setIsLoading(false));
   }, []);
 
-  // Безопасные вычисления для пагинации
   const safeCarWashes = Array.isArray(carWashes) ? carWashes : [];
   const totalPages = Math.ceil(safeCarWashes.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -76,7 +74,6 @@ export default function CarWashGrid() {
         ))}
       </div>
 
-      {/* Пагинация */}
       {totalPages > 1 && (
         <div className="pagination">
           {currentPage > 1 && (

@@ -95,6 +95,7 @@ const AuthModal = ({  onClose, onSuccess  }) => {
       const data = await response.json();
 
       if (data.success) {
+        localStorage.setItem("client_id", data.client_id);
         onSuccess();
         onClose();
       } else {

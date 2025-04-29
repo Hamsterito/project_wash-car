@@ -3,11 +3,12 @@ import "./Header.css";
 import AuthModal from "./AuthModal";
 import userIcon from "../assets/user-icon.png";
 import logo from "../assets/logo.svg";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Header = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const loggedIn = localStorage.getItem("isLoggedIn");
@@ -24,13 +25,12 @@ const Header = () => {
   const handleLogout = () => {
     setIsLoggedIn(false);
     localStorage.removeItem("isLoggedIn");
-    window.location.href = "/";
+    navigate("/");
   };
 
   const handleProfileClick = () => {
-    window.location.href = "/profile"; 
-  }; 
-
+    window.location.href = "/profile";
+  };
 
   return (
     <>
@@ -40,7 +40,9 @@ const Header = () => {
         </div>
 
         <nav className="nav">
-          <a href="#home" onClick={handleLogout} >Главная</a>
+          <a href="#home" onClick={handleLogout}>
+            Главная
+          </a>
           <a href="#about">О нас</a>
           <a href="#car-wash-grid">Бронь</a>
         </nav>
@@ -48,13 +50,12 @@ const Header = () => {
           {isLoggedIn ? (
             <>
               <div className="user_name" onClick={handleProfileClick}>
-                <img
-                  src={userIcon}
-                  alt="User Icon"
-                  className="user-icon"
-                />
+                <img src={userIcon} alt="User Icon" className="user-icon" />
                 <p className="text_name">Профиль</p>
               </div>
+              <button className="exit-button" onClick={handleLogout}>
+                Выйти
+              </button>
             </>
           ) : (
             <button className="auto-button" onClick={() => setShowAuth(true)}>
