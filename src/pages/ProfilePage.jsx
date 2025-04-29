@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import './Profil.css';
 import { useNavigate } from 'react-router-dom';
-import WashHistorySection from './WashHistorySection';
-import UserProfile from './UserProfile';
-import CreateBusinessSection from './CreateBusinessSection';
+import WashHistorySection from '../component/WashHistorySection';
+import UserProfile from '../component/UserProfile';
+import CreateBusinessSection from '../component/CreateBusinessSection';
 
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
