@@ -68,7 +68,7 @@ CREATE TABLE bookings (
 );
 
 drop table bookings cascade
-select * from bookings
+select * from booking_services
 
 -- Тест
 -- Вставляем мойки

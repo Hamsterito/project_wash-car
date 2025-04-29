@@ -32,6 +32,11 @@ const Header = () => {
     window.location.href = "/profile";
   };
 
+  const handleNavClick = (anchor) => {
+    navigate("/", { state: { scrollTo: anchor } });
+  };
+  
+
   return (
     <>
       <header className="header">
@@ -40,11 +45,21 @@ const Header = () => {
         </div>
 
         <nav className="nav">
-          <a href="#home" onClick={handleLogout}>
+          <a onClick={() => handleNavClick(null)} style={{ cursor: "pointer" }}>
             Главная
           </a>
-          <a href="#about">О нас</a>
-          <a href="#car-wash-grid">Бронь</a>
+          <a
+            onClick={() => handleNavClick("about")}
+            style={{ cursor: "pointer" }}
+          >
+            О нас
+          </a>
+          <a
+            onClick={() => handleNavClick("car-wash-grid")}
+            style={{ cursor: "pointer" }}
+          >
+            Бронь
+          </a>
         </nav>
         <div className="auth-buttons">
           {isLoggedIn ? (

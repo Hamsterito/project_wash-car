@@ -233,16 +233,16 @@ def save_user():
 
     try:
         cursor.execute(
-            "DELETE FROM clients WHERE phone = %s OR email = %s",
+            "DELETE FROM clients WHERE (phone = %s OR email = %s) AND password IS NULL",
             (phone, email)
         )
         conn.commit()
         
         cursor.execute(
-            "INSERT INTO clients (name, phone, password, email) VALUES (%s, %s, %s, %s)",
-            ("", phone, password_hash, email)
+            "INSERT INTO clients (phone, password, email) VALUES (%s, %s, %s)",
+            (phone, password_hash, email)
         )
-        conn.commit()
+        conn.commit()   
         return jsonify({"success": True})
     except Exception as e:
         conn.rollback()
