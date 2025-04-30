@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import defaultavatar from '../assets/defaultavatar.jpg'
 
 export default function UserProfile({
   avatar,
@@ -15,7 +16,7 @@ export default function UserProfile({
 
   return (
     <div className="profile-section">
-      <img src={avatar} alt="Фото профиля" className="avatar" />
+      <img src={defaultavatar} alt="Фото профиля" className="avatar" />
       {!isEditing ? (
         <>
           <div className="user-info">
