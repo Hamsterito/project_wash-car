@@ -18,9 +18,6 @@ app = Flask(__name__)
 CORS(app)
 app.secret_key = '12345'
 
-app.config['UPLOAD_FOLDER'] = 'static/img'
-app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
-
 MAILJET_API_KEY = os.getenv('MAILJET_API_KEY')
 MAILJET_API_SECRET = os.getenv('MAILJET_API_SECRET')
 FROM_EMAIL = os.getenv('FROM_EMAIL')
@@ -29,6 +26,7 @@ TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
 TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
 TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER')
 
+# отправка кода по емайлу
 def send_verification_email(to_email, code):
     mailjet = MailjetClient(auth=(MAILJET_API_KEY, MAILJET_API_SECRET), version='v3.1')
     data = {
@@ -52,6 +50,7 @@ def send_verification_email(to_email, code):
     result = mailjet.send.create(data=data)
     return result.status_code in [200, 201]
 
+# отправка кода по смс
 def send_verification_sms(to_phone, code):
     client = TwilioClient(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
     try:
@@ -64,11 +63,12 @@ def send_verification_sms(to_phone, code):
     except Exception as e:
         print(f"Ошибка при отправке SMS: {e}")
         return False
-    
+
+# генерация кода для потверждение
 def generate_code(length=6):
     return ''.join(random.choices(string.digits, k=length))
 
-
+# удаление старых кодов
 def delete_expired_codes():
     cursor.execute("""
         DELETE FROM verification_codes 
@@ -140,7 +140,7 @@ def register():
         print(f"[register] Ошибка: {e}")
         return jsonify({"success": False, "message": "Ошибка при регистрации"}), 500
 
-# авторизоваться
+# авторизация
 @app.route("/api/login", methods=["POST"])
 def api_login():
     data = request.get_json()
@@ -265,7 +265,8 @@ def save_user():
     except Exception as e:
         conn.rollback()
         return jsonify({"success": False, "error": "Ошибка при сохранении"}), 500
-    
+
+# вывод автомоек
 @app.route('/api/wash_boxes', methods=['GET'])
 def get_wash_boxes():
     try:
@@ -323,58 +324,154 @@ def get_wash_boxes():
         if 'conn' in locals():
             conn.close()
 
+# бронирование
 @app.route("/api/book", methods=["POST"])
 def create_booking():
     data = request.get_json()
+    
     car_type = data.get("carType")
     date = data.get("date")
     time = data.get("time")
-    service_names = data.get("selectedServices")
+    selected_services = data.get("selectedServices")
     box_id = data.get("boxId")
     client_id = data.get("clientId")
-
-    if not all([car_type, date, time, service_names, box_id]):
-        return jsonify({"error": "Недостаточно данных"}), 400
-
+    
+    name = data.get("name")
+    phone = data.get("phone")
+    email = data.get("email")
+    comments = data.get("comments", "")
+    
+    if not all([car_type, date, time, selected_services, box_id]):
+        return jsonify({"error": "Недостаточно данных для бронирования"}), 400
+    
     try:
-        placeholders = ','.join(['%s'] * len(service_names))
+        if not client_id:
+            cursor.execute(
+                """
+                INSERT INTO clients (name, phone, email)
+                VALUES (%s, %s, %s) RETURNING id
+                """,
+                (name, phone, email)
+            )
+            client_id = cursor.fetchone()[0]
+        
+        placeholders = ','.join(['%s'] * len(selected_services))
         cursor.execute(
             f"SELECT id, duration_minutes FROM services WHERE name IN ({placeholders})",
-            service_names
+            selected_services
         )
         service_rows = cursor.fetchall()
-
+        
         if not service_rows:
-            return jsonify({"error": "Услуги не найдены"}), 400
-
+            return jsonify({"error": "Выбранные услуги не найдены"}), 400
+        
         total_minutes = sum(row[1] for row in service_rows)
         start_time = datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M")
         end_time = start_time + timedelta(minutes=total_minutes)
-
+        
         cursor.execute(
             """
-            INSERT INTO bookings (client_id, box_id, start_time, end_time, status, type_car)
-            VALUES (%s, %s, %s, %s, 'забронировано',%s) RETURNING id
+            SELECT COUNT(*) FROM bookings
+            WHERE box_id = %s AND status != 'отменено'
+            AND (
+                (start_time <= %s AND end_time > %s) OR
+                (start_time < %s AND end_time >= %s) OR
+                (start_time >= %s AND end_time <= %s)
+            )
             """,
-            (client_id, box_id, start_time, end_time, car_type)
+            (box_id, start_time, start_time, end_time, end_time, start_time, end_time)
+        )
+        
+        if cursor.fetchone()[0] > 0:
+            return jsonify({"error": "Выбранное время уже занято. Пожалуйста, выберите другое время."}), 409
+        
+        cursor.execute(
+            """
+            INSERT INTO bookings (client_id, box_id, start_time, end_time, status, type_car, comments)
+            VALUES (%s, %s, %s, %s, 'забронировано', %s, %s) RETURNING id
+            """,
+            (client_id, box_id, start_time, end_time, car_type, comments)
         )
         booking_id = cursor.fetchone()[0]
-
+        
         for service_id, _ in service_rows:
             cursor.execute(
                 "INSERT INTO booking_services (booking_id, service_id) VALUES (%s, %s)",
                 (booking_id, service_id)
             )
-
+        
         conn.commit()
-
-        return jsonify({"message": "Бронирование успешно", "booking_id": booking_id}), 201
-
+                
+        return jsonify({
+            "message": "Бронирование успешно создано",
+            "booking_id": booking_id,
+            "start_time": start_time.strftime("%Y-%m-%d %H:%M"),
+            "end_time": end_time.strftime("%Y-%m-%d %H:%M"),
+            "total_duration": total_minutes
+        }), 201
+        
     except Exception as e:
         conn.rollback()
-        print(e)
-        return jsonify({"error": str(e)}), 500
+        print(f"Error creating booking: {str(e)}")
+        return jsonify({"error": "Произошла ошибка при создании бронирования. Пожалуйста, попробуйте снова."}), 500
 
-              
+
+@app.route("/api/available-slots", methods=["GET"])
+def get_available_slots():
+    try:
+        start_date = datetime.now().date()
+        end_date = start_date + timedelta(days=30)
+        
+        cursor.execute(
+            """
+            SELECT box_id, start_time, end_time 
+            FROM bookings 
+            WHERE date(start_time) BETWEEN %s AND %s
+            AND status != 'отменено'
+            """,
+            (start_date, end_date)
+        )
+        existing_bookings = cursor.fetchall()
+        
+        work_start = 9 
+        work_end = 21 
+        slot_duration = 30  
+        
+        available_slots = {}
+        current_date = start_date
+        
+        while current_date <= end_date:
+            if current_date.weekday() < 5:
+                date_str = current_date.strftime("%Y-%m-%d")
+                available_slots[date_str] = []
+                
+                current_datetime = datetime.combine(current_date, datetime.min.time()) + timedelta(hours=work_start)
+                end_datetime = datetime.combine(current_date, datetime.min.time()) + timedelta(hours=work_end)
+                
+                while current_datetime < end_datetime:
+                    time_str = current_datetime.strftime("%H:%M")
+                    slot_end = current_datetime + timedelta(minutes=slot_duration)
+                    
+                    is_available = True
+                    for box_id, booking_start, booking_end in existing_bookings:
+                        if (current_datetime >= booking_start and current_datetime < booking_end) or \
+                           (slot_end > booking_start and slot_end <= booking_end) or \
+                           (current_datetime <= booking_start and slot_end >= booking_end):
+                            is_available = False
+                            break
+                    
+                    if is_available:
+                        available_slots[date_str].append(time_str)
+                    
+                    current_datetime += timedelta(minutes=slot_duration)
+            
+            current_date += timedelta(days=1)
+        
+        return jsonify({"availableSlots": available_slots}), 200
+        
+    except Exception as e:
+        print(f"Error getting available slots: {str(e)}")
+        return jsonify({"error": "Не удалось получить доступные слоты"}), 500@app.route("/api/book", methods=["POST"])
+    
 if __name__ == "__main__":
     app.run(debug=True)

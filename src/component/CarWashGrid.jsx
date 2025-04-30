@@ -39,6 +39,10 @@ export default function CarWashGrid() {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentWashes = safeCarWashes.slice(indexOfFirstItem, indexOfLastItem);
 
+  useEffect(() => {
+    window.scrollTo(0, 900);
+  }, [currentPage]);
+
   if (isLoading) return <div className="loading">Загрузка...</div>;
   if (error)
     return (
