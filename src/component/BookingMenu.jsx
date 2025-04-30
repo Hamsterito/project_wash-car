@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from "react";
 import "./BookingMenu.css";
 
-export default function BookingSystem({ wash = {}, onClose, services = [], clientId = null }) {
+export default function BookingSystem({
+  wash = {},
+  onClose,
+  services = [],
+  clientId = null,
+}) {
   const [step, setStep] = useState(1);
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
@@ -36,20 +41,32 @@ export default function BookingSystem({ wash = {}, onClose, services = [], clien
   const fetchAvailableTimeSlots = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/api/available-slots');
+      const response = await fetch("http://localhost:5000/api/available-slots");
       if (!response.ok) {
-        throw new Error('Failed to fetch available time slots');
+        throw new Error("Failed to fetch available time slots");
       }
-      
+
       const data = await response.json();
       setAvailableDates(data.availableSlots);
     } catch (error) {
       console.error("Error fetching available slots:", error);
-      setError("Не удалось загрузить доступные даты. Пожалуйста, попробуйте позже.");
+      setError(
+        "Не удалось загрузить доступные даты. Пожалуйста, попробуйте позже."
+      );
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    let timeoutId;
+    if (error) {
+      timeoutId = setTimeout(() => {
+        setError(null);
+      }, 5000);
+    }
+    return () => clearTimeout(timeoutId);
+  }, [error]);
 
   const monthNames = [
     "Январь",
@@ -167,17 +184,17 @@ export default function BookingSystem({ wash = {}, onClose, services = [], clien
         time: selectedTimeSlot,
         selectedServices,
         boxId: wash.id || 1,
-        clientId: clientId, 
+        clientId: clientId,
         name: formData.name,
         phone: formData.phone,
         email: formData.email,
         comments: formData.comments,
       };
 
-      const response = await fetch('http://localhost:5000/api/book', {
-        method: 'POST',
+      const response = await fetch("http://localhost:5000/api/book", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(bookingData),
       });
@@ -185,15 +202,19 @@ export default function BookingSystem({ wash = {}, onClose, services = [], clien
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Ошибка при создании бронирования');
+        throw new Error(data.error || "Ошибка при создании бронирования");
       }
 
-      setSuccessMessage(`Бронирование успешно создано! Номер брони: ${data.booking_id}`);
+      setSuccessMessage(
+        `Бронирование успешно создано! Номер брони: ${data.booking_id}`
+      );
       setStep(5);
-
     } catch (error) {
       console.error("Error submitting booking:", error);
-      setError(error.message || 'Произошла ошибка при бронировании. Пожалуйста, попробуйте снова.');
+      setError(
+        error.message ||
+          "Произошла ошибка при бронировании. Пожалуйста, попробуйте снова."
+      );
     } finally {
       setLoading(false);
     }
@@ -262,7 +283,6 @@ export default function BookingSystem({ wash = {}, onClose, services = [], clien
       );
     }
 
-    // Fill remaining cells with days from next month
     const totalCells = Math.ceil((firstDayOfWeek + daysInMonth) / 7) * 7;
     const nextMonthDays = totalCells - (firstDayOfWeek + daysInMonth);
 
@@ -345,7 +365,18 @@ export default function BookingSystem({ wash = {}, onClose, services = [], clien
         </button>
       </div>
 
-      {error && <div className="error-message">{error}</div>}
+      {error && (
+        <div className="error-message">
+          {error}
+          <button
+            className="error-close"
+            onClick={() => setError(null)}
+            aria-label="Закрыть"
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       {step === 1 && (
         <div className="group">
@@ -511,7 +542,18 @@ export default function BookingSystem({ wash = {}, onClose, services = [], clien
             </div>
             <div className="summary-row">
               <span className="summary-label">Услуги:</span>
-              <span>{selectedServices.join(", ")}</span>
+              <span>
+                <ul className="services-list">
+                  {selectedServices.map((service, index) => (
+                    <li
+                      key={`${service}-${index}`}
+                      className="service-list-item"
+                    >
+                      {service}
+                    </li>
+                  ))}
+                </ul>
+              </span>
             </div>
             <div className="summary-row">
               <span className="summary-label">Итоговая цена:</span>
@@ -570,7 +612,9 @@ export default function BookingSystem({ wash = {}, onClose, services = [], clien
             <button
               className="btn confirm"
               onClick={handleSubmit}
-              disabled={!formData.name || !formData.phone || !formData.email || loading}
+              disabled={
+                !formData.name || !formData.phone || !formData.email || loading
+              }
             >
               {loading ? "Отправка..." : "Подтвердить бронирование"}
             </button>

@@ -165,7 +165,7 @@
   padding: 0 10px;
 }
 
-.btn_close_book{
+.btn_close_book {
   margin-top: 10px;
   background-color: #FFB200;
   border-radius: 12px;
@@ -175,7 +175,7 @@
   transition: background 0.3s ease;
 }
 
-.btn_close_book:hover{
+.btn_close_book:hover {
   background-color: #d49500;
 }
 
@@ -287,7 +287,7 @@
   transform: translateY(-2px);
 }
 
-.day-button.today:hover{
+.day-button.today:hover {
   box-shadow: 0 0 0 2px #05b32e;
 }
 
@@ -307,7 +307,7 @@
   font-weight: 500;
 }
 
-.form-row input, 
+.form-row input,
 .form-row textarea {
   width: 100%;
   padding: 10px;
@@ -318,7 +318,6 @@
   box-sizing: border-box;
 }
 
-/* Booking summary */
 .booking-summary {
   background-color: #f9f9f9;
   padding: 15px;
@@ -332,12 +331,31 @@
   margin-bottom: 5px;
 }
 
+.services-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.service-list-item {
+  padding: 3px 0;
+  font-size: 16px;
+  position: relative;
+  padding-left: 15px;
+}
+
+.service-list-item::before {
+  content: "•";
+  font-size: 16px;
+  position: absolute;
+  left: 0;
+}
+
 .summary-label {
   font-weight: bold;
   color: #666;
 }
 
-/* Services */
 .service-list {
   list-style: none;
   padding: 0;
@@ -407,23 +425,63 @@
   margin: 0;
 }
 
+.error-message {
+  position: relative;
+  padding: 15px 40px 15px 20px;
+  margin: 15px;
+  background: #ffebee;
+  color: #b71c1c;
+  border-radius: 8px;
+  animation: slideIn 0.3s ease-out;
+}
+
+.error-close {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0 5px;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.loading-indicator {
+  margin: auto;
+}
+
 @media (max-width: 600px) {
   .booking-menu {
     width: 100%;
   }
-  
+
   .slots-container {
     grid-template-columns: repeat(3, 1fr);
   }
-  
+
   .calendar-container {
     overflow-x: auto;
   }
-  
-  .calendar-grid, .weekdays {
+
+  .calendar-grid,
+  .weekdays {
     min-width: 350px;
   }
-  
+
   .day-button {
     width: 40px;
     height: 40px;
