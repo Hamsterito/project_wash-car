@@ -1,5 +1,6 @@
 from flask import Flask, request, render_template, redirect, url_for, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
+from psycopg2 import errors
 from bd_car import conn, cursor
 from apscheduler.schedulers.background import BackgroundScheduler
 from mailjet_rest import Client as MailjetClient
@@ -99,7 +100,22 @@ def register():
 
     try:
         cursor.execute(
-            "INSERT INTO clients (phone, email) VALUES (%s, %s) RETURNING id",
+            "SELECT id, is_verified FROM clients WHERE phone = %s OR email = %s",
+            (phone, email)
+        )
+        existing = cursor.fetchone()
+
+        if existing:
+            client_id, is_verified = existing
+            if is_verified:
+                return jsonify({"success": False, "message": "Пользователь уже существует"}), 409
+            else:
+                cursor.execute("DELETE FROM verification_codes WHERE client_id = %s", (client_id,))
+                cursor.execute("DELETE FROM clients WHERE id = %s", (client_id,))
+                conn.commit()
+
+        cursor.execute(
+            "INSERT INTO clients (phone, email, is_verified) VALUES (%s, %s, FALSE) RETURNING id",
             (phone, email)
         )
         client_id = cursor.fetchone()[0]
@@ -116,6 +132,9 @@ def register():
             send_verification_sms(phone, verification_code)
 
         return jsonify({"success": True})
+    except errors.UniqueViolation:
+        conn.rollback()
+        return jsonify({"success": False, "message": "Пользователь уже существует"}), 409
     except Exception as e:
         conn.rollback()
         print(f"[register] Ошибка: {e}")
@@ -165,18 +184,26 @@ def verify_code():
         if not result:
             return jsonify({"success": False, "error": "Код или контакт неверны"}), 400
 
-        if result:
-            client_id, expires_at = result
-            if expires_at < datetime.now():
-                cursor.execute("DELETE FROM verification_codes WHERE client_id = %s", (client_id,))
-                cursor.execute("DELETE FROM clients WHERE id = %s", (client_id,))
-                conn.commit()
-                return jsonify({"success": False, "error": "Код истёк"}), 400
-            return jsonify({"success": True})
-        else:
-            return jsonify({"success": False, "error": "Код или контакт неверны"}), 400
+        client_id, expires_at = result
+
+        if expires_at < datetime.now():
+            cursor.execute("DELETE FROM verification_codes WHERE client_id = %s", (client_id,))
+            cursor.execute("DELETE FROM clients WHERE id = %s", (client_id,))
+            conn.commit()
+            return jsonify({"success": False, "error": "Код истёк"}), 400
+
+        cursor.execute("UPDATE clients SET is_verified = TRUE WHERE id = %s", (client_id,))
+        print(client_id)
+        conn.commit()
+        cursor.execute("DELETE FROM verification_codes WHERE client_id = %s", (client_id,))
+        conn.commit()
+
+        return jsonify({"success": True})
+
     except Exception as e:
-        print(f"Ошибка верификаций {e}")
+        print(f"[verify_code] Ошибка: {e}")
+        conn.rollback()
+        return jsonify({"success": False, "error": "Ошибка на сервере"}), 500
 
 # отправка кода
 @app.route("/api/send-code", methods=["POST"])
@@ -232,16 +259,7 @@ def save_user():
     password_hash = generate_password_hash(password)
 
     try:
-        cursor.execute(
-            "DELETE FROM clients WHERE (phone = %s OR email = %s) AND password IS NULL",
-            (phone, email)
-        )
-        conn.commit()
-        
-        cursor.execute(
-            "INSERT INTO clients (phone, password, email) VALUES (%s, %s, %s)",
-            (phone, password_hash, email)
-        )
+        cursor.execute("UPDATE clients SET password = %s WHERE phone = %s or email = %s" , (password_hash, phone, email))
         conn.commit()   
         return jsonify({"success": True})
     except Exception as e:

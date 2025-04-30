@@ -9,7 +9,8 @@ CREATE TABLE clients (
     photo_url TEXT,
     booking_history_id INTEGER REFERENCES bookings(id) ON DELETE SET NULL
 );
-select * from clients
+select * from verification_codes
+delete from clients
 
 CREATE TABLE booking_history (
     id SERIAL PRIMARY KEY,
@@ -67,6 +68,14 @@ CREATE TABLE bookings (
 	'Сверхбольшие внедорожники и микроавтобусы','Грузовые'))
 );
 
+CREATE TABLE admins (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+	password TEXT NOT NULL,
+    phone TEXT
+);
+
+
 drop table bookings cascade
 select * from booking_services
 
@@ -99,13 +108,6 @@ INSERT INTO booking_services (booking_id, service_id) VALUES
 (8, 2);
 
 select * from booking_services
-
-CREATE TABLE admins (
-    id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
-	password TEXT NOT NULL,
-    phone TEXT
-);
 
 -- Услуги
 INSERT INTO services (name, description, price, duration_minutes) VALUES
