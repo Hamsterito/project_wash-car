@@ -9,6 +9,8 @@ const AuthModal = ({  onClose, onSuccess  }) => {
     email: "",
     password: "",
     code: "",
+    firstName: "",
+    lastName: "",
   });
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errors, setErrors] = useState({});
@@ -24,13 +26,13 @@ const AuthModal = ({  onClose, onSuccess  }) => {
         newErrors.contact = "Введите номер или почту";
       }
 
-        if (isPhone && !/^(?:\+7|8)[0-9]{10}$/.test(formData.phone)) {
-            newErrors.phone = 'Неверный формат номера KZ (+7XXXXXXXXXX или 8XXXXXXXXXX)';
-        }
-        
-        if (isEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-            newErrors.email = 'Введите корректную почту';
-        }
+      if (isPhone && !/^(?:\+7|8)[0-9]{10}$/.test(formData.phone)) {
+        newErrors.phone = 'Неверный формат номера KZ (+7XXXXXXXXXX или 8XXXXXXXXXX)';
+      }
+
+      if (isEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        newErrors.email = 'Введите корректную почту';
+      }
 
       if (!/^[a-zA-Z0-9]+$/.test(formData.password)) {
         newErrors.password = "Пароль должен содержать только буквы и цифры";
@@ -59,12 +61,15 @@ const AuthModal = ({  onClose, onSuccess  }) => {
         body: JSON.stringify({
           contact: isPhone ? formData.phone : formData.email,
           password: formData.password,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
         }),
       });
-      if (formData.password !== confirmPassword) {
-        newErrors.passwordConfirmation = "Пароли не совпадают";
-      }
       const data = await response.json();
+      if (formData.password !== confirmPassword) {
+        setErrors({ passwordConfirmation: "Пароли не совпадают" });
+        return;
+      }
       console.log("Полученные данные", data);
       if (data.success) {
         setMode("code");
@@ -107,9 +112,7 @@ const AuthModal = ({  onClose, onSuccess  }) => {
   return (
     <div className="modal-overlay">
       <div className="auth-modal">
-        <button className="close-btn" onClick={onClose}>
-          ✖
-        </button>
+        <button className="close-btn" onClick={onClose}>✖</button>
 
         {mode === "login" && (
           <>
@@ -135,27 +138,30 @@ const AuthModal = ({  onClose, onSuccess  }) => {
               type="password"
               placeholder="Пароль"
               value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             />
-            {errors.password && (
-              <span className="error">{errors.password}</span>
-            )}
+            {errors.password && <span className="error">{errors.password}</span>}
 
-            <button className="button-enter" onClick={handleSubmit}>
-              Войти
-            </button>
-            <p>
-              Нет учётной записи?{" "}
-              <span onClick={() => setMode("register")}>Cоздай её</span>
-            </p>
+            <button className="button-enter" onClick={handleSubmit}>Войти</button>
+            <p>Нет учётной записи? <span onClick={() => setMode("register")}>Создай её</span></p>
           </>
         )}
 
         {mode === "register" && (
           <>
             <h2>Создать учётную запись</h2>
+            <input
+              type="text"
+              placeholder="Имя"
+              value={formData.firstName}
+              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+            />
+            <input
+              type="text"
+              placeholder="Фамилия"
+              value={formData.lastName}
+              onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+            />
             <input
               type="text"
               placeholder="Номер телефона или почта"
@@ -177,13 +183,9 @@ const AuthModal = ({  onClose, onSuccess  }) => {
               type="password"
               placeholder="Пароль"
               value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             />
-            {errors.password && (
-              <span className="error">{errors.password}</span>
-            )}
+            {errors.password && <span className="error">{errors.password}</span>}
 
             <input
               type="password"
@@ -192,25 +194,10 @@ const AuthModal = ({  onClose, onSuccess  }) => {
               onChange={(e) => setConfirmPassword(e.target.value)}
               className={errors.passwordConfirmation ? "input-error" : ""}
             />
-            {errors.passwordConfirmation && (
-              <span className="error">{errors.passwordConfirmation}</span>
-            )}
+            {errors.passwordConfirmation && <span className="error">{errors.passwordConfirmation}</span>}
 
-            {errors.passwordConfirmation && (
-              <span className="error-text">{errors.passwordConfirmation}</span>
-            )}
-
-            {errors.password && (
-              <span className="error">{errors.password}</span>
-            )}
-
-            <button className="button-enter" onClick={handleSubmit}>
-              Зарегистрироваться
-            </button>
-            <p>
-              Уже есть аккаунт?{" "}
-              <span onClick={() => setMode("login")}>Войти</span>
-            </p>
+            <button className="button-enter" onClick={handleSubmit}>Зарегистрироваться</button>
+            <p>Уже есть аккаунт? <span onClick={() => setMode("login")}>Войти</span></p>
           </>
         )}
 
@@ -231,6 +218,5 @@ const AuthModal = ({  onClose, onSuccess  }) => {
     </div>
   );
 };
-
 
 export default AuthModal;
