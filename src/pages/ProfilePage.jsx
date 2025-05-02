@@ -7,7 +7,7 @@ import CreateBusinessSection from '../component/CreateBusinessSection';
 import RequestToBeConsidered from '../component/RequestToBeConsidered';
 // import EditBusinessSection from '../component/EditBusinessSection';
 import ListSection from '../component/ListSection';
-import AdminPanel from '../component/AdminPanel';
+import ApplicationsSection from '../component/ApplicationsSection';
 
 
 
@@ -15,7 +15,7 @@ import AdminPanel from '../component/AdminPanel';
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
-  const [userRole, setUserRole] = useState('business'); //'user', 'business', 'manager', 'admin'
+  const [userRole, setUserRole] = useState('admin'); //'user', 'business', 'manager', 'admin'
   const [formData, setFormData] = useState({
     lastName: '',
     firstName: '',
@@ -128,7 +128,7 @@ export default function ProfilePage() {
 
 
 
-        {userRole === 'admin' && <AdminPanel />}
+        {userRole === 'admin' && <ApplicationsSection /> }
         {userRole === 'manager' && <ListSection/>}
         {userRole === 'business' && <ListSection/>}
 
