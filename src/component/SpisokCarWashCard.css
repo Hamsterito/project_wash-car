@@ -1,0 +1,45 @@
+.carwash-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 65%;
+    background: linear-gradient(to right, #ffb200 60%, transparent 100%);
+    border: none;
+    border-radius: 20px; 
+    overflow: hidden;
+    margin: 16px auto;
+    margin-bottom: 16px;
+    padding: 16px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .carwash-card:hover {
+    background: linear-gradient(to right, #d99c0e 60%, transparent 100%);
+  }
+  
+  .carwash-info {
+    text-align: left;
+  }
+  
+  .carwash-name {
+    font-size: 20px;
+    font-weight: bold;
+    color: black;
+    margin: 0;
+  }
+  
+  .carwash-address {
+    font-size: 14px;
+    color: black;
+    margin-top: 4px;
+  }
+  
+  .carwash-image {
+    width: 160px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 0 999px 999px 0; 
+  }
+  
