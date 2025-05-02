@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './CreateBusinessModal.css';
 
-export default function CreateBusinessModal({ onClose }) {
+export default function CreateBusinessModal({ onClose, onApprove }) {
   const [formData, setFormData] = useState({
     registrationCertificate: null,
     carWashName: '',
@@ -32,18 +32,19 @@ export default function CreateBusinessModal({ onClose }) {
       formData.logo
     );
   };
-
+  
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!isFormValid()) {
       alert('Пожалуйста, заполните все поля!');
       return;
     }
+  
     console.log('Отправка данных:', formData);
-    // вввввввввввввввввввввввввввввввввввввввввввввввввввв
     onClose();
+    onApprove();
   };
-
+  
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
