@@ -9,7 +9,7 @@ const ApplicationsSection = () => {
   const applications = Array(10).fill({
     name: 'Макенбалд Чинчопа',
     phone: '+7(707)7771234',
-    time: '10:00–22:00',
+    time: '20.03 12:00',
   });
 
   const visibleApps = showAll ? applications : applications.slice(0, 5);
