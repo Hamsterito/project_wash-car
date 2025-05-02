@@ -9,9 +9,6 @@ import RequestToBeConsidered from '../component/RequestToBeConsidered';
 import ListSection from '../component/ListSection';
 import ApplicationsSection from '../component/ApplicationsSection';
 
-
-
-
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
