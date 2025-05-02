@@ -1,8 +1,6 @@
 import React from 'react';
 import CreateBusinessModal from './CreateBusinessModal';
 
-
-
 export default function CreateBusinessSection({ isModalOpen, setIsModalOpen, onApprove }) {
   return (
     <div className="business-section">

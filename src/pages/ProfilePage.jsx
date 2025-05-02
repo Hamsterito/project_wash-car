@@ -5,17 +5,17 @@ import WashHistorySection from '../component/WashHistorySection';
 import UserProfile from '../component/UserProfile';
 import CreateBusinessSection from '../component/CreateBusinessSection';
 import RequestToBeConsidered from '../component/RequestToBeConsidered';
-// import EditBusinessSection from '../component/EditBusinessSection'
+// import EditBusinessSection from '../component/EditBusinessSection';
+import ListSection from '../component/ListSection';
 import AdminPanel from '../component/AdminPanel';
-import ManagerPanel from '../component/ManagerPanel';
-import BusinessPanel from '../component/BusinessPanel';
+
 
 
 
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
-  const [userRole, setUserRole] = useState('admin'); //'user', 'business', 'manager', 'admin'
+  const [userRole, setUserRole] = useState('business'); //'user', 'business', 'manager', 'admin'
   const [formData, setFormData] = useState({
     lastName: '',
     firstName: '',
@@ -106,6 +106,7 @@ export default function ProfilePage() {
         />
 
       </div>
+      
         {/* пользователь */}
         {userRole === 'user' && !isApproved && (
           <CreateBusinessSection
@@ -118,11 +119,18 @@ export default function ProfilePage() {
         {userRole === 'user' && isApproved && (
           <RequestToBeConsidered />
         )}
+        
+        {/* <EditBusinessSection
+          isModalOpen={isModalOpen}
+          setIsModalOpen={setIsModalOpen}
+          onApprove={() => setIsApproved(true)}
+        /> */}
+
 
 
         {userRole === 'admin' && <AdminPanel />}
-        {userRole === 'manager' && <ManagerPanel />}
-        {userRole === 'business' && <BusinessPanel />}
+        {userRole === 'manager' && <ListSection/>}
+        {userRole === 'business' && <ListSection/>}
 
 
     </div>
