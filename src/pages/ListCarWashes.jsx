@@ -5,16 +5,19 @@ import carwash from '../assets/carwash.png'
 const ListCarWashes = () => {
   const carWashData = [
     {
+      id: 1,
       name: "Автомойка 1",
       address: "ул. Примерная, 1",
       image: carwash,
     },
     {
+      id: 2,
       name: "Автомойка 2",
       address: "ул. Моечная, 2",
       image: carwash,
     },
     {
+      id: 3,
       name: "Автомойка 3",
       address: "ул. Чистая, 3",
       image: carwash,
