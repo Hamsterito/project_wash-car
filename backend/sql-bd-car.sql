@@ -47,7 +47,40 @@ CREATE TABLE wash_boxes (
 	image_url TEXT
 );
 
-select * from wash_boxes
+CREATE TABLE box_availability (
+    id SERIAL PRIMARY KEY,
+    wash_box_id INTEGER REFERENCES wash_boxes(id) ON DELETE CASCADE,
+    weekday INTEGER CHECK (weekday BETWEEN 0 AND 6), -- 0 = Понедельник, 6 = Воскресенье
+    work_start TIME NOT NULL,
+    work_end TIME NOT NULL,
+	max_slots INTEGER DEFAULT 1
+);
+delete from box_availability
+
+-- Бокс 1: понедельник-пятница, 09:00–21:00
+INSERT INTO box_availability (wash_box_id, weekday, work_start, work_end, max_slots)
+VALUES 
+(1, 0, '09:00', '21:00',2),  -- Понедельник
+(1, 1, '09:00', '21:00',2),  -- Вторник
+(1, 2, '09:00', '21:00',2),  -- Среда
+(1, 3, '09:00', '21:00',2),  -- Четверг
+(1, 4, '09:00', '21:00',2);  -- Пятница
+
+-- Бокс 2: суббота-воскресенье, 10:00–18:00
+INSERT INTO box_availability (wash_box_id, weekday, work_start, work_end,max_slots)
+VALUES 
+(2, 5, '10:00', '18:00',2),  -- Суббота
+(2, 6, '10:00', '18:00',2);  -- Воскресенье
+
+
+select * from bookings
+
+SELECT max_slots FROM box_availability
+WHERE wash_box_id = 2
+AND weekday = 3
+AND work_start <= '09:30:00'
+AND work_end >= '10:30:00'
+
 
 CREATE TABLE booking_services (
     booking_id INTEGER NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,

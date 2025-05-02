@@ -23,11 +23,12 @@ const Header = () => {
   };
 
   const handleLogout = () => {
-    setIsLoggedIn(false);
+    localStorage.removeItem("client_id");
     localStorage.removeItem("isLoggedIn");
+    setIsLoggedIn(false);
     navigate("/");
   };
-
+  
   const handleProfileClick = () => {
     window.location.href = "/profile";
   };
