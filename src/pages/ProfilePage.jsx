@@ -13,7 +13,7 @@ import HistoryApplicationsSection from '../component/HistoryApplicationsSection'
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
-  const [userRole, setUserRole] = useState('user'); //'user', 'business', 'manager', 'admin'
+  const [userRole, setUserRole] = useState('manager'); //'user', 'business', 'manager', 'admin'
   const [formData, setFormData] = useState({
     lastName: '',
     firstName: '',

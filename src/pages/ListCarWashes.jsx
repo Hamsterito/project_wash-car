@@ -1,5 +1,5 @@
 import React from "react";
-import SpisokCarWashCard from "../component/SpisokCarWashCard.jsx";
+import SpisokCarWashCard from "../component/SpisokCarWashCard";
 import carwash from '../assets/carwash.png'
 
 const ListCarWashes = () => {
@@ -20,6 +20,7 @@ const ListCarWashes = () => {
       image: carwash,
     },
   ];
+  
 
   const handleClick = (name) => {
     alert(`Вы нажали на: ${name}`);
@@ -33,9 +34,10 @@ const ListCarWashes = () => {
       {carWashData.map((wash, index) => (
         <SpisokCarWashCard
           key={index}
+          id={wash.id}
           name={wash.name}
           address={wash.address}
-          imageUrl={wash.imageUrl}
+          image={wash.image}
           onClick={handleClick}
         />
       ))}

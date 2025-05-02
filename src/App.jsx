@@ -4,6 +4,7 @@ import Header from "./component/Header";
 import ProfilePage from "./pages/ProfilePage";
 import MainPage from "./pages/MainPage";
 import ListCarWashes from "./pages/ListCarWashes"
+import CarWashSchedule from "./pages/CarWashSchedule";
 
 const App = () => {
   return (
@@ -13,6 +14,7 @@ const App = () => {
         <Route path="/" element={<MainPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/list-car-washes" element={<ListCarWashes />} />
+        <Route path="/carwash/:id" element={<CarWashSchedule />} />
       </Routes>
     </Router>
   );
