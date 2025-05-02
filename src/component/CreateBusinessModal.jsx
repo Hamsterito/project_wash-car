@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './CreateBusinessModal.css';
 
-export default function CreateBusinessModal({ onClose, onApprove }) {
+export default function CreateBusinessModal({ onClose }) {
   const [formData, setFormData] = useState({
     registrationCertificate: null,
     carWashName: '',
@@ -32,28 +32,48 @@ export default function CreateBusinessModal({ onClose, onApprove }) {
       formData.logo
     );
   };
-  
-  const handleSubmit = (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isFormValid()) {
       alert('Пожалуйста, заполните все поля!');
       return;
     }
-  
-    console.log('Отправка данных:', formData);
-    onClose();
-    onApprove();
+
+    const formDataToSend = new FormData();
+    formDataToSend.append("clientId", formData.clientId);
+    formDataToSend.append("carWashName", formData.carWashName);
+    formDataToSend.append("address", formData.address);
+    formDataToSend.append("cityDistrict", formData.cityDistrict);
+    formDataToSend.append("workingHours", formData.workingHours);
+    formDataToSend.append("registrationCertificate", formData.registrationCertificate);
+    formDataToSend.append("ownershipProof", formData.ownershipProof);
+    formDataToSend.append("logo", formData.logo);
+
+    try {
+      const response = await fetch("http://localhost:5000/api/create-business-account", {
+        method: "POST",
+        body: formDataToSend,
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        alert("Бизнес-аккаунт успешно создан!");
+        onClose();
+      } else {
+        alert(`Ошибка: ${data.error}`);
+      }
+    } catch (error) {
+      console.error("Ошибка при создании бизнес-аккаунта:", error);
+      alert("Произошла ошибка при создании бизнес-аккаунта");
+    }
   };
-  
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <h2>Создать бизнес аккаунт</h2>
         <form onSubmit={handleSubmit}>
-          <label>
-            Свидетельство о регистрации ИП или юр. лица
-            <input type="file" name="registrationCertificate" onChange={handleChange} />
-          </label>
 
           <label>
             Название автомойки
@@ -76,6 +96,11 @@ export default function CreateBusinessModal({ onClose, onApprove }) {
           </label>
 
           <label>
+            Свидетельство о регистрации ИП или юр. лица
+            <input type="file" name="registrationCertificate" onChange={handleChange} />
+          </label>
+
+          <label>
             Подтверждение личности / прав владения
             <input type="file" name="ownershipProof" onChange={handleChange} />
           </label>
@@ -86,8 +111,7 @@ export default function CreateBusinessModal({ onClose, onApprove }) {
           </label>
 
           <div className="modal-buttons">
-            <button type="button" className="btnq decline" onClick={onClose}>Отклонить</button>
-            <button type="submit" className="btnq approve" disabled={!isFormValid()}>Одобрить</button>
+            <button type="submit" className="btnq create" disabled={!isFormValid()}>Создать</button>
           </div>
         </form>
       </div>

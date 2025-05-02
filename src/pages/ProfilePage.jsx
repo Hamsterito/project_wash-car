@@ -5,16 +5,17 @@ import WashHistorySection from '../component/WashHistorySection';
 import UserProfile from '../component/UserProfile';
 import CreateBusinessSection from '../component/CreateBusinessSection';
 import RequestToBeConsidered from '../component/RequestToBeConsidered';
-// import EditBusinessSection from '../component/EditBusinessSection';
+import EditBusinessSection from '../component/EditBusinessSection';
 import ListSection from '../component/ListSection';
 import ApplicationsSection from '../component/ApplicationsSection';
 import { useAuth } from "../component/AuthContext";
+import HistoryApplicationsSection from '../component/HistoryApplicationsSection';  
 
 export default function ProfilePage() {
   const { isLoggedIn, setIsLoggedIn } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
-  const [userRole, setUserRole] = useState('admin'); //'user', 'business', 'manager', 'admin'
+  const [userRole, setUserRole] = useState('user'); //'user', 'business', 'manager', 'admin'
   const [formData, setFormData] = useState({
     lastName: '',
     firstName: '',
@@ -44,7 +45,7 @@ export default function ProfilePage() {
         email: data.email,
       }); 
       // setUserRole(data.role || 'user');
-      setUserRole('admin'); //manager, business, user, admin
+      setUserRole('user'); //manager, business, user, admin
       setAvatar(data.avatar || 'https://via.placeholder.com/150');
     } catch (error) {
       console.error('Ошибка при загрузке данных пользователя:', error);
@@ -110,8 +111,6 @@ export default function ProfilePage() {
         />
 
       </div>
-      
-        {/* пользователь */}
         {userRole === 'user' && !isApproved && (
           <CreateBusinessSection
             isModalOpen={isModalOpen}
@@ -131,8 +130,8 @@ export default function ProfilePage() {
         /> */}
 
 
-
-        {userRole === 'admin' && <ApplicationsSection /> }
+        {userRole === 'admin' && <ApplicationsSection/>}
+        {userRole === 'admin' && <HistoryApplicationsSection/>}
         {userRole === 'manager' && <ListSection/>}
         {userRole === 'business' && <ListSection/>}
 
@@ -140,3 +139,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+
