@@ -8,8 +8,10 @@ import RequestToBeConsidered from '../component/RequestToBeConsidered';
 // import EditBusinessSection from '../component/EditBusinessSection';
 import ListSection from '../component/ListSection';
 import ApplicationsSection from '../component/ApplicationsSection';
+import { useAuth } from "../component/AuthContext";
 
 export default function ProfilePage() {
+  const { isLoggedIn, setIsLoggedIn } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
   const [userRole, setUserRole] = useState('admin'); //'user', 'business', 'manager', 'admin'
