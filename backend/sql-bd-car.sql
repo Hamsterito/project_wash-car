@@ -7,11 +7,16 @@ CREATE TABLE clients (
     email TEXT,
     status TEXT DEFAULT 'Пользователь',
     photo_url TEXT,
+    booking_history_id INTEGER REFERENCES bookings(id) ON DELETE SET NULL
 );
-select * from clients
+select * from verification_codes
+delete from clients
 
 CREATE TABLE booking_history (
     id SERIAL PRIMARY KEY,
+    client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE,
+    start_time TIMESTAMP NOT NULL,
+    end_time TIMESTAMP NOT NULL,
 	status TEXT DEFAULT 'Активно' CHECK (status IN ('Активно', 'Просроченно', 'Завершено'))
 );
 
@@ -42,7 +47,40 @@ CREATE TABLE wash_boxes (
 	image_url TEXT
 );
 
-select * from wash_boxes
+CREATE TABLE box_availability (
+    id SERIAL PRIMARY KEY,
+    wash_box_id INTEGER REFERENCES wash_boxes(id) ON DELETE CASCADE,
+    weekday INTEGER CHECK (weekday BETWEEN 0 AND 6), -- 0 = Понедельник, 6 = Воскресенье
+    work_start TIME NOT NULL,
+    work_end TIME NOT NULL,
+	max_slots INTEGER DEFAULT 1
+);
+delete from box_availability
+
+-- Бокс 1: понедельник-пятница, 09:00–21:00
+INSERT INTO box_availability (wash_box_id, weekday, work_start, work_end, max_slots)
+VALUES 
+(1, 0, '09:00', '21:00',2),  -- Понедельник
+(1, 1, '09:00', '21:00',2),  -- Вторник
+(1, 2, '09:00', '21:00',2),  -- Среда
+(1, 3, '09:00', '21:00',2),  -- Четверг
+(1, 4, '09:00', '21:00',2);  -- Пятница
+
+-- Бокс 2: суббота-воскресенье, 10:00–18:00
+INSERT INTO box_availability (wash_box_id, weekday, work_start, work_end,max_slots)
+VALUES 
+(2, 5, '10:00', '18:00',2),  -- Суббота
+(2, 6, '10:00', '18:00',2);  -- Воскресенье
+
+
+select * from bookings
+
+SELECT max_slots FROM box_availability
+WHERE wash_box_id = 2
+AND weekday = 3
+AND work_start <= '09:30:00'
+AND work_end >= '10:30:00'
+
 
 CREATE TABLE booking_services (
     booking_id INTEGER NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
@@ -63,8 +101,16 @@ CREATE TABLE bookings (
 	'Сверхбольшие внедорожники и микроавтобусы','Грузовые'))
 );
 
+CREATE TABLE admins (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+	password TEXT NOT NULL,
+    phone TEXT
+);
+
+
 drop table bookings cascade
-select * from bookings
+select * from booking_services
 
 -- Тест
 -- Вставляем мойки
@@ -96,13 +142,6 @@ INSERT INTO booking_services (booking_id, service_id) VALUES
 
 select * from booking_services
 
-CREATE TABLE admins (
-    id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
-	password TEXT NOT NULL,
-    phone TEXT
-);
-
 -- Услуги
 INSERT INTO services (name, description, price, duration_minutes) VALUES
 ('Мойка кузова', 'Полная мойка внешней части автомобиля', 500.00, 20),
@@ -126,4 +165,3 @@ INSERT INTO bookings (client_id, service_id, box_id, start_time, end_time, statu
 (Null, 3, 3, '2025-04-15 12:30:00', '2025-04-15 13:00:00', 'свободно');
 
 select * from bookings
-

@@ -1,4 +1,5 @@
-import React, { useRef } from 'react';
+import React, { useRef, userRole } from 'react';
+import defaultavatar from '../assets/defaultavatar.jpg'
 
 export default function UserProfile({
   avatar,
@@ -9,17 +10,29 @@ export default function UserProfile({
   handleChange,
   handleImageChange,
   handleLogout,
-  setIsEditing
+  setIsEditing,
+  userRole 
 }) {
   const fileInputRef = useRef(null);
 
   return (
     <div className="profile-section">
-      <img src={avatar} alt="Фото профиля" className="avatar" />
+      <img src={defaultavatar} alt="Фото профиля" className="avatar" />
       {!isEditing ? (
         <>
           <div className="user-info">
-            <p className="user-status">Статус пользователя:<br /><span>Пользователь</span></p>
+            <p className="user-status">
+              Статус пользователя:<br />
+              <span>
+                {{
+                  admin: 'Администратор',
+                  manager: 'Менеджер',
+                  business: 'Бизнес аккаунт',
+                  user: 'Пользователь'
+                }[userRole] || 'Пользователь'}
+              </span>
+            </p>
+
             <p>Фамилия: {formData.lastName}</p>
             <p>Имя: {formData.firstName}</p>
             <p>Номер: {formData.phone}</p>

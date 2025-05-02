@@ -3,11 +3,12 @@ import "./Header.css";
 import AuthModal from "./AuthModal";
 import userIcon from "../assets/user-icon.png";
 import logo from "../assets/logo.svg";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const loggedIn = localStorage.getItem("isLoggedIn");
@@ -22,15 +23,20 @@ const Header = () => {
   };
 
   const handleLogout = () => {
-    setIsLoggedIn(false);
+    localStorage.removeItem("client_id");
     localStorage.removeItem("isLoggedIn");
-    window.location.href = "/";
+    setIsLoggedIn(false);
+    navigate("/");
+  };
+  
+  const handleProfileClick = () => {
+    window.location.href = "/profile";
   };
 
-  const handleProfileClick = () => {
-    window.location.href = "/profile"; 
-  }; 
-
+  const handleNavClick = (anchor) => {
+    navigate("/", { state: { scrollTo: anchor } });
+  };
+  
 
   return (
     <>
@@ -40,21 +46,32 @@ const Header = () => {
         </div>
 
         <nav className="nav">
-          <a href="#home" onClick={handleLogout} >Главная</a>
-          <a href="#about">О нас</a>
-          <a href="#car-wash-grid">Бронь</a>
+          <a onClick={() => handleNavClick(null)} style={{ cursor: "pointer" }}>
+            Главная
+          </a>
+          <a
+            onClick={() => handleNavClick("about")}
+            style={{ cursor: "pointer" }}
+          >
+            О нас
+          </a>
+          <a
+            onClick={() => handleNavClick("car-wash-grid")}
+            style={{ cursor: "pointer" }}
+          >
+            Бронь
+          </a>
         </nav>
         <div className="auth-buttons">
           {isLoggedIn ? (
             <>
               <div className="user_name" onClick={handleProfileClick}>
-                <img
-                  src={userIcon}
-                  alt="User Icon"
-                  className="user-icon"
-                />
+                <img src={userIcon} alt="User Icon" className="user-icon" />
                 <p className="text_name">Профиль</p>
               </div>
+              <button className="exit-button" onClick={handleLogout}>
+                Выйти
+              </button>
             </>
           ) : (
             <button className="auto-button" onClick={() => setShowAuth(true)}>

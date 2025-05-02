@@ -61,7 +61,9 @@ const CodeVerification = ({
   return (
     <>
       <h2>Введите код</h2>
-      <p>Код отправлен на ваш {isPhone ? "номер" : "email"}</p>
+      <p style={{ marginTop: "-10px", fontSize: "16px", marginBottom:"10px"}}>
+        Код отправлен на ваш {isPhone ? "номер" : "email"}
+      </p>
       <input
         type="text"
         placeholder="6-значный код"
@@ -70,12 +72,17 @@ const CodeVerification = ({
         disabled={loading}
       />
       {errors.code && <span className="error">{errors.code}</span>}
-      {successMessage && <span className="success">{successMessage}</span>}
+      {successMessage && (
+        <span className="success">
+          {successMessage}
+        </span>
+      )}
 
       <button
         className="button-enter"
         onClick={handleSubmit}
         disabled={loading}
+        style={{marginTop:"10px"}}
       >
         {loading ? "Проверка..." : "Подтвердить"}
       </button>
