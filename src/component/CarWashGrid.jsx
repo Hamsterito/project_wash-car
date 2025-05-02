@@ -11,6 +11,8 @@ export default function CarWashGrid() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [bookingKey, setBookingKey] = useState(0);
+  const clientId = localStorage.getItem("client_id");
   const itemsPerPage = 9;
 
   useEffect(() => {
@@ -43,6 +45,15 @@ export default function CarWashGrid() {
     window.scrollTo(0, 900);
   }, [currentPage]);
 
+  const handleOpenBooking = (wash) => {
+    setSelectedWash(wash);
+    setBookingKey(prevKey => prevKey + 1); 
+  };
+
+  const handleCloseBooking = () => {
+    setSelectedWash(null);
+  };
+
   if (isLoading) return <div className="loading">Загрузка...</div>;
   if (error)
     return (
@@ -69,7 +80,7 @@ export default function CarWashGrid() {
               </div>
               <button
                 className="btn_book_carwash"
-                onClick={() => setSelectedWash(wash)}
+                onClick={() => handleOpenBooking(wash)}
               >
                 Забронировать
               </button>
@@ -112,9 +123,12 @@ export default function CarWashGrid() {
 
       {selectedWash && (
         <BookingMenu
+          key={bookingKey} 
           wash={selectedWash}
           services={selectedWash?.services || []}
-          onClose={() => setSelectedWash(null)}
+          onClose={handleCloseBooking}
+          clientId={clientId}
+          boxId={selectedWash.id}
         />
       )}
     </div>

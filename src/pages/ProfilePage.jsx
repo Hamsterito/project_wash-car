@@ -72,7 +72,12 @@ export default function ProfilePage() {
     }
   };
 
-  const handleLogout = () => navigate('/');
+  const handleLogout = () => {
+    localStorage.removeItem("client_id");
+    localStorage.removeItem("isLoggedIn");
+    setIsLoggedIn(false);
+    navigate("/");
+  };
 
   if (loading) return <p>Загрузка...</p>;
 
