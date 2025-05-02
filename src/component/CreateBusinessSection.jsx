@@ -1,7 +1,9 @@
 import React from 'react';
 import CreateBusinessModal from './CreateBusinessModal';
 
-export default function CreateBusinessSection({ isModalOpen, setIsModalOpen }) {
+
+
+export default function CreateBusinessSection({ isModalOpen, setIsModalOpen, onApprove }) {
   return (
     <div className="business-section">
       <div className="business-text">
@@ -12,7 +14,12 @@ export default function CreateBusinessSection({ isModalOpen, setIsModalOpen }) {
         Создать!
       </button>
 
-      {isModalOpen && <CreateBusinessModal onClose={() => setIsModalOpen(false)} />}
+      {isModalOpen && (
+        <CreateBusinessModal 
+          onClose={() => setIsModalOpen(false)} 
+          onApprove={onApprove}
+        />
+      )}
     </div>
   );
 }
