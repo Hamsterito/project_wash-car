@@ -324,7 +324,6 @@ def get_wash_boxes():
         if 'conn' in locals():
             conn.close()
 
-# бронирование
 @app.route("/api/book", methods=["POST"])
 def create_booking():
     data = request.get_json()
@@ -332,7 +331,7 @@ def create_booking():
     car_type = data.get("carType")
     date = data.get("date")
     time = data.get("time")
-    selected_services = data.get("selectedServices")
+    selected_services = data.get("selectedServices", [])
     box_id = data.get("boxId")
     client_id = data.get("clientId")
     
@@ -341,8 +340,11 @@ def create_booking():
     email = data.get("email")
     comments = data.get("comments", "")
     
-    if not all([car_type, date, time, selected_services, box_id]):
+    if not all([car_type, date, time, box_id]):
         return jsonify({"error": "Недостаточно данных для бронирования"}), 400
+    
+    if len(selected_services) == 0:
+        return jsonify({"error": "Выберите хотя бы одну услугу"}), 400
     
     try:
         if not client_id:
@@ -355,53 +357,69 @@ def create_booking():
             )
             client_id = cursor.fetchone()[0]
         
-        placeholders = ','.join(['%s'] * len(selected_services))
-        cursor.execute(
-            f"SELECT id, duration_minutes FROM services WHERE name IN ({placeholders})",
-            selected_services
-        )
-        service_rows = cursor.fetchall()
+        if selected_services:
+            placeholders = ','.join(['%s'] * len(selected_services))
+            cursor.execute(
+                f"SELECT id, name, duration_minutes FROM services WHERE name IN ({placeholders})",
+                selected_services
+            )
+            service_rows = cursor.fetchall()
+            
+            total_minutes = sum(row[2] for row in service_rows)
+        else:
+            return jsonify({"error": "Выберите хотя бы одну услугу"}), 400
         
-        if not service_rows:
-            return jsonify({"error": "Выбранные услуги не найдены"}), 400
-        
-        total_minutes = sum(row[1] for row in service_rows)
-        start_time = datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M")
+        try:
+            start_time = datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M")
+        except ValueError:
+            return jsonify({"error": "Неверный формат даты или времени"}), 400
+            
         end_time = start_time + timedelta(minutes=total_minutes)
         
-        cursor.execute(
-            """
+        weekday = start_time.weekday()
+        print(box_id, weekday, start_time.time(), end_time.time())
+        
+        cursor.execute(""" 
+            SELECT max_slots FROM box_availability 
+            WHERE wash_box_id = %s AND weekday = %s 
+            AND work_start <= %s AND work_end >= %s
+        """, (box_id, weekday, start_time.time(), end_time.time()))
+
+        row = cursor.fetchone()
+
+        if not row:
+            return jsonify({"error": "В это время автомойка не работает"}), 400
+
+        max_slots = row[0]
+
+        cursor.execute("""
             SELECT COUNT(*) FROM bookings
             WHERE box_id = %s AND status != 'отменено'
-            AND (
-                (start_time <= %s AND end_time > %s) OR
-                (start_time < %s AND end_time >= %s) OR
-                (start_time >= %s AND end_time <= %s)
-            )
-            """,
-            (box_id, start_time, start_time, end_time, end_time, start_time, end_time)
-        )
+            AND start_time < %s AND end_time > %s
+        """, (box_id, end_time, start_time))
         
-        if cursor.fetchone()[0] > 0:
-            return jsonify({"error": "Выбранное время уже занято. Пожалуйста, выберите другое время."}), 409
+        current_bookings = cursor.fetchone()[0]
+
+        if current_bookings >= max_slots:
+            return jsonify({"error": "На это время нет доступных слотов. Выберите другое время."}), 409
         
         cursor.execute(
             """
-            INSERT INTO bookings (client_id, box_id, start_time, end_time, status, type_car, comments)
-            VALUES (%s, %s, %s, %s, 'забронировано', %s, %s) RETURNING id
+            INSERT INTO bookings (client_id, box_id, start_time, end_time, total_minutes, status, type_car, comments_client)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
             """,
-            (client_id, box_id, start_time, end_time, car_type, comments)
+            (client_id, box_id, start_time, end_time, total_minutes, 'забронировано', car_type, comments)
         )
         booking_id = cursor.fetchone()[0]
         
-        for service_id, _ in service_rows:
+        for service_id, _, _ in service_rows:
             cursor.execute(
                 "INSERT INTO booking_services (booking_id, service_id) VALUES (%s, %s)",
                 (booking_id, service_id)
             )
         
         conn.commit()
-                
+        
         return jsonify({
             "message": "Бронирование успешно создано",
             "booking_id": booking_id,
@@ -415,63 +433,122 @@ def create_booking():
         print(f"Error creating booking: {str(e)}")
         return jsonify({"error": "Произошла ошибка при создании бронирования. Пожалуйста, попробуйте снова."}), 500
 
-
 @app.route("/api/available-slots", methods=["GET"])
 def get_available_slots():
     try:
+        box_id = request.args.get('box_id', type=int)
+
+        if not box_id:
+            return jsonify({"error": "box_id обязателен"}), 400
+        
         start_date = datetime.now().date()
         end_date = start_date + timedelta(days=30)
-        
-        cursor.execute(
-            """
-            SELECT box_id, start_time, end_time 
-            FROM bookings 
-            WHERE date(start_time) BETWEEN %s AND %s
-            AND status != 'отменено'
-            """,
-            (start_date, end_date)
-        )
-        existing_bookings = cursor.fetchall()
-        
-        work_start = 9 
-        work_end = 21 
-        slot_duration = 30  
-        
-        available_slots = {}
+
+        cursor.execute("""
+            SELECT wash_box_id, weekday, work_start, work_end, max_slots 
+            FROM box_availability 
+            WHERE wash_box_id = %s
+        """, (box_id,))
+        availability_data = cursor.fetchall()
+
+        if not availability_data:
+            return jsonify({"error": f"Нет данных для автомойки с ID {box_id}"}), 404
+
+        schedule = {
+            (row[0], row[1]): {
+                'work_start': row[2],
+                'work_end': row[3],
+                'max_slots': row[4]
+            } for row in availability_data
+        }
+
+        slot_duration = 30
+        available_slots = []
+
         current_date = start_date
-        
         while current_date <= end_date:
-            if current_date.weekday() < 5:
-                date_str = current_date.strftime("%Y-%m-%d")
-                available_slots[date_str] = []
-                
-                current_datetime = datetime.combine(current_date, datetime.min.time()) + timedelta(hours=work_start)
-                end_datetime = datetime.combine(current_date, datetime.min.time()) + timedelta(hours=work_end)
-                
-                while current_datetime < end_datetime:
-                    time_str = current_datetime.strftime("%H:%M")
+            weekday = current_date.weekday()
+            date_str = current_date.strftime("%Y-%m-%d")
+            
+            slots_for_date = {}
+            date_has_slots = False
+
+            for (wash_box_id, wd), data in schedule.items():
+                if wash_box_id != box_id or wd != weekday:
+                    continue
+
+                current_datetime = datetime.combine(current_date, data['work_start'])
+                end_datetime = datetime.combine(current_date, data['work_end'])
+
+                now = datetime.now()
+
+                while current_datetime + timedelta(minutes=slot_duration) <= end_datetime:
                     slot_end = current_datetime + timedelta(minutes=slot_duration)
                     
-                    is_available = True
-                    for box_id, booking_start, booking_end in existing_bookings:
-                        if (current_datetime >= booking_start and current_datetime < booking_end) or \
-                           (slot_end > booking_start and slot_end <= booking_end) or \
-                           (current_datetime <= booking_start and slot_end >= booking_end):
-                            is_available = False
-                            break
-                    
-                    if is_available:
-                        available_slots[date_str].append(time_str)
-                    
+                    if current_date == now.date() and current_datetime < now:
+                        current_datetime += timedelta(minutes=slot_duration)
+                        continue
+
+                    cursor.execute("""
+                        SELECT COUNT(*) 
+                        FROM bookings
+                        WHERE box_id = %s 
+                        AND status != 'отменено'
+                        AND start_time < %s AND end_time > %s
+                    """, (wash_box_id, slot_end, current_datetime))
+                    booked_slots = cursor.fetchone()[0]
+                    max_slots = data['max_slots']
+
+                    time_str = current_datetime.strftime("%H:%M")
+                    if booked_slots < max_slots:
+                        slots_for_date[time_str] = {
+                            "bookedSlots": booked_slots,
+                            "maxSlots": max_slots
+                        }
+                        date_has_slots = True
+
                     current_datetime += timedelta(minutes=slot_duration)
             
+            if date_has_slots:
+                sorted_slots = sorted(slots_for_date.keys(), 
+                                     key=lambda x: tuple(map(int, x.split(':'))))
+                                     
+                available_slots.append({
+                    "boxId": box_id,
+                    "date": date_str,
+                    "slots": sorted_slots,
+                    "slotInfo": slots_for_date
+                })
+
             current_date += timedelta(days=1)
-        
-        return jsonify({"availableSlots": available_slots}), 200
-        
+
+        return jsonify(available_slots), 200
+
     except Exception as e:
         print(f"Error getting available slots: {str(e)}")
-        return jsonify({"error": "Не удалось получить доступные слоты"}), 500@app.route("/api/book", methods=["POST"])
+        return jsonify({"error": "Не удалось получить доступные слоты"}), 500
     
+
+@app.route("/api/services", methods=["GET"])
+def get_services():
+    try:
+        cursor.execute("SELECT id, name, price, duration_minutes FROM services")
+        services = cursor.fetchall()
+        
+        result = []
+        for service in services:
+            result.append({
+                "id": service[0],
+                "name": service[1],
+                "price": service[2],
+                "duration_minutes": service[3]
+            })
+        
+        return jsonify({"services": result}), 200
+        
+    except Exception as e:
+        print(f"Error fetching services: {str(e)}")
+        return jsonify({"error": "Не удалось получить список услуг"}), 500
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5000)

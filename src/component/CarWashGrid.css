@@ -149,3 +149,73 @@ body {
 .page-nav:hover {
   color: #FFB200;
 }
+
+.login-prompt-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.login-prompt {
+  background-color: white;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 450px;
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-prompt h2 {
+  color: #333;
+  font-family: 'Prosto One', sans-serif;
+  margin-bottom: 15px;
+  font-size: 24px;
+}
+
+.login-prompt p {
+  background-color: #ededed;
+  border-radius: 12px;
+  padding: 10px 10px;
+  color: #646464;
+  margin-bottom: 10px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.close-button {
+  background-color: #FFB200;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 12px;
+  color: black;
+  font-family: 'Prosto One', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  margin-top: 5px;
+}
+
+.close-button:hover {
+  background-color: #d49500;
+}

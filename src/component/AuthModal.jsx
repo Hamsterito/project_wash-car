@@ -50,11 +50,9 @@ const AuthModal = ({  onClose, onSuccess  }) => {
   };
 
   const handleSubmit = async () => {
-    console.log("handleSubmit сработал");
     if (!validate()) return;
 
     if (mode === "register") {
-      console.log("Регистрируемся");
       const response = await fetch("http://localhost:5000/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -70,7 +68,6 @@ const AuthModal = ({  onClose, onSuccess  }) => {
         setErrors({ passwordConfirmation: "Пароли не совпадают" });
         return;
       }
-      console.log("Полученные данные", data);
       if (data.success) {
         setMode("code");
       } else {

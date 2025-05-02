@@ -11,7 +11,25 @@ export default function CarWashGrid() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [bookingKey, setBookingKey] = useState(0);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [clientId, setClientId] = useState(localStorage.getItem("client_id"));
   const itemsPerPage = 9;
+  
+  useEffect(() => {
+    const checkAuth = () => {
+      const currentClientId = localStorage.getItem("client_id");
+      setClientId(currentClientId);
+    };
+    
+    checkAuth();
+    
+    window.addEventListener('click', checkAuth);
+    
+    return () => {
+      window.removeEventListener('click', checkAuth);
+    };
+  }, []);
 
   useEffect(() => {
     fetch("http://localhost:5000/api/wash_boxes")
@@ -43,6 +61,26 @@ export default function CarWashGrid() {
     window.scrollTo(0, 900);
   }, [currentPage]);
 
+  const handleOpenBooking = (wash) => {
+    const currentClientId = localStorage.getItem("client_id");
+    
+    if (!currentClientId) {
+      setShowLoginPrompt(true);
+      return;
+    }
+    
+    setSelectedWash(wash);
+    setBookingKey(prevKey => prevKey + 1); 
+  };
+
+  const handleCloseBooking = () => {
+    setSelectedWash(null);
+  };
+
+  const handleCloseLoginPrompt = () => {
+    setShowLoginPrompt(false);
+  };
+
   if (isLoading) return <div className="loading">Загрузка...</div>;
   if (error)
     return (
@@ -69,7 +107,7 @@ export default function CarWashGrid() {
               </div>
               <button
                 className="btn_book_carwash"
-                onClick={() => setSelectedWash(wash)}
+                onClick={() => handleOpenBooking(wash)}
               >
                 Забронировать
               </button>
@@ -112,10 +150,23 @@ export default function CarWashGrid() {
 
       {selectedWash && (
         <BookingMenu
+          key={bookingKey} 
           wash={selectedWash}
           services={selectedWash?.services || []}
-          onClose={() => setSelectedWash(null)}
+          onClose={handleCloseBooking}
+          clientId={clientId}
+          boxId={selectedWash.id}
         />
+      )}
+
+      {showLoginPrompt && (
+        <div className="login-prompt-overlay">
+          <div className="login-prompt">
+            <h2>Требуется авторизация</h2>
+            <p>Для бронирования автомойки необходимо авторизоваться. Пожалуйста, войдите в свой аккаунт или зарегистрируйтесь.</p>
+            <button className="close-button" onClick={handleCloseLoginPrompt}>Закрыть</button>
+          </div>
+        </div>
       )}
     </div>
   );
