@@ -11,12 +11,16 @@ from datetime import datetime, timedelta
 from flask_cors import CORS
 import random
 import string
+from werkzeug.utils import secure_filename
+
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), 'app.env'))
 
 app = Flask(__name__)
 CORS(app)
 app.secret_key = '12345'
+
+app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
 
 MAILJET_API_KEY = os.getenv('MAILJET_API_KEY')
 MAILJET_API_SECRET = os.getenv('MAILJET_API_SECRET')
@@ -549,6 +553,183 @@ def get_services():
     except Exception as e:
         print(f"Error fetching services: {str(e)}")
         return jsonify({"error": "Не удалось получить список услуг"}), 500
+    
+# ИНформация о пользователе
+@app.route("/api/user-info", methods=["GET"])
+def get_user_info_fixed():
+    user_id = 2 
+    try:
+        cursor.execute(
+            """
+            SELECT id, first_name, last_name, phone, email, status, 
+                   COALESCE(photo_url, 'src/assets/fotoprofila.jpg') AS photo_url
+            FROM clients
+            WHERE id = %s
+            """,
+            (user_id,)
+        )
+        user = cursor.fetchone()
+
+        if not user:
+            return jsonify({"success": False, "error": "Пользователь не найден"}), 404
+
+        photo_url = f"/{user[6]}"
+
+        user_data = {
+            "id": user[0],
+            "first_name": user[1],
+            "last_name": user[2],
+            "phone": user[3],
+            "email": user[4],
+            "status": user[5],
+            "photo_url": photo_url, 
+        }
+
+        return jsonify({"success": True, "user": user_data})
+    except Exception as e:
+        print(f"Ошибка при получении информации о пользователе: {e}")
+        return jsonify({"success": False, "error": "Ошибка сервера"}), 500
+
+#  обновление информации о пользователе
+@app.route("/api/update-user", methods=["PUT"])
+def update_user_info():
+    try:
+        data = request.get_json()
+        user_id = data.get("id")
+        first_name = data.get("first_name")
+        last_name = data.get("last_name")
+        phone = data.get("phone")
+        email = data.get("email")
+
+        if not user_id or not all([first_name, last_name, phone, email]):
+            return jsonify({"success": False, "error": "Недостаточно данных"}), 400
+
+        cursor.execute(
+            """
+            UPDATE clients
+            SET first_name = %s, last_name = %s, phone = %s, email = %s
+            WHERE id = %s
+            """,
+            (first_name, last_name, phone, email, user_id)
+        )
+        conn.commit()
+
+        return jsonify({"success": True, "message": "Информация обновлена"})
+    except Exception as e:
+        conn.rollback()
+        print(f"Ошибка при обновлении информации о пользователе: {e}")
+        return jsonify({"success": False, "error": "Ошибка сервера"}), 500
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+
+# загрузка аватара
+@app.route("/api/upload-photo", methods=["POST"])
+def upload_photo():
+    if 'file' not in request.files:
+        return jsonify({"success": False, "error": "Файл не найден"}), 400
+
+    file = request.files['file']
+    print(f"Файл получен: {file}")
+    print(f"Тип файла: {file.content_type}")
+
+    user_id = request.form.get("user_id")
+    print(f"user_id: {user_id}")
+    if not user_id:
+        return jsonify({"success": False, "error": "ID пользователя не указан"}), 400
+
+    if file.filename == '':
+        return jsonify({"success": False, "error": "Файл не выбран"}), 400
+
+    if file and allowed_file(file.filename):
+        try:
+            filename = secure_filename(file.filename)
+            upload_folder = r'C:\Users\chika\OneDrive\Документы\car_wash\project_wash-car\public\images'
+            os.makedirs(upload_folder, exist_ok=True)
+            file_path = os.path.join(upload_folder, filename)
+            print(f"Сохраняем файл в: {file_path}")
+            file.save(file_path)
+            print("Файл успешно сохранён")
+
+            relative_path = f"images/{filename}"
+            print(f"Обновляем путь в базе данных: {relative_path} для пользователя с ID {user_id}")
+            cursor.execute(
+                "UPDATE clients SET photo_url = %s WHERE id = %s",
+                (relative_path, user_id)
+            )
+            conn.commit()
+            print("Путь к фото успешно обновлён в базе данных")
+            return jsonify({"success": True, "message": "Фото обновлено", "photo_url": relative_path})
+        except Exception as e:
+            conn.rollback()
+            print(f"Ошибка при сохранении файла или обновлении базы данных: {e}")
+            return jsonify({"success": False, "error": "Ошибка при сохранении файла"}), 500
+    else:
+        print(f"Недопустимый формат файла: {file.filename}")
+        return jsonify({"success": False, "error": "Недопустимый формат файла"}), 400
+
+@app.route("/api/create-business-account", methods=["POST"])
+def create_business_account():
+    try:
+        client_id = 2
+        
+        if 'registrationCertificate' not in request.files or 'ownershipProof' not in request.files or 'logo' not in request.files:
+            return jsonify({"success": False, "error": "Не все файлы загружены"}), 400
+
+        car_wash_name = request.form.get("carWashName")
+        address = request.form.get("address")
+        city_district = request.form.get("cityDistrict")
+        working_hours = request.form.get("workingHours")
+
+        if not all([car_wash_name, address, city_district, working_hours]):
+            return jsonify({"success": False, "error": "Не все поля заполнены"}), 400
+
+        upload_folder = r'C:\Users\chika\OneDrive\Документы\car_wash\project_wash-car\public\images'
+        os.makedirs(upload_folder, exist_ok=True)
+
+        registration_certificate_file = request.files['registrationCertificate']
+        registration_certificate_path = os.path.join(upload_folder, secure_filename(registration_certificate_file.filename))
+        registration_certificate_file.save(registration_certificate_path)
+
+        ownership_proof_file = request.files['ownershipProof']
+        ownership_proof_path = os.path.join(upload_folder, secure_filename(ownership_proof_file.filename))
+        ownership_proof_file.save(ownership_proof_path)
+
+        logo_file = request.files['logo']
+        logo_path = os.path.join(upload_folder, secure_filename(logo_file.filename))
+        logo_file.save(logo_path)
+
+        cursor.execute(
+            """
+            INSERT INTO business_accounts (
+                client_id,
+                registration_certificate,
+                car_wash_name,
+                address,
+                city_district,
+                working_hours,
+                ownership_proof,
+                logo
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """,
+            (
+                client_id,
+                f"business account information/{secure_filename(registration_certificate_file.filename)}",
+                car_wash_name,
+                address,
+                city_district,
+                working_hours,
+                f"business account information/{secure_filename(ownership_proof_file.filename)}",
+                f"business account information/{secure_filename(logo_file.filename)}"
+            )
+        )
+        conn.commit()
+
+        return jsonify({"success": True, "message": "Бизнес-аккаунт успешно создан"})
+    except Exception as e:
+        conn.rollback()
+        print(f"Ошибка при создании бизнес-аккаунта: {e}")
+        return jsonify({"success": False, "error": "Ошибка при создании бизнес-аккаунта"}), 500
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

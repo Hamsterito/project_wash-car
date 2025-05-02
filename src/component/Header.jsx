@@ -4,9 +4,10 @@ import AuthModal from "./AuthModal";
 import userIcon from "../assets/user-icon.png";
 import logo from "../assets/logo.svg";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "./AuthContext";
 
 const Header = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const { isLoggedIn, setIsLoggedIn } = useAuth();
   const [showAuth, setShowAuth] = useState(false);
   const navigate = useNavigate();
 
