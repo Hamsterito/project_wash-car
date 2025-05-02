@@ -5,6 +5,7 @@ import WashHistorySection from '../component/WashHistorySection';
 import UserProfile from '../component/UserProfile';
 import CreateBusinessSection from '../component/CreateBusinessSection';
 import RequestToBeConsidered from '../component/RequestToBeConsidered';
+import EditBusinessSection from '../component/EditBusinessSection'
 
 
 export default function ProfilePage() {
@@ -105,6 +106,7 @@ export default function ProfilePage() {
       ) : (
         <RequestToBeConsidered />
       )}
+      <EditBusinessSection />
     </div>
   );
 }
