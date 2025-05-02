@@ -15,7 +15,7 @@ const ApplicationsSection = () => {
   const visibleApps = showAll ? applications : applications.slice(0, 5);
 
   return (
-    <div>
+    <div className='razdelenie'>
       <div className="applications-header">Недавние заявки:</div>
       <div className="applications-table-container">
         <h2>Заявки новых автомоек!</h2>

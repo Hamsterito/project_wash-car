@@ -352,17 +352,16 @@ input {
   text-decoration: underline;
 }
 
-.see-more {
-  text-align: right;
-  margin-top: 10px;
-}
 
-.see-more a {
+.see-more button {
+  margin-top: 10px;
   color: #007bff;
   text-decoration: none;
   font-weight: bold;
+  background: rgb(255, 255, 255);
+  border-style: none;
 }
 
-.see-more a:hover {
-  text-decoration: underline;
+.razdelenie {
+  margin-bottom: 50px;
 }
