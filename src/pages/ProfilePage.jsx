@@ -4,9 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import WashHistorySection from '../component/WashHistorySection';
 import UserProfile from '../component/UserProfile';
 import CreateBusinessSection from '../component/CreateBusinessSection';
+import RequestToBeConsidered from '../component/RequestToBeConsidered';
+
 
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
+  const [isApproved, setIsApproved] = useState(false);
   const [formData, setFormData] = useState({
     lastName: '',
     firstName: '',
@@ -93,10 +96,15 @@ export default function ProfilePage() {
           setIsEditing={setIsEditing}
         />
       </div>
-      <CreateBusinessSection
-        isModalOpen={isModalOpen}
-        setIsModalOpen={setIsModalOpen}
-      />
+      {!isApproved ? (
+        <CreateBusinessSection
+          isModalOpen={isModalOpen}
+          setIsModalOpen={setIsModalOpen}
+          onApprove={() => setIsApproved(true)}
+        />
+      ) : (
+        <RequestToBeConsidered />
+      )}
     </div>
   );
 }
