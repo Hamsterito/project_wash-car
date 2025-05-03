@@ -632,7 +632,7 @@ export default function BookingSystem({
                 return (
                   <li
                     key={i}
-                    className={`service-item ${isSelected ? "selected" : ""}`}
+                    className={`service-item-menu ${isSelected ? "selected" : ""}`}
                     onClick={() => toggleService(service.name)}
                   >
                     <span className="checkbox">{isSelected ? "☑" : "☐"}</span>

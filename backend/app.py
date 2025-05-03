@@ -741,6 +741,160 @@ def create_business_account():
         conn.rollback()
         print(f"Ошибка при создании бизнес-аккаунта: {e}")
         return jsonify({"success": False, "error": "Ошибка при создании бизнес-аккаунта"}), 500
+    
+
+@app.route("/api/wash-history", methods=["GET"])
+def get_wash_history():
+    try:
+        client_id = request.args.get("client_id")
+        
+        if not client_id or not client_id.isdigit():
+            return jsonify({"success": False, "error": "Неверный client_id"}), 400
+        
+        client_id = int(client_id)
+        
+        limit = request.args.get("limit", default=10, type=int)
+        offset = request.args.get("offset", default=0, type=int)
+        
+        cursor.execute(
+            """
+            SELECT 
+                id,
+                box_id,
+                to_char(start_time, 'YYYY-MM-DD HH24:MI') as appointment_time,
+                vehicle_type,
+                services,
+                total_price,
+                wash_name,
+                wash_location,
+                wash_image,
+                status
+            FROM 
+                wash_history_view
+            WHERE 
+                client_id = %s
+            ORDER BY 
+                start_time DESC
+            LIMIT %s OFFSET %s
+            """,
+            (client_id, limit, offset)
+        )
+        
+        history_rows = cursor.fetchall()
+        
+        if not history_rows:
+            return jsonify({"success": True, "history": []})
+        
+        wash_history = []
+        for row in history_rows:
+            wash_item = {
+                "id": row[0],
+                "boxId": row[1],
+                "appointmentTime": row[2],
+                "vehicleType": row[3],
+                "selectedServices": row[4].split(', ') if row[4] else [],
+                "price": f"{float(row[5]):.0f} тг" if row[5] else "0 тг", 
+                "name": row[6],
+                "street": row[7],
+                "image": row[8],
+                "status": row[9]
+            }
+            wash_history.append(wash_item)
+        
+        cursor.execute(
+            "SELECT COUNT(*) FROM wash_history_view WHERE client_id = %s",
+            (client_id,)
+        )
+        total_count = cursor.fetchone()[0]
+        
+        return jsonify({
+            "success": True, 
+            "history": wash_history,
+            "total": total_count
+        })
+        
+    except Exception as e:
+        print(f"Ошибка при получении истории моек: {e}")
+        return jsonify({"success": False, "error": "Ошибка сервера"}), 500
+
+@app.route("/api/wash-history/<int:history_id>", methods=["GET"])
+def get_wash_history_detail(history_id):
+    try:
+        client_id = request.args.get("client_id")
+        
+        if not client_id or not client_id.isdigit():
+            return jsonify({"success": False, "error": "Неверный client_id"}), 400
+        
+        client_id = int(client_id)
+        
+        cursor.execute(
+            """
+            SELECT 
+                id,
+                box_id,
+                to_char(start_time, 'YYYY-MM-DD HH24:MI') as appointment_time,
+                to_char(end_time, 'YYYY-MM-DD HH24:MI') as end_time,
+                vehicle_type,
+                services,
+                total_price,
+                wash_name,
+                wash_location,
+                wash_image,
+                status,
+                comments_client
+            FROM 
+                wash_history_view
+            WHERE 
+                id = %s AND client_id = %s
+            """,
+            (history_id, client_id)
+        )
+        
+        row = cursor.fetchone()
+        
+        if not row:
+            return jsonify({"success": False, "error": "Запись не найдена"}), 404
+        
+        history_detail = {
+            "id": row[0],
+            "boxId": row[1],
+            "appointmentTime": row[2],
+            "endTime": row[3],
+            "vehicleType": row[4],
+            "selectedServices": row[5].split(', ') if row[5] else [],
+            "price": f"{float(row[6]):.0f} тг" if row[6] else "0 тг", 
+            "name": row[7],
+            "street": row[8],
+            "image": row[9],
+            "status": row[10],
+            "comments": row[11] or ""
+        }
+        
+        return jsonify({"success": True, "detail": history_detail})
+        
+    except Exception as e:
+        print(f"Ошибка при получении детальной информации о мойке: {e}")
+        return jsonify({"success": False, "error": "Ошибка сервера"}), 500
+    
+@app.route("/api/get-role", methods=["POST"])
+def get_role():
+    data = request.get_json()
+    client_id = data.get("clientId")
+    
+    if not client_id:
+        return jsonify({"success": False, "error": "Не указан clientId"}), 400
+    
+    try:
+        cursor.execute("SELECT status FROM clients WHERE id = %s", (client_id,))
+        row = cursor.fetchone()
+        if not row:
+            return jsonify({"success": False, "error": "Клиент не найден"}), 404
+        
+        return jsonify({"success": True, "role": row[0]})
+    except Exception as e:
+        print(f"[get_role] Ошибка: {e}")
+        return jsonify({"success": False, "error": "Ошибка сервера"}), 500
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

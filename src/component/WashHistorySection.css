@@ -1,0 +1,117 @@
+.history-section {
+    width: 100%;
+    max-width: 600px;
+    margin-right: 20px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.history-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.history-card {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+    padding: 16px;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease;
+}
+
+.history-card:hover {
+    transform: scale(1.01);
+}
+
+.card-header {
+    font-weight: bold;
+    font-size: 20px;
+    background-color: #343a40;
+    color: #fff;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    width: fit-content;
+}
+
+.card-body {
+    background-color: #f9f9f9;
+    border-radius: 6px;
+    padding: 12px;
+    flex-grow: 1;
+}
+
+.card-body p {
+    margin: 6px 0;
+}
+
+.btnq {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    color: white;
+    transition: background-color 0.2s ease;
+}
+
+.btnq:hover {
+    background-color: #0056b3;
+}
+
+.btnq.more {
+    width: 100%;
+    margin-top: 15px;
+}
+
+.btnq.collapse,
+.btnq.expand {
+    width: 100%;
+    margin-top: 10px;
+    background-color: #6c757d;
+}
+
+.btnq.collapse:hover,
+.btnq.expand:hover {
+    background-color: #5a6268;
+}
+
+.button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.empty-history {
+    background-color: #f1f3f5;
+    border-radius: 10px;
+    padding: 25px;
+    text-align: center;
+    color: #6c757d;
+    font-size: 1rem;
+}
+
+.loading,
+.error-message {
+    text-align: center;
+    padding: 10px;
+    margin-top: 10px;
+}
+
+.error-message {
+    color: #dc3545;
+}
+
+.btnq.toggle-btn {
+    width: 100%;
+    margin-top: 15px;
+    background-color: #6c757d;
+}
+
+.btnq.toggle-btn:hover {
+    background-color: #5a6268;
+}
