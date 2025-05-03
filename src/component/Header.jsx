@@ -29,7 +29,7 @@ const Header = () => {
     setIsLoggedIn(false);
     navigate("/");
   };
-  
+
   const handleProfileClick = () => {
     window.location.href = "/profile";
   };
@@ -37,7 +37,6 @@ const Header = () => {
   const handleNavClick = (anchor) => {
     navigate("/", { state: { scrollTo: anchor } });
   };
-  
 
   return (
     <>
@@ -64,7 +63,7 @@ const Header = () => {
           </a>
         </nav>
         <div className="auth-buttons">
-          {true ? (
+          {isLoggedIn ? (
             <>
               <div className="user_name" onClick={handleProfileClick}>
                 <img src={userIcon} alt="User Icon" className="user-icon" />

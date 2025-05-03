@@ -8,7 +8,7 @@ import CarWashSchedule from "./pages/CarWashSchedule";
 import { UserRoleContext } from "./component/UserRoleContext";
 
 const App = () => {
-  const userRole = 'business'; 
+  const userRole = 'user'; 
 
   return (
     <UserRoleContext.Provider value={userRole}>
