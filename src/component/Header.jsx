@@ -64,7 +64,7 @@ const Header = () => {
           </a>
         </nav>
         <div className="auth-buttons">
-          {isLoggedIn ? (
+          {true ? (
             <>
               <div className="user_name" onClick={handleProfileClick}>
                 <img src={userIcon} alt="User Icon" className="user-icon" />

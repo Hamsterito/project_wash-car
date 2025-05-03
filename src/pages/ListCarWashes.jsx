@@ -1,8 +1,11 @@
 import React from "react";
 import SpisokCarWashCard from "../component/SpisokCarWashCard";
 import carwash from '../assets/carwash.png'
+import { useAuth } from "../component/AuthContext";
 
 const ListCarWashes = () => {
+  const { userRole } = useAuth(); 
+
   const carWashData = [
     {
       id: 1,
@@ -23,25 +26,17 @@ const ListCarWashes = () => {
       image: carwash,
     },
   ];
-  
-
-  const handleClick = (name) => {
-    alert(`Вы нажали на: ${name}`);
-  };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1 style={{ fontSize: "32px", textAlign: "center", marginBottom: "24px" }}>
-        Список автомоек
-      </h1>
-      {carWashData.map((wash, index) => (
+    <div>
+      {carWashData.map((wash) => (
         <SpisokCarWashCard
-          key={index}
+          key={wash.id}
           id={wash.id}
           name={wash.name}
           address={wash.address}
           image={wash.image}
-          onClick={handleClick}
+          userRole="business"
         />
       ))}
     </div>

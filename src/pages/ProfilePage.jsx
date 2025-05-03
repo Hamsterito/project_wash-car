@@ -45,7 +45,7 @@ export default function ProfilePage() {
         email: data.email,
       }); 
       // setUserRole(data.role || 'user');
-      setUserRole('user'); //manager, business, user, admin
+      setUserRole('business'); //manager, business, user, admin
       setAvatar(data.avatar || 'https://via.placeholder.com/150');
     } catch (error) {
       console.error('Ошибка при загрузке данных пользователя:', error);
