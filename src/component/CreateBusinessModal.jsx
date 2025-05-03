@@ -1,6 +1,19 @@
 import React, { useState } from 'react';
 import './CreateBusinessModal.css';
 
+function CarWashCard({ name, address, image }) {
+  return (
+    <div className="carwash-card">
+      <img src={image} alt="Автомойка" className="carwash-image" />
+      <div className="carwash-info">
+        <h3>{name || 'Название автомойки'}</h3>
+        <p>Адрес: {address || 'Адрес автомойки'}</p>
+        <button className="carwash-button">Забронировать</button>
+      </div>
+    </div>
+  );
+}
+
 export default function CreateBusinessModal({ onClose }) {
   const [formData, setFormData] = useState({
     registrationCertificate: null,
@@ -71,49 +84,71 @@ export default function CreateBusinessModal({ onClose }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <h2>Создать бизнес аккаунт</h2>
-        <form onSubmit={handleSubmit}>
+      <div className="modal-wrapper" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-content">
+          <h2>Создать бизнес аккаунт</h2>
+          <form onSubmit={handleSubmit}>
 
-          <label>
-            Название автомойки
-            <input type="text" name="carWashName" value={formData.carWashName} onChange={handleChange} />
-          </label>
+            <label>
+              Название автомойки
+              <input type="text" name="carWashName" value={formData.carWashName} onChange={handleChange} />
+            </label>
 
-          <label>
-            Адрес (физическое местоположение)
-            <input type="text" name="address" value={formData.address} onChange={handleChange} />
-          </label>
+            <label>
+              Адрес (физическое местоположение)
+              <input type="text" name="address" value={formData.address} onChange={handleChange} />
+            </label>
 
-          <label>
-            Город и район
-            <input type="text" name="cityDistrict" value={formData.cityDistrict} onChange={handleChange} />
-          </label>
+            <label>
+              Город и район
+              <input type="text" name="cityDistrict" value={formData.cityDistrict} onChange={handleChange} />
+            </label>
 
-          <label>
-            График работы
-            <input type="text" name="workingHours" value={formData.workingHours} onChange={handleChange} />
-          </label>
+            <label>
+              График работы
+              <input type="text" name="workingHours" value={formData.workingHours} onChange={handleChange} />
+            </label>
 
-          <label>
-            Свидетельство о регистрации ИП или юр. лица
-            <input type="file" name="registrationCertificate" onChange={handleChange} />
-          </label>
+            <label>
+              Свидетельство о регистрации ИП или юр. лица
+              <input type="file" name="registrationCertificate" onChange={handleChange} />
+            </label>
 
-          <label>
-            Подтверждение личности / прав владения
-            <input type="file" name="ownershipProof" onChange={handleChange} />
-          </label>
+            <label>
+              Подтверждение личности / прав владения
+              <input type="file" name="ownershipProof" onChange={handleChange} />
+            </label>
 
-          <label>
-            Фото автомойки, логотип
-            <input type="file" name="logo" onChange={handleChange} />
-          </label>
+            <label>
+              Фото автомойки, обложка
+              <input type="file" name="logo" onChange={handleChange} />
+            </label>
 
-          <div className="modal-buttons">
-            <button type="submit" className="btnq create" disabled={!isFormValid()}>Создать</button>
+            <div className="modal-buttons">
+              <button type="submit" className="btnq create" disabled={!isFormValid()}>Оставить заявку</button>
+            </div>
+          </form>
+        </div>
+
+        <div className="preview-card">
+          <p className="preview-label">Пример:</p>
+          <div className="carwash-card">
+            {formData.logo && (
+              <img
+                src={URL.createObjectURL(formData.logo)}
+                alt="Обложка автомойки"
+                className="background-image"
+              />
+            )}
+            <div className="overlay" />
+            <div className="carwash-content">
+              <h3>{formData.carWashName || 'Название автомойки'}</h3>
+              <p>{formData.address || 'Адрес будет здесь'}</p>
+              <button className="carwash-button" disabled>Забронировать</button>
+            </div>
           </div>
-        </form>
+        </div>
+
       </div>
     </div>
   );
