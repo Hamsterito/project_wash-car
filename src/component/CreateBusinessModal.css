@@ -71,7 +71,6 @@
   }
   
   .btnq:disabled {
-    opacity: 0.5;
     cursor: not-allowed;
   }
   
@@ -81,5 +80,140 @@
     background-color: white;
     color: #2c2c2c;
     border-radius: 6px;
+  }
+  
+  .modal-wrapper {
+    display: flex;
+  }
+  
+  .modal-content {
+    flex: 1;
+    max-width: 500px;
+  }
+  
+  .preview-card {
+    width: 370px;
+    margin-left: 20px;
+    color: white;
+  }
+  
+  .preview-label {
+    color: white;
+    font-weight: bold;
+    margin-bottom: 10px;
+    font-size: 18px;
+  }
+  
+  .carwash-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+  }
+  
+  .carwash-placeholder {
+    width: 100%;
+    height: 200px;
+    background-color: #444;
+  }
+  
+  .carwash-info {
+    padding: 16px;
+  }
+  
+  .carwash-card h3 {
+    margin: 0 0 8px;
+    font-size: 20px;
+  }
+  
+  .carwash-card p {
+    margin: 0;
+    font-size: 16px;
+  }
+  
+  .image-wrapper {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+  }
+  
+  .carwash-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  
+  .image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); 
+  }
+
+  .carwash-card {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    color: white;
+  }
+  
+  .background-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+  }
+  
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); 
+    z-index: 2;
+  }
+  
+  .carwash-content {
+    position: relative;
+    z-index: 3;
+    padding: 20px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+  
+  .carwash-content h3,
+  .carwash-content p {
+    margin: 0 0 8px;
+    font-size: 18px;
+    word-break: break-word;
+  }
+  
+  .carwash-content p {
+    max-height: 50px; 
+    text-overflow: ellipsis; 
+    line-height: 1.4;
+  }
+  
+  .carwash-button {
+    margin-top: auto; 
+    background-color: #ffb800;
+    color: black;
+    font-weight: bold;
+    padding: 12px;
+    width: 200px;
+    border: none;
+    border-radius: 16px;
   }
   
