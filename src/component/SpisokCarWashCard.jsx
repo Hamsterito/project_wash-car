@@ -18,7 +18,6 @@ const SpisokCarWashCard = ({ id, name, address, image, userRole }) => {
   const handleSave = (updatedData) => {
     console.log("Сохранить автомойку:", updatedData);
     setShowModal(false);
-    // Тут можно добавить API-запрос на обновление автомойки
   };
 
   return (
