@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './CarWashEditModal.css';
 
-const CarWashEditModal = ({ data, onClose, onSave }) => {
+const CarWashEditModal = ({ data, onClose, onSave, isCreating = false }) => {
   const [form, setForm] = useState({ ...data });
 
   const handleChange = (e) => {
@@ -127,7 +127,7 @@ const CarWashEditModal = ({ data, onClose, onSave }) => {
         </div>
 
         <button className="save-button" onClick={() => onSave(form)}>
-          Изменить
+          {isCreating ? "Создать" : "Изменить"}
         </button>
       </div>
     </>

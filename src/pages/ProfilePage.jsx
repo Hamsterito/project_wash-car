@@ -15,7 +15,7 @@ export default function ProfilePage() {
   const { isLoggedIn, setIsLoggedIn } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
-  const [userRole, setUserRole] = useState('manager'); //'user', 'business', 'manager', 'admin'
+  const [userRole, setUserRole] = useState('business'); //'user', 'business', 'manager', 'admin'
   const [formData, setFormData] = useState({
     lastName: '',
     firstName: '',
@@ -45,7 +45,7 @@ export default function ProfilePage() {
         email: data.email,
       }); 
       // setUserRole(data.role || 'user');
-      setUserRole('business'); //manager, business, user, admin
+      setUserRole('manager'); //manager, business, user, admin
       setAvatar(data.avatar || 'https://via.placeholder.com/150');
     } catch (error) {
       console.error('Ошибка при загрузке данных пользователя:', error);
