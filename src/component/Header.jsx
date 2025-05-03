@@ -7,7 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 
 const Header = () => {
-  const { isLoggedIn, setIsLoggedIn } = useAuth();
+  const { isLoggedIn, setIsLoggedIn } = useAuth(false);
   const [showAuth, setShowAuth] = useState(false);
   const navigate = useNavigate();
 
@@ -64,7 +64,7 @@ const Header = () => {
           </a>
         </nav>
         <div className="auth-buttons">
-          {isLoggedIn ? (
+          {true ? (
             <>
               <div className="user_name" onClick={handleProfileClick}>
                 <img src={userIcon} alt="User Icon" className="user-icon" />
