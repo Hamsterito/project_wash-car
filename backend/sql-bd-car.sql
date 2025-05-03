@@ -6,18 +6,37 @@ CREATE TABLE clients (
     phone TEXT UNIQUE,
     email TEXT,
     status TEXT DEFAULT 'Пользователь',
-    photo_url TEXT,
-    booking_history_id INTEGER REFERENCES bookings(id) ON DELETE SET NULL
+    photo_url TEXT
 );
 select * from verification_codes
 delete from clients
 
 CREATE TABLE booking_history (
     id SERIAL PRIMARY KEY,
-    client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE,
+    booking_id INTEGER NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
+    client_id INTEGER REFERENCES clients(id),
+    box_id INTEGER REFERENCES wash_boxes(id),
+	car_wash_name TEXT,
+    service_name TEXT NOT NULL,
+    service_description TEXT,
+    service_price NUMERIC(10, 2),
+    service_duration INTEGER,
     start_time TIMESTAMP NOT NULL,
     end_time TIMESTAMP NOT NULL,
-	status TEXT DEFAULT 'Активно' CHECK (status IN ('Активно', 'Просроченно', 'Завершено'))
+    status TEXT DEFAULT 'Активно' CHECK (status IN ('Активно', 'Просроченно', 'Завершено'))
+);
+
+CREATE TABLE business_accounts (
+    id SERIAL PRIMARY KEY, 
+    client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE, 
+    registration_certificate TEXT NOT NULL, 
+    car_wash_name TEXT NOT NULL,
+    address TEXT NOT NULL,
+    city_district TEXT NOT NULL,
+    working_hours TEXT NOT NULL,
+    ownership_proof TEXT NOT NULL, 
+    car_wash_logo TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE verification_codes (
@@ -143,11 +162,7 @@ INSERT INTO booking_services (booking_id, service_id) VALUES
 select * from booking_services
 
 -- Услуги
-INSERT INTO services (name, description, price, duration_minutes) VALUES
-('Мойка кузова', 'Полная мойка внешней части автомобиля', 500.00, 20),
-('Химчистка салона', 'Глубокая чистка сидений и обивки', 1500.00, 60),
-('Полировка фар', 'Полировка передних фар', 800.00, 30),
-('Комплексная мойка', 'Мойка кузова и салона', 2000.00, 90);
+
 
 -- Мойки (боксы)
 INSERT INTO wash_boxes (name, location, image_url) VALUES
