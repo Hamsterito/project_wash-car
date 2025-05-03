@@ -172,10 +172,10 @@ def verify_code():
     code = data.get("code")
     phone = data.get("phone")
     email = data.get("email")
-
+    
     if not code or not (phone or email):
         return jsonify({"success": False, "error": "Не хватает данных"}), 400
-
+    
     try:
         query = """
             SELECT c.id, v.expires_at FROM clients c
@@ -184,26 +184,25 @@ def verify_code():
         """
         cursor.execute(query, (code, phone, phone, email, email))
         result = cursor.fetchone()
-
+        
         if not result:
-            return jsonify({"success": False, "error": "Код или контакт неверны"}), 400
-
+            return jsonify({"success": False, "error": "Код неверен"}), 400
+        
         client_id, expires_at = result
-
+        
         if expires_at < datetime.now():
             cursor.execute("DELETE FROM verification_codes WHERE client_id = %s", (client_id,))
             cursor.execute("DELETE FROM clients WHERE id = %s", (client_id,))
             conn.commit()
             return jsonify({"success": False, "error": "Код истёк"}), 400
-
+        
         cursor.execute("UPDATE clients SET is_verified = TRUE WHERE id = %s", (client_id,))
-        print(client_id)
         conn.commit()
         cursor.execute("DELETE FROM verification_codes WHERE client_id = %s", (client_id,))
         conn.commit()
-
-        return jsonify({"success": True})
-
+        
+        return jsonify({"success": True, "client_id": client_id})
+    
     except Exception as e:
         print(f"[verify_code] Ошибка: {e}")
         conn.rollback()
@@ -251,6 +250,8 @@ def send_code():
 def save_user():
     data = request.get_json()
     contact = data.get("contact")
+    firstName = data.get("firstName")
+    lastName = data.get("lastName")
     password = data.get("password")
     contact_type = data.get("type")
 
@@ -263,7 +264,8 @@ def save_user():
     password_hash = generate_password_hash(password)
 
     try:
-        cursor.execute("UPDATE clients SET password = %s WHERE phone = %s or email = %s" , (password_hash, phone, email))
+        cursor.execute('''UPDATE clients SET first_name = %s, last_name = %s, password = %s 
+                       WHERE phone = %s or email = %s''' , (firstName, lastName, password_hash, phone, email))
         conn.commit()   
         return jsonify({"success": True})
     except Exception as e:
@@ -554,27 +556,32 @@ def get_services():
         print(f"Error fetching services: {str(e)}")
         return jsonify({"error": "Не удалось получить список услуг"}), 500
     
-# ИНформация о пользователе
 @app.route("/api/user-info", methods=["GET"])
 def get_user_info_fixed():
-    user_id = 2 
+    client_id = request.args.get("client_id")
+    
+    if not client_id or not client_id.isdigit():
+        return jsonify({"success": False, "error": "Неверный client_id"}), 400
+    
+    client_id = int(client_id)
+    
     try:
         cursor.execute(
             """
-            SELECT id, first_name, last_name, phone, email, status, 
-                   COALESCE(photo_url, 'src/assets/fotoprofila.jpg') AS photo_url
+            SELECT id, first_name, last_name, phone, email, status,
+                    COALESCE(photo_url, 'src/assets/fotoprofila.jpg') AS photo_url
             FROM clients
             WHERE id = %s
             """,
-            (user_id,)
+            (client_id,)
         )
         user = cursor.fetchone()
-
+        
         if not user:
             return jsonify({"success": False, "error": "Пользователь не найден"}), 404
-
+        
         photo_url = f"/{user[6]}"
-
+        
         user_data = {
             "id": user[0],
             "first_name": user[1],
@@ -582,9 +589,9 @@ def get_user_info_fixed():
             "phone": user[3],
             "email": user[4],
             "status": user[5],
-            "photo_url": photo_url, 
+            "photo_url": photo_url,
         }
-
+        
         return jsonify({"success": True, "user": user_data})
     except Exception as e:
         print(f"Ошибка при получении информации о пользователе: {e}")
@@ -601,8 +608,8 @@ def update_user_info():
         phone = data.get("phone")
         email = data.get("email")
 
-        if not user_id or not all([first_name, last_name, phone, email]):
-            return jsonify({"success": False, "error": "Недостаточно данных"}), 400
+        # if not user_id or not all([first_name, last_name, phone, email]):
+        #     return jsonify({"success": False, "error": "Недостаточно данных"}), 400
 
         cursor.execute(
             """
@@ -671,7 +678,11 @@ def upload_photo():
 @app.route("/api/create-business-account", methods=["POST"])
 def create_business_account():
     try:
-        client_id = 2
+        client_id = request.form.get("client_id")
+        if not client_id or not client_id.isdigit():
+            return jsonify({"success": False, "error": "Неверный client_id"}), 400
+        client_id = int(client_id)
+
         
         if 'registrationCertificate' not in request.files or 'ownershipProof' not in request.files or 'logo' not in request.files:
             return jsonify({"success": False, "error": "Не все файлы загружены"}), 400

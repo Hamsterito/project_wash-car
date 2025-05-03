@@ -17,10 +17,10 @@ function CarWashCard({ name, address, image }) {
 export default function CreateBusinessModal({ onClose }) {
   const [formData, setFormData] = useState({
     registrationCertificate: null,
-    carWashName: '',
-    address: '',
-    cityDistrict: '',
-    workingHours: '',
+    carWashName: "",
+    address: "",
+    cityDistrict: "",
+    workingHours: "",
     ownershipProof: null,
     logo: null,
   });
@@ -49,7 +49,7 @@ export default function CreateBusinessModal({ onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isFormValid()) {
-      alert('Пожалуйста, заполните все поля!');
+      alert("Пожалуйста, заполните все поля!");
       return;
     }
 
@@ -59,15 +59,25 @@ export default function CreateBusinessModal({ onClose }) {
     formDataToSend.append("address", formData.address);
     formDataToSend.append("cityDistrict", formData.cityDistrict);
     formDataToSend.append("workingHours", formData.workingHours);
-    formDataToSend.append("registrationCertificate", formData.registrationCertificate);
+    formDataToSend.append(
+      "registrationCertificate",
+      formData.registrationCertificate
+    );
     formDataToSend.append("ownershipProof", formData.ownershipProof);
     formDataToSend.append("logo", formData.logo);
 
     try {
-      const response = await fetch("http://localhost:5000/api/create-business-account", {
-        method: "POST",
-        body: formDataToSend,
-      });
+      const clientId = localStorage.getItem("client_id");
+      const formDataToSend = new FormData(formElement);
+      formDataToSend.append("client_id", clientId);
+
+      const response = await fetch(
+        "http://localhost:5000/api/create-business-account",
+        {
+          method: "POST",
+          body: formDataToSend,
+        }
+      );
 
       const data = await response.json();
       if (data.success) {

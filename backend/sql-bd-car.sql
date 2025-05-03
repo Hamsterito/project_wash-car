@@ -8,8 +8,6 @@ CREATE TABLE clients (
     status TEXT DEFAULT 'Пользователь',
     photo_url TEXT
 );
-select * from verification_codes
-delete from clients
 
 CREATE TABLE booking_history (
     id SERIAL PRIMARY KEY,
@@ -47,9 +45,6 @@ CREATE TABLE verification_codes (
     expires_at timestamp 
 );
 
-truncate clients cascade
-select * from services
-
 CREATE TABLE services (
     id SERIAL PRIMARY KEY,
     wash_box_id INTEGER NOT NULL REFERENCES wash_boxes(id) ON DELETE CASCADE,
@@ -74,7 +69,6 @@ CREATE TABLE box_availability (
     work_end TIME NOT NULL,
 	max_slots INTEGER DEFAULT 1
 );
-delete from box_availability
 
 -- Бокс 1: понедельник-пятница, 09:00–21:00
 INSERT INTO box_availability (wash_box_id, weekday, work_start, work_end, max_slots)
@@ -90,16 +84,6 @@ INSERT INTO box_availability (wash_box_id, weekday, work_start, work_end,max_slo
 VALUES 
 (2, 5, '10:00', '18:00',2),  -- Суббота
 (2, 6, '10:00', '18:00',2);  -- Воскресенье
-
-
-select * from bookings
-
-SELECT max_slots FROM box_availability
-WHERE wash_box_id = 2
-AND weekday = 3
-AND work_start <= '09:30:00'
-AND work_end >= '10:30:00'
-
 
 CREATE TABLE booking_services (
     booking_id INTEGER NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
@@ -127,9 +111,6 @@ CREATE TABLE admins (
     phone TEXT
 );
 
-
-drop table bookings cascade
-select * from booking_services
 
 -- Тест
 -- Вставляем мойки

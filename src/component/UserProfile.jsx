@@ -4,8 +4,6 @@ import defaultAvatar from "../assets/fotoprofila.jpg";
 export default function UserProfile({
   isEditing,
   handleEdit,
-  handleChange,
-  handleImageChange,
   handleLogout,
   setIsEditing,
 }) {
@@ -17,11 +15,39 @@ export default function UserProfile({
     email: '',
   });
   const [userStatus, setUserStatus] = useState('');
+  const [clientId, setClientId] = useState(null);
+  
+  useEffect(() => {
+    const storedClientId = localStorage.getItem("client_id");
+    if (storedClientId) {
+      if (storedClientId.trim() !== '') {
+        setClientId(storedClientId);
+      } else {
+        console.error("Ошибка: client_id пустой");
+        handleLogout();
+      }
+    } else {
+      console.error("Ошибка: client_id не найден в localStorage");
+      handleLogout();
+    }
+  }, [handleLogout]);
 
   useEffect(() => {
+    if (!clientId) return;
+    
     async function fetchUserInfo() {
       try {
-        const response = await fetch('http://localhost:5000/api/user-info');
+        const response = await fetch(`http://localhost:5000/api/user-info?client_id=${clientId}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Ошибка HTTP: ${response.status}`);
+        }
+        
         const data = await response.json();
 
         if (data.success) {
@@ -34,19 +60,27 @@ export default function UserProfile({
           setUserStatus(data.user.status);
 
           const photoPath = data.user.photo_url?.trim();
-          setAvatar(photoPath ? photoPath : defaultAvatar); // Используем путь из данных или дефолтное изображение
+          setAvatar(photoPath ? photoPath : defaultAvatar);
         } else {
           console.error(data.error);
         }
       } catch (error) {
         console.error('Ошибка при получении данных пользователя:', error);
+        if (error.message.includes('401') || error.message.includes('403')) {
+          handleLogout(); 
+        }
       }
     }
 
     fetchUserInfo();
-  }, []);
+  }, [clientId, handleLogout]);
 
   const handleSave = async () => {
+    if (!clientId) {
+      console.error("Ошибка: client_id не доступен");
+      return;
+    }
+    
     try {
       const response = await fetch('http://localhost:5000/api/update-user', {
         method: 'PUT',
@@ -54,16 +88,20 @@ export default function UserProfile({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          id: 2,
+          client_id: clientId,
           first_name: formData.firstName,
           last_name: formData.lastName,
           phone: formData.phone,
           email: formData.email,
         }),
       });
-
+      
+      if (!response.ok) {
+        throw new Error(`Ошибка HTTP: ${response.status}`);
+      }
+      
       const data = await response.json();
-
+      
       if (data.success) {
         console.log('Информация обновлена:', data.message);
         setIsEditing(false);
@@ -74,13 +112,18 @@ export default function UserProfile({
       console.error('Ошибка при сохранении данных:', error);
     }
   };
-
+  
   const handleProfileImageChange = async (e) => {
+    if (!clientId) {
+      console.error("Ошибка: client_id не доступен");
+      return;
+    }
+    
     const file = e.target.files[0];
     if (file) {
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("user_id", 2); // ID пользователя (замените на динамический, если нужно)
+      formData.append("client_id", clientId);
 
       try {
         const response = await fetch("http://localhost:5000/api/upload-photo", {
@@ -88,9 +131,14 @@ export default function UserProfile({
           body: formData,
         });
 
+        if (!response.ok) {
+          throw new Error(`Ошибка HTTP: ${response.status}`);
+        }
+
         const data = await response.json();
         if (data.success) {
-          setAvatar(`/${data.photo_url}`); // Обновляем аватар на клиенте
+          const photoUrl = data.photo_url.startsWith('/') ? data.photo_url : `/${data.photo_url}`;
+          setAvatar(photoUrl);
           console.log("Фото успешно обновлено");
         } else {
           console.error("Ошибка при обновлении фото:", data.error);
@@ -100,6 +148,18 @@ export default function UserProfile({
       }
     }
   };
+
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: value
+    }));
+  };
+
+  if (!clientId) {
+    return <div className="loading">Загрузка данных пользователя...</div>;
+  }
 
   return (
     <div className="profile-section">
@@ -138,39 +198,30 @@ export default function UserProfile({
             name="lastName"
             placeholder="Фамилия"
             value={formData.lastName}
-            onChange={(e) =>
-              setFormData({ ...formData, lastName: e.target.value })
-            }
+            onChange={handleFormChange}
           />
           <input
             type="text"
             name="firstName"
             placeholder="Имя"
             value={formData.firstName}
-            onChange={(e) =>
-              setFormData({ ...formData, firstName: e.target.value })
-            }
+            onChange={handleFormChange}
           />
           <input
             type="text"
             name="phone"
             placeholder="Номер телефона"
             value={formData.phone}
-            onChange={(e) =>
-              setFormData({ ...formData, phone: e.target.value })
-            }
+            onChange={handleFormChange}
           />
           <input
             type="email"
             name="email"
             placeholder="Email"
             value={formData.email}
-            onChange={(e) =>
-              setFormData({ ...formData, email: e.target.value })
-            }
+            onChange={handleFormChange}
           />
 
-          {/* Кнопка для изменения фото профиля */}
           <div className="profile-image-upload">
             <label htmlFor="profileImage" className="btnq edit">
               Изменить фото профиля
