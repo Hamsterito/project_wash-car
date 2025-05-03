@@ -149,15 +149,15 @@ const AuthModal = ({  onClose, onSuccess  }) => {
             <h2>Создать учётную запись</h2>
             <input
               type="text"
-              placeholder="Имя"
-              value={formData.firstName}
-              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-            />
-            <input
-              type="text"
               placeholder="Фамилия"
               value={formData.lastName}
               onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+            />
+            <input
+              type="text"
+              placeholder="Имя"
+              value={formData.firstName}
+              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
             />
             <input
               type="text"
@@ -201,6 +201,8 @@ const AuthModal = ({  onClose, onSuccess  }) => {
         {mode === "code" && (
           <CodeVerification
             isPhone={isPhone}
+            firstName={formData.firstName}
+            lastName = {formData.lastName}
             contact={isPhone ? formData.phone : formData.email}
             code={formData.code}
             setCode={(newCode) => setFormData({ ...formData, code: newCode })}
