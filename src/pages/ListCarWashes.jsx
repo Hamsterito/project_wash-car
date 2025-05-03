@@ -6,6 +6,7 @@ import { useAuth } from "../component/AuthContext";
 
 const ListCarWashes = () => {
   const { userRole } = useAuth();
+  console.log(userRole);
   const [carWashData, setCarWashData] = useState([
     {
       id: 1,
@@ -64,7 +65,7 @@ const ListCarWashes = () => {
           name={wash.name}
           address={wash.address}
           image={wash.image}
-          userRole="business"
+          userRole={userRole}
         />
       ))}
 
