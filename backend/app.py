@@ -644,7 +644,7 @@ def upload_photo():
     if file and allowed_file(file.filename):
         try:
             filename = secure_filename(file.filename)
-            upload_folder = r'C:\Users\chika\OneDrive\Документы\car_wash\project_wash-car\public\images'
+            upload_folder = r'project_wash-car\public\images'
             os.makedirs(upload_folder, exist_ok=True)
             file_path = os.path.join(upload_folder, filename)
             print(f"Сохраняем файл в: {file_path}")
@@ -684,7 +684,7 @@ def create_business_account():
         if not all([car_wash_name, address, city_district, working_hours]):
             return jsonify({"success": False, "error": "Не все поля заполнены"}), 400
 
-        upload_folder = r'C:\Users\chika\OneDrive\Документы\car_wash\project_wash-car\public\images'
+        upload_folder = r'project_wash-car\public\images'
         os.makedirs(upload_folder, exist_ok=True)
 
         registration_certificate_file = request.files['registrationCertificate']
