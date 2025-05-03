@@ -2,6 +2,8 @@ import React, { useState } from "react";
 
 const CodeVerification = ({
   isPhone,
+  firstName,
+  lastName,
   contact,
   code,
   setCode,
@@ -11,17 +13,17 @@ const CodeVerification = ({
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
-
+  
   const handleSubmit = async () => {
     if (code.trim().length !== 6) {
       setErrors({ code: "Введите 6-значный код" });
       return;
     }
-
+    
     setLoading(true);
     setErrors({});
     setSuccessMessage("");
-
+    
     try {
       const response = await fetch("http://localhost:5000/api/verify-code", {
         method: "POST",
@@ -31,22 +33,26 @@ const CodeVerification = ({
           [isPhone ? "phone" : "email"]: contact,
         }),
       });
-
+      
       const data = await response.json();
-
+      
       if (data.success) {
         setSuccessMessage("Код подтверждён!");
-
+        
+        localStorage.setItem("client_id", data.client_id);
+        
         await fetch("http://localhost:5000/api/save-user", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             contact,
+            firstName,
+            lastName,
             password,
             type: isPhone ? "phone" : "email",
           }),
         });
-
+        
         setTimeout(() => onSuccess(), 1000);
       } else {
         setErrors({ code: data.error || "Неправильный код" });
@@ -57,7 +63,7 @@ const CodeVerification = ({
       setLoading(false);
     }
   };
-
+  
   return (
     <>
       <h2>Введите код</h2>
@@ -77,7 +83,7 @@ const CodeVerification = ({
           {successMessage}
         </span>
       )}
-
+      
       <button
         className="button-enter"
         onClick={handleSubmit}
