@@ -7,7 +7,7 @@ export const AuthProvider = ({ children }) => {
     !!localStorage.getItem("client_id")
   );
 
-  const [userRole, setUserRole] = useState(localStorage.getItem("role") || "user");
+  const [userRole, setUserRole] = useState(localStorage.getItem("admin") || "admin");
 
   return (
     <AuthContext.Provider value={{ isLoggedIn, setIsLoggedIn, userRole, setUserRole }}>

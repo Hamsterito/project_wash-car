@@ -6,8 +6,12 @@ CREATE TABLE clients (
     phone TEXT UNIQUE,
     email TEXT,
     status TEXT DEFAULT 'Пользователь',
-    photo_url TEXT
+    photo_url TEXT,
+    is_verified BOOLEAN DEFAULT FALSE
 );
+
+SELECT * FROM business_accounts
+
 
 CREATE TABLE booking_history (
     id SERIAL PRIMARY KEY,
@@ -34,8 +38,11 @@ CREATE TABLE business_accounts (
     working_hours TEXT NOT NULL,
     ownership_proof TEXT NOT NULL, 
     car_wash_logo TEXT,
+	verified BOOLEAN DEFAULT FALSE,
+	status TEXT DEFAULT 'На рассмотрении' CHECK (status IN ('На рассмотрении', 'Принят', 'Отклонен')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 
 CREATE TABLE verification_codes (
     id serial PRIMARY KEY,
@@ -44,7 +51,7 @@ CREATE TABLE verification_codes (
     created_at timestamp,
     expires_at timestamp 
 );
-
+SELECT * FROM verification_codes
 CREATE TABLE services (
     id SERIAL PRIMARY KEY,
     wash_box_id INTEGER NOT NULL REFERENCES wash_boxes(id) ON DELETE CASCADE,

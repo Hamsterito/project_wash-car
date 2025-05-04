@@ -16,7 +16,8 @@ export default function UserProfile({
   });
   const [userStatus, setUserStatus] = useState('');
   const [clientId, setClientId] = useState(null);
-  
+  const [loading, setLoading] = useState(true); // Состояние загрузки
+
   useEffect(() => {
     const storedClientId = localStorage.getItem("client_id");
     if (storedClientId) {
@@ -34,23 +35,15 @@ export default function UserProfile({
 
   useEffect(() => {
     if (!clientId) return;
-    
+
     async function fetchUserInfo() {
+      setLoading(true);
       try {
-        const response = await fetch(`http://localhost:5000/api/user-info?client_id=${clientId}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        
-        if (!response.ok) {
-          throw new Error(`Ошибка HTTP: ${response.status}`);
-        }
-        
+        const response = await fetch(`http://localhost:5000/api/user-info?client_id=${clientId}`);
         const data = await response.json();
 
         if (data.success) {
+          console.log("Полученные данные пользователя:", data.user); // Лог для проверки
           setFormData({
             lastName: data.user.last_name,
             firstName: data.user.first_name,
@@ -62,102 +55,20 @@ export default function UserProfile({
           const photoPath = data.user.photo_url?.trim();
           setAvatar(photoPath ? photoPath : defaultAvatar);
         } else {
-          console.error(data.error);
+          console.error("Ошибка API:", data.error);
+          alert("Ошибка: " + data.error); // Показываем сообщение об ошибке
         }
       } catch (error) {
-        console.error('Ошибка при получении данных пользователя:', error);
-        if (error.message.includes('401') || error.message.includes('403')) {
-          handleLogout(); 
-        }
+        console.error("Ошибка при получении данных пользователя:", error);
+      } finally {
+        setLoading(false);
       }
     }
 
     fetchUserInfo();
-  }, [clientId, handleLogout]);
+  }, [clientId]);
 
-  const handleSave = async () => {
-    if (!clientId) {
-      console.error("Ошибка: client_id не доступен");
-      return;
-    }
-    
-    try {
-      const response = await fetch('http://localhost:5000/api/update-user', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          client_id: clientId,
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          phone: formData.phone,
-          email: formData.email,
-        }),
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Ошибка HTTP: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        console.log('Информация обновлена:', data.message);
-        setIsEditing(false);
-      } else {
-        console.error('Ошибка при обновлении:', data.error);
-      }
-    } catch (error) {
-      console.error('Ошибка при сохранении данных:', error);
-    }
-  };
-  
-  const handleProfileImageChange = async (e) => {
-    if (!clientId) {
-      console.error("Ошибка: client_id не доступен");
-      return;
-    }
-    
-    const file = e.target.files[0];
-    if (file) {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("client_id", clientId);
-
-      try {
-        const response = await fetch("http://localhost:5000/api/upload-photo", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!response.ok) {
-          throw new Error(`Ошибка HTTP: ${response.status}`);
-        }
-
-        const data = await response.json();
-        if (data.success) {
-          const photoUrl = data.photo_url.startsWith('/') ? data.photo_url : `/${data.photo_url}`;
-          setAvatar(photoUrl);
-          console.log("Фото успешно обновлено");
-        } else {
-          console.error("Ошибка при обновлении фото:", data.error);
-        }
-      } catch (error) {
-        console.error("Ошибка при загрузке фото:", error);
-      }
-    }
-  };
-
-  const handleFormChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prevData => ({
-      ...prevData,
-      [name]: value
-    }));
-  };
-
-  if (!clientId) {
+  if (loading) {
     return <div className="loading">Загрузка данных пользователя...</div>;
   }
 
@@ -193,54 +104,7 @@ export default function UserProfile({
         </>
       ) : (
         <div className="edit-form">
-          <input
-            type="text"
-            name="lastName"
-            placeholder="Фамилия"
-            value={formData.lastName}
-            onChange={handleFormChange}
-          />
-          <input
-            type="text"
-            name="firstName"
-            placeholder="Имя"
-            value={formData.firstName}
-            onChange={handleFormChange}
-          />
-          <input
-            type="text"
-            name="phone"
-            placeholder="Номер телефона"
-            value={formData.phone}
-            onChange={handleFormChange}
-          />
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={formData.email}
-            onChange={handleFormChange}
-          />
-
-          <div className="profile-image-upload">
-            <label htmlFor="profileImage" className="btnq edit">
-              Изменить фото профиля
-            </label>
-            <input
-              type="file"
-              id="profileImage"
-              accept="image/*"
-              style={{ display: 'none' }}
-              onChange={handleProfileImageChange}
-            />
-          </div>
-
-          <button className="btnq save" onClick={handleSave}>
-            Сохранить изменения
-          </button>
-          <button className="btnq cancel" onClick={() => setIsEditing(false)}>
-            Отменить
-          </button>
+          {/* Форма редактирования */}
         </div>
       )}
     </div>
