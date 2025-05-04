@@ -5,7 +5,7 @@ const CitySelector = () => {
   const [selectedCity, setSelectedCity] = useState("Астана");
   const [showDropdown, setShowDropdown] = useState(false);
 
-  const cities = ["Астана", "Алматы", "Экибастуз", "Варшава"];
+  const cities = ["Астана"];
 
   const toggleDropdown = () => setShowDropdown(!showDropdown);
   const handleCitySelect = (city) => {
