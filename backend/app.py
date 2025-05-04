@@ -162,7 +162,7 @@ def api_login():
         if not contact or not password:
             return jsonify({'success': False, 'message': 'Неверные данные'}), 400
 
-        with conn.cursor() as cursor:
+        with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
             cursor.execute("""
                 SELECT id, password, is_verified 
                 FROM clients 
