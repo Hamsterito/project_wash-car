@@ -12,37 +12,41 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const fetchUserRole = async () => {
       const clientId = localStorage.getItem("client_id");
-      
-      if (clientId) {
-        setIsLoading(true);
-        try {
-          const response = await fetch("http://localhost:5000/api/get-role", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ clientId }),
-          });
 
-          const data = await response.json();
-          
-          if (data.success) {
-            const role = data.role.toLowerCase();
-            localStorage.setItem("role", role);
-            setUserRole(role);
-          } else {
-            console.error("Failed to fetch user role:", data.error);
-          }
-        } catch (error) {
-          console.error("Error fetching user role:", error);
-        } finally {
-          setIsLoading(false);
+      if (!clientId) return;
+
+      setIsLoading(true);
+      try {
+        const response = await fetch("http://localhost:5000/api/get-role", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ clientId }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Ошибка сервера: ${response.status}`);
         }
+
+        const data = await response.json();
+
+        if (data.success && data.role) {
+          const role = data.role.toLowerCase();
+          localStorage.setItem("role", role);
+          setUserRole(role);
+        } else {
+             setIsLoading(false);
+        }
+      } catch (error) {
+      } finally {
+        setIsLoading(false);
       }
     };
 
     if (isLoggedIn) {
-      fetchUserRole();
+      const timeout = setTimeout(fetchUserRole, 200);
+      return () => clearTimeout(timeout);
     }
   }, [isLoggedIn]);
 
