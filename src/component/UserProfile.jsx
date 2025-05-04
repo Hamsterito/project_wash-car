@@ -8,12 +8,16 @@ export default function UserProfile({
   setIsEditing,
 }) {
   const [avatar, setAvatar] = useState(defaultAvatar);
+  const [previewAvatar, setPreviewAvatar] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+
   const [formData, setFormData] = useState({
     lastName: "",
     firstName: "",
     phone: "",
     email: "",
   });
+
   const [userStatus, setUserStatus] = useState("");
   const [clientId, setClientId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -82,6 +86,15 @@ export default function UserProfile({
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleProfileImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setSelectedFile(file);
+    const previewUrl = URL.createObjectURL(file);
+    setPreviewAvatar(previewUrl);
+  };
+
   const handleSave = async () => {
     try {
       const response = await fetch("http://localhost:5000/api/update-user", {
@@ -97,34 +110,35 @@ export default function UserProfile({
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Ошибка обновления");
-      console.log("Профиль обновлен:", data.message);
+
+      // Загружаем фото, если был выбран файл
+      if (selectedFile) {
+        const imageData = new FormData();
+        imageData.append("file", selectedFile);
+        imageData.append("user_id", clientId);
+
+        const uploadResponse = await fetch("http://localhost:5000/api/upload-photo", {
+          method: "POST",
+          body: imageData,
+        });
+        const uploadData = await uploadResponse.json();
+        if (!uploadResponse.ok) throw new Error(uploadData.error || "Ошибка загрузки");
+
+        setAvatar(uploadData.photo_url);
+      }
+
+      setSelectedFile(null);
+      setPreviewAvatar(null);
       setIsEditing(false);
     } catch (error) {
-      console.error("Ошибка обновления:", error);
+      console.error("Ошибка сохранения профиля:", error);
     }
   };
 
-  const handleProfileImageChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const imageData = new FormData();
-    imageData.append("file", file);
-    imageData.append("user_id", clientId);
-    console.log(clientId)
-
-    try {
-      const response = await fetch("http://localhost:5000/api/upload-photo", {
-        method: "POST",
-        body: imageData,
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Ошибка загрузки");
-      setAvatar(data.photo_url);
-      console.log("Фото успешно обновлено");
-    } catch (error) {
-      console.error("Ошибка загрузки:", error);
-    }
+  const handleCancel = () => {
+    setIsEditing(false);
+    setSelectedFile(null);
+    setPreviewAvatar(null);
   };
 
   if (loading) {
@@ -134,7 +148,7 @@ export default function UserProfile({
   return (
     <div className="profile-section">
       <div className="avatar-section">
-        <img src={avatar} alt="Аватар" className="avatar" />
+        <img src={previewAvatar || avatar} alt="Аватар" className="avatar" />
         {isEditing && (
           <label className="avatar-upload-label">
             <input
@@ -197,7 +211,7 @@ export default function UserProfile({
             <button className="btnq save" onClick={handleSave}>
               Сохранить
             </button>
-            <button className="btnq cancel" onClick={() => setIsEditing(false)}>
+            <button className="btnq cancel" onClick={handleCancel}>
               Отмена
             </button>
           </div>
