@@ -4,23 +4,22 @@ import ViewApplicationModal from './ViewApplicationModal';
 const ApplicationsSection = () => {
   const [applications, setApplications] = useState([]);
   const [selectedApp, setSelectedApp] = useState(null);
-  const [loading, setLoading] = useState(true); // Состояние загрузки
-
+  const [loading, setLoading] = useState(true); 
   useEffect(() => {
     async function fetchApplications() {
-      setLoading(true); // Устанавливаем состояние загрузки
+      setLoading(true); 
       try {
         const response = await fetch("http://localhost:5000/api/business-requests");
         const data = await response.json();
 
-        setTimeout(() => { // Искусственная задержка
+        setTimeout(() => { 
           if (data.success) {
             setApplications(data.data);
           } else {
             console.error("Ошибка при загрузке заявок:", data.error);
           }
-          setLoading(false); // Завершаем состояние загрузки
-        }, 500); // Задержка в 500 мс
+          setLoading(false); 
+        }, 500); 
       } catch (error) {
         console.error("Ошибка при загрузке заявок:", error);
         setLoading(false);

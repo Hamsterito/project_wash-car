@@ -27,22 +27,22 @@
     transition: transform 0.2s ease;
 }
 
-  .history-card::before {
+.history-card::before {
     content: "";
     position: absolute;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.3); 
+    background-color: rgba(0, 0, 0, 0.3);
     z-index: 0;
-  }
-  
-  .history-card > * {
+}
+
+.history-card>* {
     position: relative;
     z-index: 1;
-  }  
+}
 
-    .history-card:hover {
-        transform: scale(1.01);
-    } */
+.history-card:hover {
+    transform: scale(1.01);
+}
 
 .card-header {
     font-weight: 500;
