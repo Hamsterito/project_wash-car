@@ -6,6 +6,7 @@ import MainPage from "./pages/MainPage";
 import ListCarWashes from "./pages/ListCarWashes"
 import CarWashSchedule from "./pages/CarWashSchedule";
 import { UserRoleContext } from "./component/UserRoleContext";
+import Footer from "./component/Footer";
 
 const App = () => {
   const userRole = 'user'; 
@@ -20,6 +21,7 @@ const App = () => {
           <Route path="/list-car-washes" element={<ListCarWashes />} />
           <Route path="/carwash/:id" element={<CarWashSchedule />} />
         </Routes>
+        <Footer />
       </Router>
     </UserRoleContext.Provider>
   );
