@@ -629,14 +629,25 @@ def update_user_info():
         user_id = data.get("client_id")
         first_name = data.get("first_name")
         last_name = data.get("last_name")
-        phone = data.get("phone")
-        email = data.get("email")
+        phone = data.get("phone") or None
+        email = data.get("email") or None
+
         print(data)
+
+        # Проверка: хотя бы одно поле из email или phone должно быть заполнено
+        if not phone and not email:
+            return jsonify({
+                "success": False,
+                "error": "Необходимо указать хотя бы телефон или email"
+            }), 400
 
         cursor.execute(
             """
             UPDATE clients
-            SET first_name = %s, last_name = %s, phone = %s, email = %s
+            SET first_name = %s,
+                last_name = %s,
+                phone = %s,
+                email = %s
             WHERE id = %s
             """,
             (first_name, last_name, phone, email, user_id)
@@ -648,6 +659,7 @@ def update_user_info():
         conn.rollback()
         print(f"Ошибка при обновлении информации о пользователе: {e}")
         return jsonify({"success": False, "error": "Ошибка сервера"}), 500
+
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
