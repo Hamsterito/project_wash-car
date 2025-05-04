@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './Profil.css';
-import { useNavigate } from 'react-router-dom';
+import { data, useNavigate } from 'react-router-dom';
 import WashHistorySection from '../component/WashHistorySection';
 import UserProfile from '../component/UserProfile';
 import CreateBusinessSection from '../component/CreateBusinessSection';
@@ -12,7 +12,7 @@ import { useAuth } from "../component/AuthContext";
 import HistoryApplicationsSection from '../component/HistoryApplicationsSection';  
 
 export default function ProfilePage() {
-  const { isLoggedIn, setIsLoggedIn, clientId } = useAuth();
+  const { isLoggedIn, setIsLoggedIn } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
   const {userRole, setUserRole} = useAuth('admin'); //'user', 'business', 'manager', 'admin'
@@ -25,14 +25,19 @@ export default function ProfilePage() {
   const [avatar, setAvatar] = useState('https://via.placeholder.com/150');
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [businessStatus, setBusinessStatus] = useState(null); // Новый state для проверки статуса бизнес-аккаунта
+
+  
 
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchUserData();
-  }, [clientId]);
+    checkBusinessStatus(); // Проверка статуса бизнес-аккаунта
+  }, []);
 
   const fetchUserData = async () => {
+    const clientId = localStorage.getItem("client_id")
     if (!clientId) {
       setLoading(false);
       return;
@@ -69,6 +74,25 @@ export default function ProfilePage() {
       setLoading(false);
     }
   };
+
+  const checkBusinessStatus = async () => {
+    const client_id = localStorage.getItem("client_id")
+    console.log("Проверка статуса бизнес-аккаунта для client_id:", client_id);
+    if (!client_id) return;
+    try {
+      const response = await fetch(`http://localhost:5000/api/check-business-status?client_id=${client_id}`);
+      const data = await response.json();
+  
+      if (data.success) {
+        setBusinessStatus(data.status);
+        console.log("Business status:", data);
+      } else {
+        console.error('Ошибка при проверке статуса бизнес-аккаунта:', data.error);
+      }
+    } catch (error) {
+      console.error('Ошибка при проверке статуса бизнес-аккаунта:', error);
+    }
+  };  
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -167,17 +191,25 @@ export default function ProfilePage() {
         />
       </div>
       
-      {userRole === 'user' && !isApproved && (
-        <CreateBusinessSection
-          isModalOpen={isModalOpen}
-          setIsModalOpen={setIsModalOpen}
-          onApprove={() => setIsApproved(true)}
-        />
-      )}
+      {userRole === 'user' && (
+  businessStatus === 'На рассмотрении' ? (
+    <RequestToBeConsidered />
+  ) : businessStatus === 'Отклонен' ? (
+    <EditBusinessSection
+      isModalOpen={isModalOpen}
+      setIsModalOpen={setIsModalOpen}
+      onResubmit={() => setBusinessStatus('На рассмотрении')}
+    />
+  ) : (
+    <CreateBusinessSection
+      isModalOpen={isModalOpen}
+      setIsModalOpen={setIsModalOpen}
+      onApprove={() => setBusinessStatus('На рассмотрении')}
+    />
+  )
+)}
 
-      {userRole === 'user' && isApproved && (
-        <RequestToBeConsidered />
-      )}
+
       
       {userRole === 'admin' && <ApplicationsSection/>}
       {userRole === 'admin' && <HistoryApplicationsSection/>}
