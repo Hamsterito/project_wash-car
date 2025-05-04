@@ -741,83 +741,125 @@ def create_business_account():
         print(f"Файлы успешно сохранены: {registration_certificate_path}, {ownership_proof_path}, {car_wash_logo_path}")
 
         # Вставка данных в базу
+        # Проверка, есть ли отклонённая заявка у клиента
         cursor.execute(
-            """
-            INSERT INTO business_accounts (
-                client_id,
-                registration_certificate,
-                car_wash_name,
-                address,
-                city_district,
-                working_hours,
-                ownership_proof,
-                car_wash_logo
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            """,
-            (
-                client_id,
-                f"business account information/{secure_filename(registration_certificate_file.filename)}",
-                car_wash_name,
-                address,
-                city_district,
-                working_hours,
-                f"business account information/{secure_filename(ownership_proof_file.filename)}",
-                f"business account information/{secure_filename(car_wash_logo_file.filename)}"
-            )
+            "SELECT id FROM business_accounts WHERE client_id = %s AND status = 'Отклонен'",
+            (client_id,)
         )
-        conn.commit()
+        existing_account = cursor.fetchone()
 
-        return jsonify({"success": True, "message": "Бизнес-аккаунт успешно создан"})
+        if existing_account:
+            # Обновление существующей отклонённой заявки
+            cursor.execute(
+                """
+                UPDATE business_accounts
+                SET
+                    registration_certificate = %s,
+                    car_wash_name = %s,
+                    address = %s,
+                    city_district = %s,
+                    working_hours = %s,
+                    ownership_proof = %s,
+                    car_wash_logo = %s,
+                    status = 'На рассмотрении',
+                    verified = FALSE,
+                    created_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+                """,
+                (
+                    f"business account information/{secure_filename(registration_certificate_file.filename)}",
+                    car_wash_name,
+                    address,
+                    city_district,
+                    working_hours,
+                    f"business account information/{secure_filename(ownership_proof_file.filename)}",
+                    f"business account information/{secure_filename(car_wash_logo_file.filename)}",
+                    existing_account[0]
+                )
+            )
+            conn.commit()
+            return jsonify({"success": True, "message": "Заявка обновлена после отклонения"})
+
+        else:
+            # Вставка новой заявки
+            cursor.execute(
+                """
+                INSERT INTO business_accounts (
+                    client_id,
+                    registration_certificate,
+                    car_wash_name,
+                    address,
+                    city_district,
+                    working_hours,
+                    ownership_proof,
+                    car_wash_logo
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    client_id,
+                    f"business account information/{secure_filename(registration_certificate_file.filename)}",
+                    car_wash_name,
+                    address,
+                    city_district,
+                    working_hours,
+                    f"business account information/{secure_filename(ownership_proof_file.filename)}",
+                    f"business account information/{secure_filename(car_wash_logo_file.filename)}"
+                )
+            )
+            conn.commit()
+            return jsonify({"success": True, "message": "Бизнес-аккаунт успешно создан"})
+
     except Exception as e:
-        conn.rollback()
-        print(f"Ошибка при создании бизнес-аккаунта: {e}")
+        # Обработка ошибок
         return jsonify({"success": False, "error": str(e)}), 500
+
 
 @app.route("/api/business-requests", methods=["GET"])
 def get_business_requests():
     try:
-        cursor.execute("""
-            SELECT 
-                ba.id AS request_id,
-                c.first_name || ' ' || c.last_name AS client_name,
-                COALESCE(c.phone, c.email) AS contact_info,
-                ba.car_wash_name,
-                ba.address,
-                ba.city_district,
-                ba.working_hours,
-                ba.registration_certificate,
-                ba.ownership_proof,
-                ba.car_wash_logo,
-                ba.created_at,
-                ba.verified,
-                ba.status
-            FROM business_accounts ba
-            LEFT JOIN clients c ON ba.client_id = c.id
-            WHERE ba.verified = FALSE
-            ORDER BY ba.created_at DESC
-        """)
-        requests = cursor.fetchall()
+        with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+            cursor.execute("""
+                SELECT 
+                    ba.id AS request_id,
+                    c.first_name || ' ' || c.last_name AS client_name,
+                    COALESCE(c.phone, c.email) AS contact_info,
+                    ba.car_wash_name,
+                    ba.address,
+                    ba.city_district,
+                    ba.working_hours,
+                    ba.registration_certificate,
+                    ba.ownership_proof,
+                    ba.car_wash_logo,
+                    ba.created_at,
+                    ba.verified,
+                    ba.status
+                FROM business_accounts ba
+                LEFT JOIN clients c ON ba.client_id = c.id
+                WHERE ba.verified = FALSE
+                ORDER BY ba.created_at DESC
+            """)
+            requests = cursor.fetchall()
 
-        result = [
-            {
-                "request_id": row[0],
-                "client_name": row[1],
-                "contact_info": row[2],
-                "car_wash_name": row[3],
-                "address": row[4],
-                "city_district": row[5],
-                "working_hours": row[6],
-                "registration_certificate": row[7],
-                "ownership_proof": row[8],
-                "car_wash_logo": row[9],
-                "created_at": row[10],
-                "verified": row[11],
-                "status": row[12]
-            }
-            for row in requests
-        ]
+            result = [
+                {
+                    "request_id": row[0],
+                    "client_name": row[1],
+                    "contact_info": row[2],
+                    "car_wash_name": row[3],
+                    "address": row[4],
+                    "city_district": row[5],
+                    "working_hours": row[6],
+                    "registration_certificate": row[7],
+                    "ownership_proof": row[8],
+                    "car_wash_logo": row[9],
+                    "created_at": row[10],
+                    "verified": row[11],
+                    "status": row[12]
+                }
+                for row in requests
+            ]
 
-        return jsonify({"success": True, "data": result}), 200
+            return jsonify({"success": True, "data": result}), 200
     except Exception as e:
         print(f"Ошибка при получении заявок на бизнес-аккаунты: {e}")
         return jsonify({"success": False, "error": "Ошибка сервера"}), 500
@@ -846,46 +888,47 @@ def update_request_status(request_id):
 @app.route("/api/verified-business-accounts", methods=["GET"])
 def get_verified_business_accounts():
     try:
-        cursor.execute("""
-            SELECT 
-                ba.id AS request_id,
-                c.first_name || ' ' || c.last_name AS client_name,
-                COALESCE(c.phone, c.email) AS contact_info,
-                ba.car_wash_name,
-                ba.address,
-                ba.city_district,
-                ba.working_hours,
-                ba.registration_certificate,
-                ba.ownership_proof,
-                ba.car_wash_logo,
-                ba.created_at,
-                ba.status
-            FROM business_accounts ba
-            LEFT JOIN clients c ON ba.client_id = c.id
-            WHERE ba.verified = TRUE
-            ORDER BY ba.created_at DESC
-        """)
-        requests = cursor.fetchall()
+        with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+            cursor.execute("""
+                SELECT 
+                    ba.id AS request_id,
+                    c.first_name || ' ' || c.last_name AS client_name,
+                    COALESCE(c.phone, c.email) AS contact_info,
+                    ba.car_wash_name,
+                    ba.address,
+                    ba.city_district,
+                    ba.working_hours,
+                    ba.registration_certificate,
+                    ba.ownership_proof,
+                    ba.car_wash_logo,
+                    ba.created_at,
+                    ba.status
+                FROM business_accounts ba
+                LEFT JOIN clients c ON ba.client_id = c.id
+                WHERE ba.verified = TRUE
+                ORDER BY ba.created_at DESC
+            """)
+            requests = cursor.fetchall()
 
-        result = [
-            {
-                "request_id": row[0],
-                "client_name": row[1],
-                "contact_info": row[2],
-                "car_wash_name": row[3],
-                "address": row[4],
-                "city_district": row[5],
-                "working_hours": row[6],
-                "registration_certificate": row[7],
-                "ownership_proof": row[8],
-                "car_wash_logo": row[9],
-                "created_at": row[10],
-                "status": row[11]
-            }
-            for row in requests
-        ]
+            result = [
+                {
+                    "request_id": row[0],
+                    "client_name": row[1],
+                    "contact_info": row[2],
+                    "car_wash_name": row[3],
+                    "address": row[4],
+                    "city_district": row[5],
+                    "working_hours": row[6],
+                    "registration_certificate": row[7],
+                    "ownership_proof": row[8],
+                    "car_wash_logo": row[9],
+                    "created_at": row[10],
+                    "status": row[11]
+                }
+                for row in requests
+            ]
 
-        return jsonify({"success": True, "data": result}), 200
+            return jsonify({"success": True, "data": result}), 200
     except Exception as e:
         print(f"Ошибка при получении проверенных заявок: {e}")
         return jsonify({"success": False, "error": "Ошибка сервера"}), 500
@@ -1040,7 +1083,26 @@ def get_role():
     except Exception as e:
         print(f"[get_role] Ошибка: {e}")
         return jsonify({"success": False, "error": "Ошибка сервера"}), 500
+    
+@app.route("/api/check-business-status", methods=["GET"])
+def check_business_status():
+    client_id = request.args.get("client_id")
+    if not client_id or not client_id.isdigit():
+        return jsonify({"success": False, "error": "Неверный client_id"}), 400
 
+    try:
+        cursor.execute("""
+            SELECT status FROM business_accounts WHERE client_id = %s
+        """, (client_id,))
+        row = cursor.fetchone()
+
+        if row:
+            return jsonify({"success": True, "status": row[0]}), 200
+        else:
+            return jsonify({"success": True, "status": None}), 200
+    except Exception as e:
+        print(f"Ошибка при проверке статуса бизнес-аккаунта: {e}")
+        return jsonify({"success": False, "error": "Ошибка сервера"}), 500
 @app.route("/api/bookings/box/<int:box_id>", methods=["GET"])
 def get_bookings_by_box(box_id):
     try:
