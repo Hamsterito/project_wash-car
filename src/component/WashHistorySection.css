@@ -9,14 +9,17 @@
 .history-cards {
     display: flex;
     flex-direction: column;
+    transition: max-height 0.5s ease;
+    overflow: hidden;
     gap: 15px;
 }
+
 
 .history-card {
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
-    padding: 16px;
+    padding: 20px;
     background-color: #fff;
     display: flex;
     flex-direction: column;
@@ -29,10 +32,10 @@
 
 .card-header {
     font-weight: bold;
-    font-size: 20px;
+    font-size: 19px;
     background-color: #343a40;
     color: #fff;
-    padding: 10px;
+    padding: 12px;
     border-radius: 6px;
     margin-bottom: 10px;
     width: fit-content;
@@ -41,7 +44,8 @@
 .card-body {
     background-color: #f9f9f9;
     border-radius: 6px;
-    padding: 12px;
+    font-size: 18px;
+    padding: 14px;
     flex-grow: 1;
 }
 
@@ -49,34 +53,30 @@
     margin: 6px 0;
 }
 
-.btnq {
-    padding: 10px 15px;
+.btn_wash {
+    padding: 15px 0px;
     border: none;
+    font-size: 18px;
+    font-weight: bold;
     border-radius: 6px;
-    font-size: 1rem;
     cursor: pointer;
     color: white;
     transition: background-color 0.2s ease;
 }
 
-.btnq:hover {
-    background-color: #0056b3;
+.btn_wash:hover {
+    background-color: #dddddd20;
 }
 
-.btnq.more {
-    width: 100%;
-    margin-top: 15px;
-}
-
-.btnq.collapse,
-.btnq.expand {
+.btn_wash.collapse,
+.btn_wash.expand {
     width: 100%;
     margin-top: 10px;
     background-color: #6c757d;
 }
 
-.btnq.collapse:hover,
-.btnq.expand:hover {
+.btn_wash.collapse:hover,
+.btn_wash.expand:hover {
     background-color: #5a6268;
 }
 
@@ -106,12 +106,45 @@
     color: #dc3545;
 }
 
-.btnq.toggle-btn {
+.btn_wash.toggle-btn {
     width: 100%;
     margin-top: 15px;
-    background-color: #6c757d;
+    background-color: #504f4f;
 }
 
-.btnq.toggle-btn:hover {
-    background-color: #5a6268;
+.btn_wash.toggle-btn:hover {
+    background-color: #555555;
+}
+
+.history-card {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.4s ease forwards;
+}
+
+.history-card:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.history-card:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.history-card:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.history-card:nth-child(4) {
+    animation-delay: 0.2s;
+}
+
+.history-card:nth-child(5) {
+    animation-delay: 0.25s;
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

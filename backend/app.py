@@ -1,6 +1,7 @@
 from flask import Flask, request, render_template, redirect, url_for, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from psycopg2 import errors
+import psycopg2.extras
 from bd_car import conn, cursor
 from apscheduler.schedulers.background import BackgroundScheduler
 from mailjet_rest import Client as MailjetClient
@@ -12,6 +13,7 @@ from flask_cors import CORS
 import random
 import string
 from werkzeug.utils import secure_filename
+import logging
 
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), 'app.env'))
@@ -21,6 +23,10 @@ CORS(app)
 app.secret_key = '12345'
 
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
+cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 MAILJET_API_KEY = os.getenv('MAILJET_API_KEY')
 MAILJET_API_SECRET = os.getenv('MAILJET_API_SECRET')
@@ -29,6 +35,7 @@ FROM_EMAIL = os.getenv('FROM_EMAIL')
 TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
 TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
 TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER')
+
 
 # отправка кода по емайлу
 def send_verification_email(to_email, code):
@@ -147,23 +154,39 @@ def register():
 # авторизация
 @app.route("/api/login", methods=["POST"])
 def api_login():
-    data = request.get_json()
-    contact = data.get('contact')
-    password = data.get('password')
+    try:
+        data = request.get_json()
+        contact = data.get('contact')
+        password = data.get('password')
 
-    if '@' in contact:
-        cursor.execute("SELECT id, password FROM clients WHERE email = %s", (contact,))
-    else:
-        cursor.execute("SELECT id, password FROM clients WHERE phone = %s", (contact,))
-    
-    result = cursor.fetchone()
+        if not contact or not password:
+            return jsonify({'success': False, 'message': 'Неверные данные'}), 400
 
-    if result and check_password_hash(result[1], password):
-        client_id = result[0]
-        session['client_id'] = client_id
-        return jsonify({'success': True, 'client_id': client_id}) 
-    else:
-        return jsonify({'success': False, 'message': 'Неверные данные'}), 401
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT id, password, is_verified 
+                FROM clients 
+                WHERE email = %s OR phone = %s
+                LIMIT 1
+            """, (contact, contact))
+            
+            result = cursor.fetchone()
+
+            if not result:
+                return jsonify({'success': False, 'message': 'Пользователь не найден'}), 404
+
+            if not result['is_verified']:
+                return jsonify({'success': False, 'message': 'Аккаунт не верифицирован'}), 403
+
+            if check_password_hash(result['password'], password):
+                session['client_id'] = result['id']
+                return jsonify({'success': True, 'client_id': result['id']})
+            
+            return jsonify({'success': False, 'message': 'Неверный пароль'}), 401
+
+    except Exception as e:
+        logger.error(f"Ошибка входа: {e}", exc_info=True)
+        return jsonify({'success': False, 'message': 'Ошибка сервера'}), 500
 
 # верификация
 @app.route("/api/verify-code", methods=["POST"])
@@ -557,7 +580,7 @@ def get_services():
         return jsonify({"error": "Не удалось получить список услуг"}), 500
     
 @app.route("/api/user-info", methods=["GET"])
-def get_user_info_fixed():
+def get_user_info():
     client_id = request.args.get("client_id")
     
     if not client_id or not client_id.isdigit():
@@ -566,33 +589,42 @@ def get_user_info_fixed():
     client_id = int(client_id)
     
     try:
-        cursor.execute(
-            """
-            SELECT id, first_name, last_name, phone, email, status,
+        with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+            cursor.execute(
+                """
+                SELECT 
+                    id, 
+                    first_name, 
+                    last_name, 
+                    phone, 
+                    email, 
+                    status,
                     COALESCE(photo_url, 'src/assets/fotoprofila.jpg') AS photo_url
-            FROM clients
-            WHERE id = %s
-            """,
-            (client_id,)
-        )
-        user = cursor.fetchone()
-        
-        if not user:
-            return jsonify({"success": False, "error": "Пользователь не найден"}), 404
-        
-        photo_url = f"/{user[6]}"
-        
-        user_data = {
-            "id": user[0],
-            "first_name": user[1],
-            "last_name": user[2],
-            "phone": user[3],
-            "email": user[4],
-            "status": user[5],
-            "photo_url": photo_url,
-        }
-        
-        return jsonify({"success": True, "user": user_data})
+                FROM clients
+                WHERE id = %s
+                """,
+                (client_id,)
+            )
+            
+            user = cursor.fetchone()
+            
+            if not user:
+                return jsonify({"success": False, "error": "Пользователь не найден"}), 404
+
+            photo_url = f"/{user['photo_url'].lstrip('/')}" if user['photo_url'] else "/src/assets/fotoprofila.jpg"
+            
+            user_data = {
+                "id": user['id'],
+                "first_name": user['first_name'],
+                "last_name": user['last_name'],
+                "phone": user['phone'],
+                "email": user['email'],
+                "status": user['status'],
+                "photo_url": photo_url
+            }
+            
+            return jsonify({"success": True, "user": user_data})
+            
     except Exception as e:
         print(f"Ошибка при получении информации о пользователе: {e}")
         return jsonify({"success": False, "error": "Ошибка сервера"}), 500
@@ -752,61 +784,61 @@ def get_wash_history():
             return jsonify({"success": False, "error": "Неверный client_id"}), 400
         
         client_id = int(client_id)
-        
-        limit = request.args.get("limit", default=10, type=int)
-        offset = request.args.get("offset", default=0, type=int)
-        
-        cursor.execute(
-            """
-            SELECT 
-                id,
-                box_id,
-                to_char(start_time, 'YYYY-MM-DD HH24:MI') as appointment_time,
-                vehicle_type,
-                services,
-                total_price,
-                wash_name,
-                wash_location,
-                wash_image,
-                status
-            FROM 
-                wash_history_view
-            WHERE 
-                client_id = %s
-            ORDER BY 
-                start_time DESC
-            LIMIT %s OFFSET %s
-            """,
-            (client_id, limit, offset)
-        )
-        
-        history_rows = cursor.fetchall()
-        
-        if not history_rows:
-            return jsonify({"success": True, "history": []})
-        
-        wash_history = []
-        for row in history_rows:
-            wash_item = {
-                "id": row[0],
-                "boxId": row[1],
-                "appointmentTime": row[2],
-                "vehicleType": row[3],
-                "selectedServices": row[4].split(', ') if row[4] else [],
-                "price": f"{float(row[5]):.0f} тг" if row[5] else "0 тг", 
-                "name": row[6],
-                "street": row[7],
-                "image": row[8],
-                "status": row[9]
-            }
-            wash_history.append(wash_item)
-        
-        cursor.execute(
-            "SELECT COUNT(*) FROM wash_history_view WHERE client_id = %s",
-            (client_id,)
-        )
-        total_count = cursor.fetchone()[0]
-        
+        limit = int(request.args.get("limit", 10))
+        offset = int(request.args.get("offset", 0))
+
+        with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+            cursor.execute(
+                """
+                SELECT 
+                    id,
+                    box_id,
+                    to_char(start_time, 'YYYY-MM-DD HH24:MI') as appointment_time,
+                    vehicle_type,
+                    services,
+                    total_price::float,
+                    wash_name,
+                    wash_location,
+                    wash_image,
+                    status
+                FROM wash_history_view
+                WHERE client_id = %s
+                ORDER BY start_time DESC
+                LIMIT %s OFFSET %s
+                """,
+                (client_id, limit, offset)
+            )
+            
+            history_rows = cursor.fetchall()
+            
+            wash_history = []
+            for row in history_rows:
+                try:
+                    price = float(row['total_price']) if row['total_price'] is not None else 0.0
+                except (TypeError, ValueError) as e:
+                    logger.error(f"Ошибка преобразования цены: {e}")
+                    price = 0.0
+                
+                wash_item = {
+                    "id": row['id'],
+                    "boxId": row['box_id'],
+                    "appointmentTime": row['appointment_time'],
+                    "vehicleType": row['vehicle_type'],
+                    "selectedServices": row['services'].split(', ') if row['services'] else [],
+                    "price": f"{price:.0f} тг",
+                    "name": row['wash_name'],
+                    "street": row['wash_location'],
+                    "image": row['wash_image'],
+                    "status": row['status']
+                }
+                wash_history.append(wash_item)
+
+            cursor.execute(
+                "SELECT COUNT(*) FROM wash_history_view WHERE client_id = %s",
+                (client_id,)
+            )
+            total_count = cursor.fetchone()['count']
+
         return jsonify({
             "success": True, 
             "history": wash_history,
@@ -814,7 +846,7 @@ def get_wash_history():
         })
         
     except Exception as e:
-        print(f"Ошибка при получении истории моек: {e}")
+        logger.error(f"Ошибка при получении истории моек: {e}", exc_info=True)
         return jsonify({"success": False, "error": "Ошибка сервера"}), 500
 
 @app.route("/api/wash-history/<int:history_id>", methods=["GET"])
