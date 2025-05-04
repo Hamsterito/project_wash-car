@@ -1,0 +1,164 @@
+.history-section {
+    width: 100%;
+    max-width: 600px;
+    margin-right: 20px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.history-cards {
+    display: flex;
+    flex-direction: column;
+    transition: max-height 0.5s ease;
+    overflow: hidden;
+    gap: 15px;
+}
+
+
+.history-card {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+    padding: 20px;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease;
+}
+
+  .history-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.3); 
+    z-index: 0;
+  }
+  
+  .history-card > * {
+    position: relative;
+    z-index: 1;
+  }  
+
+    .history-card:hover {
+        transform: scale(1.01);
+    } */
+
+.card-header {
+    font-weight: 500;
+    font-size: 15px;
+    background-color: #ffc107;
+    color: #333;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    width: fit-content;
+}
+
+.card-body {
+    background-color: #f9f9f9;
+    border-radius: 6px;
+    font-size: 18px;
+    padding: 14px;
+    flex-grow: 1;
+}
+
+.card-body p {
+    margin: 6px 0;
+}
+
+.btn_wash {
+    padding: 15px 0px;
+    border: none;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    color: white;
+    transition: background-color 0.2s ease;
+}
+
+.btn_wash:hover {
+    background-color: #dddddd20;
+}
+
+.btn_wash.collapse,
+.btn_wash.expand {
+    width: 100%;
+    margin-top: 10px;
+    background-color: #6c757d;
+}
+
+.btn_wash.collapse:hover,
+.btn_wash.expand:hover {
+    background-color: #5a6268;
+}
+
+.button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.empty-history {
+    background-color: #f1f3f5;
+    border-radius: 10px;
+    padding: 25px;
+    text-align: center;
+    color: #6c757d;
+    font-size: 1rem;
+}
+
+.loading,
+.error-message {
+    text-align: center;
+    padding: 10px;
+    margin-top: 10px;
+}
+
+.error-message {
+    color: #dc3545;
+}
+
+.btn_wash.toggle-btn {
+    width: 100%;
+    margin-top: 15px;
+    background-color: #504f4f;
+}
+
+.btn_wash.toggle-btn:hover {
+    background-color: #555555;
+}
+
+.history-card {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.4s ease forwards;
+}
+
+.history-card:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.history-card:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.history-card:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.history-card:nth-child(4) {
+    animation-delay: 0.2s;
+}
+
+.history-card:nth-child(5) {
+    animation-delay: 0.25s;
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

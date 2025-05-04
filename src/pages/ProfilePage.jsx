@@ -12,10 +12,10 @@ import { useAuth } from "../component/AuthContext";
 import HistoryApplicationsSection from '../component/HistoryApplicationsSection';  
 
 export default function ProfilePage() {
-  const { isLoggedIn, setIsLoggedIn } = useAuth();
+  const { isLoggedIn, setIsLoggedIn, clientId } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
-  const {userRole, setUserRole} = useAuth(''); //'user', 'business', 'manager', 'admin'
+  const {userRole, setUserRole} = useAuth('admin'); //'user', 'business', 'manager', 'admin'
   const [formData, setFormData] = useState({
     lastName: '',
     firstName: '',
@@ -23,7 +23,6 @@ export default function ProfilePage() {
     email: '',
   });
   const [avatar, setAvatar] = useState('https://via.placeholder.com/150');
-  const [washHistory, setWashHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -31,38 +30,41 @@ export default function ProfilePage() {
 
   useEffect(() => {
     fetchUserData();
-    fetchWashHistory();
-  }, []);
+  }, [clientId]);
 
   const fetchUserData = async () => {
+    if (!clientId) {
+      setLoading(false);
+      return;
+    }
+    
     try {
-      const response = await fetch('/api/user');
+      setLoading(true);
+      const response = await fetch(`http://localhost:5000/api/user-info?client_id=${clientId}`);
+      
+      if (!response.ok) {
+        throw new Error('Не удалось загрузить данные пользователя');
+      }
+      
       const data = await response.json();
   
-      setFormData({
-        lastName: data.lastName,
-        firstName: data.firstName,
-        phone: data.phone,
-        email: data.email,
-      });
-  
-      setUserRole(data.role || 'user'); // передаём в глобальный контекст
-      localStorage.setItem("role", data.role || 'user'); // опционально
-  
-      setAvatar(data.avatar || 'https://via.placeholder.com/150');
+      if (data.success && data.user) {
+        setFormData({
+          lastName: data.user.last_name || '',
+          firstName: data.user.first_name || '',
+          phone: data.user.phone || '',
+          email: data.user.email || '',
+        });
+      
+        setUserRole(data.user.status || 'user'); // передаём в глобальный контекст
+        localStorage.setItem("role", data.user.status || 'user'); // опционально
+      
+        setAvatar(data.user.photo_url || 'https://via.placeholder.com/150');
+      } else {
+        throw new Error(data.error || 'Ошибка загрузки данных');
+      }
     } catch (error) {
       console.error('Ошибка при загрузке данных пользователя:', error);
-    }
-  };
-  
-
-  const fetchWashHistory = async () => {
-    try {
-      const response = await fetch('API_URL');
-      const data = await response.json();
-      setWashHistory(data);
-    } catch (error) {
-      console.error('Ошибка загрузки истории:', error);
     } finally {
       setLoading(false);
     }
@@ -74,33 +76,83 @@ export default function ProfilePage() {
 
   const handleEdit = () => setIsEditing(true);
 
-  const handleSave = () => {
-    setIsEditing(false);
-    console.log('Сохранено:', formData);
+  const handleSave = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/update-user', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: clientId,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          phone: formData.phone,
+          email: formData.email
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setIsEditing(false);
+        console.log('Сохранено:', formData);
+      } else {
+        alert(data.error || 'Ошибка при сохранении данных');
+      }
+    } catch (error) {
+      console.error('Ошибка при сохранении данных:', error);
+      alert('Произошла ошибка при сохранении данных');
+    }
   };
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setAvatar(imageUrl);
+    if (!file) return;
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('user_id', clientId);
+      
+      const response = await fetch('http://localhost:5000/api/upload-photo', {
+        method: 'POST',
+        body: formData
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setAvatar(data.photo_url);
+      } else {
+        alert(data.error || 'Ошибка при загрузке фото');
+      }
+    } catch (error) {
+      console.error('Ошибка при загрузке фото:', error);
+      alert('Произошла ошибка при загрузке фото');
     }
   };
 
   const handleLogout = () => {
     localStorage.removeItem("client_id");
     localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("role");
     setIsLoggedIn(false);
     navigate("/");
   };
 
-  if (loading) return <p>Загрузка...</p>;
+  if (loading) return (
+    <div className="loading-container">
+      <div className="loading-spinner"></div>
+      <p>Загрузка данных...</p>
+    </div>
+  );
 
   return (
     <div className="profile-page">
       <h1 className="titleq">Личный кабинет:</h1>
       <div className="main-section">
-        <WashHistorySection washHistory={washHistory} />
+        <WashHistorySection />
         <UserProfile
           avatar={avatar}
           formData={formData}
@@ -113,35 +165,24 @@ export default function ProfilePage() {
           setIsEditing={setIsEditing}
           userRole={userRole}
         />
-
       </div>
-        {userRole === 'user' && !isApproved && (
-          <CreateBusinessSection
-            isModalOpen={isModalOpen}
-            setIsModalOpen={setIsModalOpen}
-            onApprove={() => setIsApproved(true)}
-          />
-        )}
-
-        {userRole === 'user' && isApproved && (
-          <RequestToBeConsidered />
-        )}
-        
-        {/* <EditBusinessSection
+      
+      {userRole === 'user' && !isApproved && (
+        <CreateBusinessSection
           isModalOpen={isModalOpen}
           setIsModalOpen={setIsModalOpen}
           onApprove={() => setIsApproved(true)}
-        /> */}
+        />
+      )}
 
-
-        {userRole === 'admin' && <ApplicationsSection/>}
-        {userRole === 'admin' && <HistoryApplicationsSection/>}
-        {userRole === 'manager' && <ListSection/>}
-        {userRole === 'business' && <ListSection/>}
-
-
+      {userRole === 'user' && isApproved && (
+        <RequestToBeConsidered />
+      )}
+      
+      {userRole === 'admin' && <ApplicationsSection/>}
+      {userRole === 'admin' && <HistoryApplicationsSection/>}
+      {userRole === 'manager' && <ListSection/>}
+      {userRole === 'business' && <ListSection/>}
     </div>
   );
 }
-
-
