@@ -19,8 +19,8 @@ const ApplicationsSection = () => {
           } else {
             console.error("Ошибка при загрузке заявок:", data.error);
           }
-          setLoading(false); // Завершаем состояние загрузки
-        }, 500); // Задержка в 500 мс
+          setLoading(false); 
+        }, 500); 
       } catch (error) {
         console.error("Ошибка при загрузке заявок:", error);
         setLoading(false);
@@ -40,11 +40,11 @@ const ApplicationsSection = () => {
       const data = await response.json();
 
       if (data.success) {
-        alert(`Заявка ${status.toLowerCase()}!`);
+        setMessage(`Заявка ${status.toLowerCase()}!`);
         setApplications(applications.filter(app => app.request_id !== requestId));
         setSelectedApp(null);
       } else {
-        alert(`Ошибка: ${data.error}`);
+        setMessage(`Ошибка: ${data.error}`);
       }
     } catch (error) {
       console.error(`Ошибка при обновлении статуса заявки: ${error}`);

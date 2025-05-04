@@ -49,7 +49,7 @@ export default function CreateBusinessModal({ onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isFormValid()) {
-      alert("Пожалуйста, заполните все поля!");
+      setMessage("Пожалуйста, заполните все поля!");
       return;
     }
   
@@ -76,14 +76,14 @@ export default function CreateBusinessModal({ onClose }) {
   
       const data = await response.json();
       if (data.success) {
-        alert("Бизнес-аккаунт успешно создан!");
+        setMessage("Бизнес-аккаунт успешно создан!");
         onClose();
       } else {
-        alert(`Ошибка: ${data.error}`);
+        setMessage(`Ошибка: ${data.error}`);
       }
     } catch (error) {
       console.error("Ошибка при создании бизнес-аккаунта:", error);
-      alert("Произошла ошибка при создании бизнес-аккаунта");
+      setMessage("Произошла ошибка при создании бизнес-аккаунта");
     }
   };
   
