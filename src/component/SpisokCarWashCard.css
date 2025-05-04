@@ -2,6 +2,7 @@
   display: flex;
   align-items: center;
   width: 65%;
+  height: 100px;
   background: linear-gradient(to right, #ffb200 50%, rgba(255, 178, 0, 0) 100%);
   border: none;
   border-radius: 20px;
