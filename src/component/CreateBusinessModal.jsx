@@ -53,8 +53,6 @@ export default function CreateBusinessModal({ onClose }) {
       return;
     }
   
-    const clientId = localStorage.getItem("client_id");
-  
     const formDataToSend = new FormData();
     const clientId = localStorage.getItem("client_id");
 
