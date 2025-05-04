@@ -5,32 +5,24 @@ CREATE TABLE clients (
     password TEXT,
     phone TEXT UNIQUE,
     email TEXT,
-    status TEXT DEFAULT 'Пользователь',
+    status TEXT DEFAULT 'user', -- 'user', 'business', 'manager', 'admin'
     photo_url TEXT,
     is_verified BOOLEAN DEFAULT FALSE
 );
 
-SELECT * FROM business_accounts
+SELECT * FROM clients
 
+UPDATE clients
+SET status = 'admin'
+WHERE id = 1;
 
-CREATE TABLE booking_history (
-    id SERIAL PRIMARY KEY,
-    booking_id INTEGER NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
-    client_id INTEGER REFERENCES clients(id),
-    box_id INTEGER REFERENCES wash_boxes(id),
-	car_wash_name TEXT,
-    service_name TEXT NOT NULL,
-    service_description TEXT,
-    service_price NUMERIC(10, 2),
-    service_duration INTEGER,
-    start_time TIMESTAMP NOT NULL,
-    end_time TIMESTAMP NOT NULL,
-    status TEXT DEFAULT 'Активно' CHECK (status IN ('Активно', 'Просроченно', 'Завершено'))
-);
+UPDATE clients
+SET status = 'user'
+WHERE id = 1;
 
 CREATE TABLE business_accounts (
     id SERIAL PRIMARY KEY, 
-    client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE, 
+    client_id INTEGER UNIQUE REFERENCES clients(id) ON DELETE CASCADE, 
     registration_certificate TEXT NOT NULL, 
     car_wash_name TEXT NOT NULL,
     address TEXT NOT NULL,
@@ -38,11 +30,14 @@ CREATE TABLE business_accounts (
     working_hours TEXT NOT NULL,
     ownership_proof TEXT NOT NULL, 
     car_wash_logo TEXT,
-	verified BOOLEAN DEFAULT FALSE,
-	status TEXT DEFAULT 'На рассмотрении' CHECK (status IN ('На рассмотрении', 'Принят', 'Отклонен')),
+    verified BOOLEAN DEFAULT FALSE,
+    status TEXT DEFAULT 'На рассмотрении' CHECK (status IN ('На рассмотрении', 'Принят', 'Отклонен')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+TRUNCATE TABLE business_accounts RESTART IDENTITY CASCADE;
+
+SELECT * FROM business_accounts
 
 CREATE TABLE verification_codes (
     id serial PRIMARY KEY,
@@ -210,3 +205,22 @@ INSERT INTO bookings (client_id, service_id, box_id, start_time, end_time, statu
 (Null, 3, 3, '2025-04-15 12:30:00', '2025-04-15 13:00:00', 'свободно');
 
 select * from bookings
+
+-- Тригер на смена статуса при принятие бизнес аккаунта
+CREATE OR REPLACE FUNCTION set_client_status_to_business()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF OLD.status = 'На рассмотрении' AND NEW.status = 'Принят' THEN
+    UPDATE clients
+    SET status = 'business'
+    WHERE id = NEW.client_id;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_update_client_status
+AFTER UPDATE ON business_accounts
+FOR EACH ROW
+WHEN (OLD.status IS DISTINCT FROM NEW.status)
+EXECUTE FUNCTION set_client_status_to_business();
