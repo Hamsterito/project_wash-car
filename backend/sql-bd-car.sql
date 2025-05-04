@@ -5,14 +5,44 @@ CREATE TABLE clients (
     password TEXT,
     phone TEXT UNIQUE,
     email TEXT,
-    status TEXT DEFAULT 'user',
+    status TEXT DEFAULT 'Пользователь',
     photo_url TEXT,
-	is_verified BOOLEAN
+    is_verified BOOLEAN DEFAULT FALSE
 );
-drop table clients cascade
-select * from clients
-update clients set status = 'admin'
-where id = 1
+
+SELECT * FROM business_accounts
+
+
+CREATE TABLE booking_history (
+    id SERIAL PRIMARY KEY,
+    booking_id INTEGER NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
+    client_id INTEGER REFERENCES clients(id),
+    box_id INTEGER REFERENCES wash_boxes(id),
+	car_wash_name TEXT,
+    service_name TEXT NOT NULL,
+    service_description TEXT,
+    service_price NUMERIC(10, 2),
+    service_duration INTEGER,
+    start_time TIMESTAMP NOT NULL,
+    end_time TIMESTAMP NOT NULL,
+    status TEXT DEFAULT 'Активно' CHECK (status IN ('Активно', 'Просроченно', 'Завершено'))
+);
+
+CREATE TABLE business_accounts (
+    id SERIAL PRIMARY KEY, 
+    client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE, 
+    registration_certificate TEXT NOT NULL, 
+    car_wash_name TEXT NOT NULL,
+    address TEXT NOT NULL,
+    city_district TEXT NOT NULL,
+    working_hours TEXT NOT NULL,
+    ownership_proof TEXT NOT NULL, 
+    car_wash_logo TEXT,
+	verified BOOLEAN DEFAULT FALSE,
+	status TEXT DEFAULT 'На рассмотрении' CHECK (status IN ('На рассмотрении', 'Принят', 'Отклонен')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 
 CREATE TABLE verification_codes (
     id serial PRIMARY KEY,
@@ -21,7 +51,7 @@ CREATE TABLE verification_codes (
     created_at timestamp,
     expires_at timestamp 
 );
-
+SELECT * FROM verification_codes
 CREATE TABLE services (
     id SERIAL PRIMARY KEY,
     wash_box_id INTEGER NOT NULL REFERENCES wash_boxes(id) ON DELETE CASCADE,

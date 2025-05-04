@@ -1,21 +1,62 @@
-import React, { useState } from 'react';
-import ViewApplicationModal from './ViewApplicationModal'; 
+import React, { useState, useEffect } from 'react';
+import ViewApplicationModal from './ViewApplicationModal';
 
 const ApplicationsSection = () => {
-  const [showAll, setShowAll] = useState(false);
+  const [applications, setApplications] = useState([]);
   const [selectedApp, setSelectedApp] = useState(null);
-  
+  const [loading, setLoading] = useState(true); // Состояние загрузки
 
-  const applications = Array(10).fill({
-    name: 'Макенбалд Чинчопа',
-    phone: '+7(707)7771234',
-    time: '20.03 12:00',
-  });
+  useEffect(() => {
+    async function fetchApplications() {
+      setLoading(true); // Устанавливаем состояние загрузки
+      try {
+        const response = await fetch("http://localhost:5000/api/business-requests");
+        const data = await response.json();
 
-  const visibleApps = showAll ? applications : applications.slice(0, 5);
+        setTimeout(() => { // Искусственная задержка
+          if (data.success) {
+            setApplications(data.data);
+          } else {
+            console.error("Ошибка при загрузке заявок:", data.error);
+          }
+          setLoading(false); // Завершаем состояние загрузки
+        }, 500); // Задержка в 500 мс
+      } catch (error) {
+        console.error("Ошибка при загрузке заявок:", error);
+        setLoading(false);
+      }
+    }
+
+    fetchApplications();
+  }, []);
+
+  const handleUpdateStatus = async (requestId, status) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/update-request-status/${requestId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        alert(`Заявка ${status.toLowerCase()}!`);
+        setApplications(applications.filter(app => app.request_id !== requestId));
+        setSelectedApp(null);
+      } else {
+        alert(`Ошибка: ${data.error}`);
+      }
+    } catch (error) {
+      console.error(`Ошибка при обновлении статуса заявки: ${error}`);
+    }
+  };
+
+  if (loading) {
+    return <div className="loading">Загрузка заявок...</div>;
+  }
 
   return (
-    <div className='razdelenie'>
+    <div className="razdelenie">
       <div className="applications-header">Недавние заявки:</div>
       <div className="applications-table-container">
         <h2>Заявки новых автомоек!</h2>
@@ -23,24 +64,24 @@ const ApplicationsSection = () => {
           <thead>
             <tr>
               <th>Имя Фамилия</th>
-              <th>номер</th>
-              <th>время подачи заявки</th>
+              <th>Контакт</th>
+              <th>Время подачи заявки</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
-            {visibleApps.map((app, index) => (
+            {applications.map((app, index) => (
               <tr key={index}>
-                <td>{app.name}</td>
-                <td>{app.phone}</td>
-                <td>{app.time}</td>
+                <td>{app.client_name}</td>
+                <td>{app.contact_info}</td>
+                <td>{new Date(app.created_at).toLocaleString()}</td>
                 <td>
                   <a
                     href="#"
                     className="view-link"
                     onClick={(e) => {
                       e.preventDefault();
-                      setSelectedApp(app); 
+                      setSelectedApp(app);
                     }}
                   >
                     Смотреть данные
@@ -50,29 +91,16 @@ const ApplicationsSection = () => {
             ))}
           </tbody>
         </table>
-
-        {!showAll && applications.length > 5 && (
-          <div className="see-more">
-            <button onClick={() => setShowAll(true)}>еще..</button>
-          </div>
-        )}
       </div>
 
-        {selectedApp && (
-            <ViewApplicationModal
-                data={selectedApp}
-                onClose={() => setSelectedApp(null)}
-                onApprove={() => {
-                console.log('Заявка одобрена');
-                setSelectedApp(null);
-                }}
-                onReject={(invalidFields) => {
-                console.log('Заявка отклонена. Ошибки:', invalidFields);
-                setSelectedApp(null);
-                }}
-            />
-        )}
-
+      {selectedApp && (
+        <ViewApplicationModal
+          data={selectedApp}
+          onClose={() => setSelectedApp(null)}
+          onApprove={(requestId) => handleUpdateStatus(requestId, "Принят")}
+          onReject={(requestId) => handleUpdateStatus(requestId, "Отклонен")}
+        />
+      )}
     </div>
   );
 };
