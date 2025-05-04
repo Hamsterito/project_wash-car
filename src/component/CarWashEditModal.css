@@ -1,6 +1,7 @@
 /* CSS Variables for Better Maintainability */
 :root {
   --primary-color: #FFB200;
+  --primary-color-second:#ffffff;
   --primary-hover: #e29d00;
   --text-dark: #333;
   --text-medium: #444;
@@ -20,7 +21,7 @@
   --spacing-sm: 8px;
   --spacing-md: 12px;
   --spacing-lg: 16px;
-  --spacing-xl: 24px;
+  --spacing-xl: 24px; 
   --transition: all 0.2s ease;
 }
 
@@ -28,7 +29,7 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.6);
   z-index: 1000;
   display: flex;
   justify-content: center;
@@ -40,12 +41,28 @@
   background-color: var(--bg-white);
   border-radius: var(--border-radius-lg);
   width: 90%;
-  max-width: 500px;
+  max-width: 550px;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: var(--shadow-md);
   padding: var(--spacing-xl);
   animation: modal-fade-in 0.25s ease-out;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-color) #f0f0f0;
+}
+
+.modal-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-container::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 4px;
+}
+
+.modal-container::-webkit-scrollbar-thumb {
+  background-color: var(--primary-color);
+  border-radius: 4px;
 }
 
 @keyframes modal-fade-in {
@@ -64,6 +81,7 @@
   font-weight: 600;
   margin-bottom: var(--spacing-xl);
   color: var(--text-dark);
+  text-align: center;
 }
 
 /* Form Sections */
@@ -87,18 +105,20 @@
 /* Input Fields - Shared Styles */
 .input-field,
 .price-input,
-.time-select {
+.duration-input,
+.time-input {
   padding: var(--spacing-md) var(--spacing-md);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
-  margin-bottom: var(--spacing-md);
   font-size: 14px;
   transition: var(--transition);
+  background-color: var(--bg-white);
 }
 
 .input-field:focus,
 .price-input:focus,
-.time-select:focus {
+.duration-input:focus,
+.time-input:focus {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 2px rgba(255, 178, 0, 0.2);
   outline: none;
@@ -108,11 +128,7 @@
   width: 100%;
 }
 
-.price-input {
-  width: 120px;
-}
-
-/* Image Upload */
+/* Image Upload - Enhanced with Centered Text */
 .image-upload-container {
   display: flex;
   justify-content: center;
@@ -120,23 +136,46 @@
 }
 
 .image-upload-area {
-  width: 128px;
-  height: 128px;
-  border-radius: var(--border-radius);
+  width: 300px;
+  height: 300px;
+  border-radius: 12px;
   background-color: var(--bg-light);
   border: 2px dashed var(--border-color);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   overflow: hidden;
   transition: var(--transition);
+  box-shadow: var(--shadow-sm);
 }
 
 .image-upload-area:hover {
   border-color: var(--primary-color);
   background-color: var(--bg-lighter);
+  transform: scale(1.03);
 }
+
+.upload-placeholder.always-visible {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  background: rgba(24, 24, 24, 0.178); 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.image-upload-area {
+  position: relative;
+}
+
 
 .preview-image {
   width: 100%;
@@ -148,19 +187,62 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  color: var(--text-light);
+  justify-content: center;
+  color: var(--primary-color-second);
+  padding: 16px;
+  text-align: center;
+  width: 100%;
+  height: 100%;
 }
 
 .upload-text {
-  font-size: 12px;
-  margin-top: var(--spacing-sm);
+  font-size: 16px;
+  font-weight: 500;
+  margin-top: var(--spacing-md);
+  text-align: center;
 }
 
 .file-input {
   display: none;
 }
 
-/* Schedule Section */
+/* Schedule Section - Modern Time Picker */
+.work-days-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+  background-color: var(--bg-lighter);
+  border-radius: var(--border-radius);
+  padding: 12px;
+}
+
+.work-day-item {
+  display: flex;
+}
+
+.day-toggle-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: background-color 0.2s ease;
+}
+
+.day-toggle-button:hover {
+  background-color: var(--bg-white);
+}
+
+.day-toggle-button.active {
+  background-color: rgba(255, 178, 0, 0.1);
+}
+
 .schedule-container {
   background-color: var(--bg-lighter);
   border-radius: var(--border-radius);
@@ -196,8 +278,6 @@
 }
 
 .day-content {
-  display: flex;
-  gap: var(--spacing-md);
   padding: var(--spacing-md);
   background-color: var(--bg-white);
   border-radius: 0 0 var(--border-radius) var(--border-radius);
@@ -205,7 +285,12 @@
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
 }
 
-.time-select-container {
+.time-range-container {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.time-field-container {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -217,8 +302,107 @@
   margin-bottom: var(--spacing-xs);
 }
 
-.time-select {
+/* Modern Time Picker */
+.modern-time-picker {
+  position: relative;
   width: 100%;
+}
+
+.time-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+  padding: var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background-color: var(--bg-white);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.time-display:hover {
+  border-color: var(--primary-color);
+  background-color: var(--bg-lighter);
+}
+
+.time-icon {
+  color: var(--primary-color);
+}
+
+.time-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: var(--bg-white);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
+  z-index: 100;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-color) #f0f0f0;
+}
+
+.time-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.time-dropdown::-webkit-scrollbar-track {
+  background: #f0f0f0;
+}
+
+.time-dropdown::-webkit-scrollbar-thumb {
+  background-color: var(--primary-color);
+  border-radius: 3px;
+}
+
+.time-option {
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.time-option:hover {
+  background-color: var(--bg-lighter);
+}
+
+.time-option.selected {
+  background-color: rgba(255, 178, 0, 0.1);
+  color: var(--primary-color);
+  font-weight: 500;
+}
+
+/* Checkboxes */
+.checkbox-icon {
+  color: var(--text-light);
+}
+
+.checkbox-icon.checked {
+  color: var(--primary-color);
+}
+
+/* Input with Suffix (for price and duration) */
+.price-container,
+.duration-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.price-input,
+.duration-input {
+  width: 100px;
+  padding-right: 30px; /* Space for suffix */
+}
+
+.input-suffix {
+  position: absolute;
+  right: 10px;
+  color: var(--text-light);
+  font-size: 14px;
+  pointer-events: none;
 }
 
 /* Managers & Services Sections */
@@ -226,7 +410,7 @@
 .services-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .manager-item, 
@@ -234,6 +418,19 @@
   display: flex;
   gap: 10px;
   align-items: center;
+  background-color: var(--bg-lighter);
+  padding: 10px;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+}
+
+.service-name-input {
+  flex: 2;
+}
+
+.manager-item:hover,
+.service-item:hover {
+  background-color: rgba(255, 178, 0, 0.05);
 }
 
 /* Button Styles */
@@ -253,13 +450,16 @@
 .add-button {
   width: 100%;
   padding: var(--spacing-md);
-  background-color: #f0f0f0;
+  background-color: var(--bg-light);
   color: var(--text-dark);
   margin-top: 10px;
+  border: 1px dashed var(--border-color);
 }
 
 .add-button:hover {
-  background-color: #e0e0e0;
+  background-color: var(--bg-lighter);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
 }
 
 .delete-button {
@@ -268,7 +468,6 @@
   color: var(--danger-color);
   cursor: pointer;
   padding: 6px;
-  margin-top: -10px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -296,7 +495,7 @@
 }
 
 .cancel-button {
-  background-color: #f0f0f0;
+  background-color: var(--bg-light);
   color: var(--text-dark);
 }
 
@@ -307,20 +506,34 @@
 .submit-button {
   background-color: var(--primary-color);
   color: black;
+  box-shadow: 0 4px 6px rgba(255, 178, 0, 0.2);
 }
 
 .submit-button:hover {
   background-color: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(255, 178, 0, 0.3);
 }
 
-/* Accessibility Improvements */
-.input-field:focus-visible,
-.price-input:focus-visible,
-.time-select:focus-visible,
-button:focus-visible {
-  outline: 2px solid var(--primary-color);
-  outline-offset: 2px;
+/* No workdays message */
+.no-workdays-message {
+  font-size: 14px;
+  color: var(--text-light);
+  text-align: center;
+  margin-top: -50px;
+  padding: 20px 20px;
+  background-color: var(--bg-lighter);
+  border-radius: var(--border-radius);
+  border: 1px dashed var(--border-color);
 }
+
+.service-item-simple {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
 
 /* Animation for delete and add actions */
 @keyframes highlight {
@@ -332,141 +545,3 @@ button:focus-visible {
   animation: highlight 1s ease-out;
 }
 
-
-
-/* Responsive Improvements */
-@media (max-width: 500px) {
-  .modal-container {
-    width: 95%;
-    padding: var(--spacing-lg);
-  }
-  
-  .button-group {
-    flex-direction: column;
-  }
-  
-  .service-item {
-    flex-wrap: wrap;
-  }
-  
-  .price-input {
-    width: calc(50% - 20px);
-  }
-  
-  .day-content {
-    flex-direction: column;
-  }
-}
-
-/* Добавьте эти стили в ваш файл CarWashEditModal.css */
-
-/* Стили для выбора рабочих дней */
-.work-days-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 8px;
-  margin-bottom: 16px;
-  background-color: var(--bg-lighter, #f9f9f9);
-  border-radius: var(--border-radius, 8px);
-  padding: 12px;
-}
-
-.work-day-item {
-  display: flex;
-}
-
-.day-toggle-button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: none;
-  border: none;
-  padding: 8px 12px;
-  border-radius: var(--border-radius-sm, 6px);
-  cursor: pointer;
-  width: 100%;
-  text-align: left;
-  transition: background-color 0.2s ease;
-}
-
-.day-toggle-button:hover {
-  background-color: var(--bg-white, #fff);
-}
-
-.checkbox-icon {
-  color: var(--text-light, #777);
-}
-
-.checkbox-icon.checked {
-  color: var(--primary-color, #FFB200);
-}
-
-.no-workdays-message {
-  position: relative;
-  top: -50px;
-  font-size: 14px;
-  color: var(--text-light, #777);
-  text-align: center;
-  padding: 16px;
-  background-color: var(--bg-lighter, #f9f9f9);
-  border-radius: var(--border-radius, 8px);
-}
-
-/* Стили для выбора длительности услуги */
-.duration-select {
-  width: 100px;
-  padding: 12px 14px;
-  border: 1px solid var(--border-color, #ddd);
-  border-radius: var(--border-radius, 8px);
-  font-size: 14px;
-  transition: all 0.2s ease;
-}
-
-.duration-select:focus {
-  border-color: var(--primary-color, #FFB200);
-  box-shadow: 0 0 0 2px rgba(255, 178, 0, 0.2);
-  outline: none;
-}
-
-/* Улучшаем расположение элементов в строке услуги */
-.service-item {
-  display: grid;
-  grid-template-columns: 1fr auto auto auto;
-  gap: 10px;
-  align-items: center;
-}
-
-/* Адаптация под мобильные устройства */
-@media (max-width: 600px) {
-  .work-days-container {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  }
-  
-  .service-item {
-    grid-template-columns: 1fr 1fr;
-    grid-template-areas:
-      "name name"
-      "price duration"
-      "delete delete";
-    row-gap: 8px;
-  }
-  
-  .service-item .input-field {
-    grid-area: name;
-  }
-  
-  .service-item .price-input {
-    grid-area: price;
-    width: 100%;
-  }
-  
-  .service-item .duration-select {
-    grid-area: duration;
-    width: 100%;
-  }
-  
-  .service-item .delete-button {
-    grid-area: delete;
-    justify-self: end;
-  }
-}

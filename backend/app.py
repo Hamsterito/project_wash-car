@@ -752,8 +752,6 @@ def create_business_account():
 
         print(f"Файлы успешно сохранены: {registration_certificate_path}, {ownership_proof_path}, {car_wash_logo_path}")
 
-        # Вставка данных в базу
-        # Проверка, есть ли отклонённая заявка у клиента
         cursor.execute(
             "SELECT id FROM business_accounts WHERE client_id = %s AND status = 'Отклонен'",
             (client_id,)
@@ -1115,6 +1113,7 @@ def check_business_status():
     except Exception as e:
         print(f"Ошибка при проверке статуса бизнес-аккаунта: {e}")
         return jsonify({"success": False, "error": "Ошибка сервера"}), 500
+    
 @app.route("/api/bookings/box/<int:box_id>", methods=["GET"])
 def get_bookings_by_box(box_id):
     try:
