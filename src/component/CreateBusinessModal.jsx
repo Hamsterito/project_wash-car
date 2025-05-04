@@ -25,6 +25,8 @@ export default function CreateBusinessModal({ onClose }) {
     logo: null,
   });
 
+  const [message, setMessage] = useState("");
+
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     if (files && files.length > 0) {
@@ -52,7 +54,7 @@ export default function CreateBusinessModal({ onClose }) {
       setMessage("Пожалуйста, заполните все поля!");
       return;
     }
-  
+
     const formDataToSend = new FormData();
     const clientId = localStorage.getItem("client_id");
 
@@ -73,11 +75,14 @@ export default function CreateBusinessModal({ onClose }) {
           body: formDataToSend,
         }
       );
-  
+
       const data = await response.json();
       if (data.success) {
         setMessage("Бизнес-аккаунт успешно создан!");
-        onClose();
+        setTimeout(() => {
+          onClose();
+          window.location.reload(); // Обновляем страницу ProfilePage
+        }, 10);
       } else {
         setMessage(`Ошибка: ${data.error}`);
       }
@@ -86,15 +91,14 @@ export default function CreateBusinessModal({ onClose }) {
       setMessage("Произошла ошибка при создании бизнес-аккаунта");
     }
   };
-  
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-wrapper" onClick={(e) => e.stopPropagation()}>
         <div className="modal-content">
           <h2>Создать бизнес аккаунт</h2>
+          {message && <p className="status-message">{message}</p>}
           <form onSubmit={handleSubmit}>
-
             <label>
               Название автомойки
               <input type="text" name="carWashName" value={formData.carWashName} onChange={handleChange} />
@@ -131,7 +135,9 @@ export default function CreateBusinessModal({ onClose }) {
             </label>
 
             <div className="modal-buttons">
-              <button type="submit" className="btnq create" disabled={!isFormValid()}>Оставить заявку</button>
+              <button type="submit" className="btnq create" disabled={!isFormValid()}>
+                Оставить заявку
+              </button>
             </div>
           </form>
         </div>
@@ -154,7 +160,6 @@ export default function CreateBusinessModal({ onClose }) {
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );

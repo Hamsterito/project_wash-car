@@ -4,29 +4,30 @@ import ViewApplicationModal from './ViewApplicationModal';
 const ApplicationsSection = () => {
   const [applications, setApplications] = useState([]);
   const [selectedApp, setSelectedApp] = useState(null);
-  const [loading, setLoading] = useState(true); // Состояние загрузки
+  const [loading, setLoading] = useState(true);
+  const [confirmReject, setConfirmReject] = useState(null); // состояние для подтверждения отклонения
+
+  const fetchApplications = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("http://localhost:5000/api/business-requests");
+      const data = await response.json();
+
+      setTimeout(() => {
+        if (data.success) {
+          setApplications(data.data);
+        } else {
+          console.error("Ошибка при загрузке заявок:", data.error);
+        }
+        setLoading(false);
+      }, 500);
+    } catch (error) {
+      console.error("Ошибка при загрузке заявок:", error);
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function fetchApplications() {
-      setLoading(true); // Устанавливаем состояние загрузки
-      try {
-        const response = await fetch("http://localhost:5000/api/business-requests");
-        const data = await response.json();
-
-        setTimeout(() => { // Искусственная задержка
-          if (data.success) {
-            setApplications(data.data);
-          } else {
-            console.error("Ошибка при загрузке заявок:", data.error);
-          }
-          setLoading(false); 
-        }, 500); 
-      } catch (error) {
-        console.error("Ошибка при загрузке заявок:", error);
-        setLoading(false);
-      }
-    }
-
     fetchApplications();
   }, []);
 
@@ -37,14 +38,15 @@ const ApplicationsSection = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
       });
+
       const data = await response.json();
 
       if (data.success) {
-        setMessage(`Заявка ${status.toLowerCase()}!`);
-        setApplications(applications.filter(app => app.request_id !== requestId));
         setSelectedApp(null);
+        setConfirmReject(null);
+        window.location.reload();
       } else {
-        setMessage(`Ошибка: ${data.error}`);
+        console.error(`Ошибка: ${data.error}`);
       }
     } catch (error) {
       console.error(`Ошибка при обновлении статуса заявки: ${error}`);
@@ -98,8 +100,24 @@ const ApplicationsSection = () => {
           data={selectedApp}
           onClose={() => setSelectedApp(null)}
           onApprove={(requestId) => handleUpdateStatus(requestId, "Принят")}
-          onReject={(requestId) => handleUpdateStatus(requestId, "Отклонен")}
+          onReject={(requestId) => setConfirmReject(requestId)}
         />
+      )}
+
+      {confirmReject && (
+        <div className="login-prompt-overlay">
+          <div className="login-prompt">
+            <p>Вы уверены, что хотите отклонить эту заявку?</p>
+            <div className="modal-buttons">
+              <button className="btn-red" onClick={() => handleUpdateStatus(confirmReject, "Отклонен")}>
+                Да
+              </button>
+              <button className="btn-green" onClick={() => setConfirmReject(null)}>
+                Нет
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
