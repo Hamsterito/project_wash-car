@@ -5,28 +5,20 @@ CREATE TABLE clients (
     password TEXT,
     phone TEXT UNIQUE,
     email TEXT,
-    status TEXT DEFAULT 'Пользователь',
+    status TEXT DEFAULT 'user', -- 'user', 'business', 'manager', 'admin'
     photo_url TEXT,
     is_verified BOOLEAN DEFAULT FALSE
 );
 
 SELECT * FROM business_accounts
 
+UPDATE clients
+SET status = 'business'
+WHERE id = 1;
 
-CREATE TABLE booking_history (
-    id SERIAL PRIMARY KEY,
-    booking_id INTEGER NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
-    client_id INTEGER REFERENCES clients(id),
-    box_id INTEGER REFERENCES wash_boxes(id),
-	car_wash_name TEXT,
-    service_name TEXT NOT NULL,
-    service_description TEXT,
-    service_price NUMERIC(10, 2),
-    service_duration INTEGER,
-    start_time TIMESTAMP NOT NULL,
-    end_time TIMESTAMP NOT NULL,
-    status TEXT DEFAULT 'Активно' CHECK (status IN ('Активно', 'Просроченно', 'Завершено'))
-);
+UPDATE clients
+SET status = 'user'
+WHERE id = 1;
 
 CREATE TABLE business_accounts (
     id SERIAL PRIMARY KEY, 
@@ -43,6 +35,7 @@ CREATE TABLE business_accounts (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+SELECT * FROM business_accounts
 
 CREATE TABLE verification_codes (
     id serial PRIMARY KEY,
