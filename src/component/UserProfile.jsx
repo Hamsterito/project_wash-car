@@ -16,7 +16,7 @@ export default function UserProfile({
   });
   const [userStatus, setUserStatus] = useState('');
   const [clientId, setClientId] = useState(null);
-  const [loading, setLoading] = useState(true); // Состояние загрузки
+  const [loading, setLoading] = useState(true); 
 
   useEffect(() => {
     const storedClientId = localStorage.getItem("client_id");
@@ -65,6 +65,7 @@ export default function UserProfile({
     
             const photoPath = data.user.photo_url?.trim();
             setAvatar(photoPath ? photoPath : defaultAvatar);
+            setLoading(false);
             return;
           } else {
             console.error(data.error);
