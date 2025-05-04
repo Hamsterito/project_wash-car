@@ -1,26 +1,77 @@
 .schedule-container {
   padding: 24px;
-  max-width: 1000px;
+  max-width: 1400px;
   margin: 0 auto;
-  font-family: "Segoe UI", sans-serif;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
 .schedule-title {
-  font-size: 32px;
+  font-size: 2.2rem;
   text-align: center;
-  margin-bottom: 32px;
-  font-weight: 600;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
   color: #333;
+  letter-spacing: -0.5px;
+}
+
+#totalPrice {
+  padding: 0 10px;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.back-button {
+  position: absolute;
+  left: 0px;
+}
+
+.view-toggle-button,
+.back-button {
+  padding: 0.8rem 1.8rem;
+  background-color: #ffffff80;
+  color: var(--bg-dark);
+  border: 2px solid var(--bg-dark);
+  border-radius: 2rem;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  min-width: 200px;
+}
+
+.view-toggle-button:hover,
+.back-button:hover {
+  background-color: var(--bg-dark);
+  color: var(--bg-light);
+}
+
+#create_carwash {
+  display: block;
+  margin: 20px auto;
 }
 
 .schedule-section {
-  margin-bottom: 50px;
+  width: 100%;
+  margin-bottom: 3rem;
+  background: white;
+  border-radius: 12px;
+  padding: 7px 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .schedule-date {
-  font-size: 20px;
+  font-size: 1.5rem;
   font-weight: 600;
-  margin-bottom: 10px;
+  padding-top: 20px;
+  padding-left: 5px;
+  margin-bottom: 1.2rem;
   color: #444;
 }
 
@@ -31,6 +82,14 @@
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-size: 0.95rem;
+}
+
+#load_schedule {
+  text-align: center;
+  font-size: 24px;
+  color: #333;
+  font-weight: bold;
 }
 
 .schedule-table thead {
@@ -38,35 +97,97 @@
   color: #000;
 }
 
-.schedule-table th,
+.schedule-table th {
+  padding: 1.1rem 1.2rem;
+  text-align: center;
+  font-weight: 600;
+}
+
 .schedule-table td {
-  padding: 16px;
-  text-align: left;
+  padding: 1rem 1.2rem;
   border-bottom: 1px solid #eee;
+  color: #333;
+  vertical-align: middle;
+  line-height: 1.5;
+}
+
+.status-cell {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 1.2rem;
+  text-align: center;
 }
 
 .status {
-  padding: 5px;
-  border-radius: 3px;
-  text-align: center;
+  width: 100%;
+  height: 100px;
+  max-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.8rem 0;
+  font-weight: 600;
+  color: white;
+  text-transform: capitalize;
 }
 
 .status.забронировано {
   background-color: #f0ad4e;
-  color: white;
 }
 
 .status.свободно {
   background-color: #5bc0de;
-  color: white;
 }
 
 .status.завершено {
   background-color: #5cb85c;
-  color: white;
 }
 
 .status.отменено {
   background-color: #d9534f;
-  color: white;
+}
+
+.all_book_text {
+  color: #444;
+  padding-top: 20px;
+  padding-left: 5px;
+  margin-bottom: 1rem;
+}
+
+.no_book_text {
+  color: #807f7f;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  padding-bottom: 30px;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .schedule-table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .schedule-title {
+    font-size: 1.8rem;
+  }
+
+  .button-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .back-button {
+    position: static;
+    margin-bottom: 1rem;
+  }
+
+  .status {
+    padding: 0.6rem 0;
+    font-size: 0.9rem;
+  }
 }

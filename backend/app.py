@@ -13,7 +13,6 @@ from flask_cors import CORS
 import random
 import string
 from werkzeug.utils import secure_filename
-import logging
 
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), 'app.env'))
@@ -24,9 +23,6 @@ app.secret_key = '12345'
 
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
 cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 MAILJET_API_KEY = os.getenv('MAILJET_API_KEY')
 MAILJET_API_SECRET = os.getenv('MAILJET_API_SECRET')
@@ -185,7 +181,6 @@ def api_login():
             return jsonify({'success': False, 'message': 'Неверный пароль'}), 401
 
     except Exception as e:
-        logger.error(f"Ошибка входа: {e}", exc_info=True)
         return jsonify({'success': False, 'message': 'Ошибка сервера'}), 500
 
 # верификация
@@ -636,6 +631,7 @@ def update_user_info():
         last_name = data.get("last_name")
         phone = data.get("phone")
         email = data.get("email")
+        print(data)
 
         cursor.execute(
             """
@@ -665,8 +661,8 @@ def upload_photo():
     file = request.files['file']
     print(f"Файл получен: {file}")
     print(f"Тип файла: {file.content_type}")
-
-    user_id = request.form.get("client_id")
+    
+    user_id = request.form.get("user_id")
     print(f"user_id: {user_id}")
     if not user_id:
         return jsonify({"success": False, "error": "ID пользователя не указан"}), 400
@@ -936,7 +932,6 @@ def get_wash_history():
                 try:
                     price = float(row['total_price']) if row['total_price'] is not None else 0.0
                 except (TypeError, ValueError) as e:
-                    logger.error(f"Ошибка преобразования цены: {e}")
                     price = 0.0
                 
                 wash_item = {
@@ -966,7 +961,6 @@ def get_wash_history():
         })
         
     except Exception as e:
-        logger.error(f"Ошибка при получении истории моек: {e}", exc_info=True)
         return jsonify({"success": False, "error": "Ошибка сервера"}), 500
 
 @app.route("/api/wash-history/<int:history_id>", methods=["GET"])
@@ -1047,6 +1041,145 @@ def get_role():
         print(f"[get_role] Ошибка: {e}")
         return jsonify({"success": False, "error": "Ошибка сервера"}), 500
 
+@app.route("/api/bookings/box/<int:box_id>", methods=["GET"])
+def get_bookings_by_box(box_id):
+    try:
+        cursor.execute("""
+            SELECT 
+                b.id,
+                b.start_time,
+                b.end_time,
+                b.status,
+                COALESCE(CONCAT(c.first_name, ' ', c.last_name), 'Гость') as client_name,
+                b.type_car,
+                b.comments_client,
+                b.total_minutes,
+                COALESCE(SUM(s.price), 0) as total_price,
+                COALESCE(
+                    json_agg(
+                        json_build_object(
+                            'id', s.id,
+                            'name', s.name,
+                            'price', s.price,
+                            'duration', s.duration_minutes
+                        ) 
+                        ORDER BY s.name
+                    ) FILTER (WHERE s.id IS NOT NULL),
+                    '[]'::json
+                ) as services,
+                COALESCE(
+                    string_agg(s.name, ', ' ORDER BY s.name),
+                    ''
+                ) as service_names
+            FROM bookings b
+            LEFT JOIN clients c ON b.client_id = c.id
+            LEFT JOIN booking_services bs ON b.id = bs.booking_id
+            LEFT JOIN services s ON bs.service_id = s.id
+            WHERE b.box_id = %s
+            GROUP BY b.id, c.first_name, c.last_name
+            ORDER BY b.start_time
+        """, (box_id,))
+        
+        bookings = cursor.fetchall()
+        
+        result = []
+        for booking in bookings:
+            result.append({
+                "bookingId": booking[0],
+                "startTime": booking[1].strftime("%Y-%m-%d %H:%M"),
+                "endTime": booking[2].strftime("%Y-%m-%d %H:%M"),
+                "status": booking[3],
+                "clientName": booking[4],
+                "carType": booking[5],
+                "comments": booking[6],
+                "totalMinutes": booking[7],
+                "totalPrice": float(booking[8]),
+                "services": booking[10].split(', ') if booking[10] else [],
+                "servicesDetails": booking[9]
+            })
+        
+        return jsonify(result), 200
+        
+    except Exception as e:
+        print(f"Error getting bookings by box: {str(e)}")
+        return jsonify({"error": "Ошибка при получении броней по боксу"}), 500
+    
+@app.route("/api/bookings/<int:booking_id>/cancel", methods=["PUT"])
+def cancel_booking(booking_id):
+    try:
+        cursor.execute("SELECT status FROM bookings WHERE id = %s", (booking_id,))
+        row = cursor.fetchone()
+        
+        if not row:
+            return jsonify({"error": "Бронирование не найдено"}), 404
+        if row[0] == 'отменено':
+            return jsonify({"message": "Бронирование уже отменено"}), 200
+
+        cursor.execute("UPDATE bookings SET status = 'отменено' WHERE id = %s", (booking_id,))
+        conn.commit()
+        
+        return jsonify({"message": "Бронирование успешно отменено"}), 200
+        
+    except Exception as e:
+        conn.rollback()
+        print(f"Error cancelling booking: {str(e)}")
+        return jsonify({"error": "Ошибка при отмене бронирования"}), 500
+
+@app.route("/api/bookings/client/<int:client_id>", methods=["GET"])
+def get_bookings_by_client(client_id):
+    try:
+        cursor.execute("""
+            SELECT b.id, b.start_time, b.end_time, b.status, 
+                   b.box_id, b.type_car, wb.name as wash_name,
+                   string_agg(s.name, ', ') as services
+            FROM bookings b
+            JOIN wash_boxes wb ON b.box_id = wb.id
+            LEFT JOIN booking_services bs ON b.id = bs.booking_id
+            LEFT JOIN services s ON bs.service_id = s.id
+            WHERE b.client_id = %s
+            GROUP BY b.id, b.start_time, b.end_time, b.status, 
+                     b.box_id, b.type_car, wb.name
+            ORDER BY b.start_time DESC
+        """, (client_id,))
+        rows = cursor.fetchall()
+        
+        result = []
+        for row in rows:
+            result.append({
+                "bookingId": row[0],
+                "startTime": row[1].strftime("%Y-%m-%d %H:%M"),
+                "endTime": row[2].strftime("%Y-%m-%d %H:%M"),
+                "status": row[3],
+                "boxId": row[4],
+                "carType": row[5],
+                "washName": row[6],
+                "services": row[7] if row[7] else "Не указаны"
+            })
+
+        return jsonify(result), 200
+
+    except Exception as e:
+        print(f"Error getting client bookings: {str(e)}")
+        return jsonify({"error": "Ошибка при получении истории клиента"}), 500
+
+@app.route("/api/carwashes", methods=["GET"])
+def get_carwashes():
+    try:
+        cursor.execute("SELECT id, name, location, image_url FROM wash_boxes ORDER BY id")
+        rows = cursor.fetchall()
+
+        carwashes = []
+        for row in rows:
+            carwashes.append({
+                "id": row[0],
+                "name": row[1],
+                "address": row[2], 
+                "image": row[3] 
+            })
+        return jsonify(carwashes), 200
+    except Exception as e:
+        print(f"Error fetching carwashes: {str(e)}")
+        return jsonify({"error": "Ошибка при получении списка автомоек"}), 500
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

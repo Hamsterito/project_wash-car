@@ -1,143 +1,472 @@
-.modal-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    z-index: 998;
-  }
-  
-  
-  .carwash-edit-modal {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #3b3b3b;
-    padding: 30px;
-    border-radius: 15px;
-    width: 90%;
-    max-width: 500px;
-    max-height: 90vh; 
-    z-index: 999;
-    color: white;
-    font-family: sans-serif;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-    overflow: auto;
-  }
-
-  .carwash-edit-modal {
-    overflow: auto;
-    scrollbar-width: none;       
-    -ms-overflow-style: none;     
-  }
-  
-  .carwash-edit-modal::-webkit-scrollbar {
-    display: none;               
-  }
-  
-  
-  
-  .carwash-edit-modal label {
-    display: block;
-    margin-top: 15px;
-    margin-bottom: 5px;
-    font-weight: bold;
-  }
-  
-  .carwash-edit-modal input,
-  .carwash-edit-modal select {
-    width: 100%;
-    padding: 10px;
-    border: none;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    font-size: 14px;
-  }
-  
-  .photo-section {
-    position: relative;
-    margin-bottom: 20px;
-  }
-  
-  .photo-section img {
-    width: 100%;
-    border-radius: 10px;
-    border: 3px solid orange;
-  }
-  
-  .upload-button {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    background-color: #ffb800;
-    color: black;
-    border: none;
-    padding: 8px 14px;
-    border-radius: 6px;
-    font-weight: bold;
-    cursor: pointer;
-  }
-  
-  .manager-list,
-  .services-list {
-    margin-bottom: 15px;
-  }
-  
-  .manager-list div,
-  .services-list div {
-    display: flex;
-    justify-content: space-between;
-    background: #505050;
-    padding: 6px 10px;
-    border-radius: 6px;
-    margin-bottom: 5px;
-  }
-  
-  .manager-list button,
-  .services-list button {
-    background: transparent;
-    border: none;
-    color: #ffb800;
-    font-size: 18px;
-    cursor: pointer;
-  }
-  
-  .save-button {
-    margin-top: 20px;
-    background-color: #ffb800;
-    color: black;
-    border: none;
-    padding: 12px 20px;
-    border-radius: 10px;
-    font-weight: bold;
-    width: 100%;
-    cursor: pointer;
-    font-size: 16px;
-  }
-  
-  .save-button:hover {
-    background-color: #e0a500;
-  }
-  
-
-  .manager-item,
-.service-item {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  background: #505050;
-  padding: 10px;
-  border-radius: 6px;
-  margin-bottom: 10px;
+/* CSS Variables for Better Maintainability */
+:root {
+  --primary-color: #FFB200;
+  --primary-hover: #e29d00;
+  --text-dark: #333;
+  --text-medium: #444;
+  --text-light: #777;
+  --border-color: #ddd;
+  --bg-light: #f7f7f7;
+  --bg-lighter: #f9f9f9;
+  --bg-white: #fff;
+  --danger-color: #e74c3c;
+  --danger-bg: #fee7e6;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.15);
+  --border-radius-sm: 6px;
+  --border-radius: 8px;
+  --border-radius-lg: 12px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 24px;
+  --transition: all 0.2s ease;
 }
 
-.manager-item input,
-.service-item input {
-  flex: 1 1 30%;
-  min-width: 100px;
-  padding: 8px;
-  border-radius: 6px;
+/* Modal Base Styles */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(3px);
+}
+
+.modal-container {
+  background-color: var(--bg-white);
+  border-radius: var(--border-radius-lg);
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-md);
+  padding: var(--spacing-xl);
+  animation: modal-fade-in 0.25s ease-out;
+}
+
+@keyframes modal-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: var(--spacing-xl);
+  color: var(--text-dark);
+}
+
+/* Form Sections */
+.form-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.section-title-edit {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  margin-bottom: var(--spacing-md);
+  font-weight: 500;
+  color: var(--text-medium);
+}
+
+.icon {
+  margin-right: var(--spacing-sm);
+}
+
+/* Input Fields - Shared Styles */
+.input-field,
+.price-input,
+.time-select {
+  padding: var(--spacing-md) var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--spacing-md);
+  font-size: 14px;
+  transition: var(--transition);
+}
+
+.input-field:focus,
+.price-input:focus,
+.time-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(255, 178, 0, 0.2);
+  outline: none;
+}
+
+.input-field {
+  width: 100%;
+}
+
+.price-input {
+  width: 120px;
+}
+
+/* Image Upload */
+.image-upload-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.image-upload-area {
+  width: 128px;
+  height: 128px;
+  border-radius: var(--border-radius);
+  background-color: var(--bg-light);
+  border: 2px dashed var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.image-upload-area:hover {
+  border-color: var(--primary-color);
+  background-color: var(--bg-lighter);
+}
+
+.preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--text-light);
+}
+
+.upload-text {
+  font-size: 12px;
+  margin-top: var(--spacing-sm);
+}
+
+.file-input {
+  display: none;
+}
+
+/* Schedule Section */
+.schedule-container {
+  background-color: var(--bg-lighter);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm);
+}
+
+.schedule-day {
+  margin-bottom: 6px;
+}
+
+.day-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  background-color: var(--bg-white);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.day-header:hover {
+  background-color: var(--bg-light);
+}
+
+.chevron {
+  transition: transform 0.3s ease;
+}
+
+.chevron-rotated {
+  transform: rotate(180deg);
+}
+
+.day-content {
+  display: flex;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--bg-white);
+  border-radius: 0 0 var(--border-radius) var(--border-radius);
+  border-top: 1px solid #f0f0f0;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
+}
+
+.time-select-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.time-label {
+  font-size: 12px;
+  color: var(--text-light);
+  margin-bottom: var(--spacing-xs);
+}
+
+.time-select {
+  width: 100%;
+}
+
+/* Managers & Services Sections */
+.managers-list, 
+.services-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.manager-item, 
+.service-item {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Button Styles */
+.add-button,
+.cancel-button,
+.submit-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  cursor: pointer;
   border: none;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+}
+
+.add-button {
+  width: 100%;
+  padding: var(--spacing-md);
+  background-color: #f0f0f0;
+  color: var(--text-dark);
+  margin-top: 10px;
+}
+
+.add-button:hover {
+  background-color: #e0e0e0;
+}
+
+.delete-button {
+  background: none;
+  border: none;
+  color: var(--danger-color);
+  cursor: pointer;
+  padding: 6px;
+  margin-top: -10px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.delete-button:hover {
+  background-color: var(--danger-bg);
+}
+
+/* Submit Button Group */
+.button-group {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-xl);
+}
+
+.cancel-button,
+.submit-button {
+  flex: 1;
+  padding: 14px;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.cancel-button {
+  background-color: #f0f0f0;
+  color: var(--text-dark);
+}
+
+.cancel-button:hover {
+  background-color: #e0e0e0;
+}
+
+.submit-button {
+  background-color: var(--primary-color);
+  color: black;
+}
+
+.submit-button:hover {
+  background-color: var(--primary-hover);
+}
+
+/* Accessibility Improvements */
+.input-field:focus-visible,
+.price-input:focus-visible,
+.time-select:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Animation for delete and add actions */
+@keyframes highlight {
+  0% { background-color: rgba(255, 178, 0, 0.2); }
+  100% { background-color: transparent; }
+}
+
+.item-added {
+  animation: highlight 1s ease-out;
+}
+
+
+
+/* Responsive Improvements */
+@media (max-width: 500px) {
+  .modal-container {
+    width: 95%;
+    padding: var(--spacing-lg);
+  }
+  
+  .button-group {
+    flex-direction: column;
+  }
+  
+  .service-item {
+    flex-wrap: wrap;
+  }
+  
+  .price-input {
+    width: calc(50% - 20px);
+  }
+  
+  .day-content {
+    flex-direction: column;
+  }
+}
+
+/* Добавьте эти стили в ваш файл CarWashEditModal.css */
+
+/* Стили для выбора рабочих дней */
+.work-days-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+  background-color: var(--bg-lighter, #f9f9f9);
+  border-radius: var(--border-radius, 8px);
+  padding: 12px;
+}
+
+.work-day-item {
+  display: flex;
+}
+
+.day-toggle-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  border-radius: var(--border-radius-sm, 6px);
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: background-color 0.2s ease;
+}
+
+.day-toggle-button:hover {
+  background-color: var(--bg-white, #fff);
+}
+
+.checkbox-icon {
+  color: var(--text-light, #777);
+}
+
+.checkbox-icon.checked {
+  color: var(--primary-color, #FFB200);
+}
+
+.no-workdays-message {
+  position: relative;
+  top: -50px;
+  font-size: 14px;
+  color: var(--text-light, #777);
+  text-align: center;
+  padding: 16px;
+  background-color: var(--bg-lighter, #f9f9f9);
+  border-radius: var(--border-radius, 8px);
+}
+
+/* Стили для выбора длительности услуги */
+.duration-select {
+  width: 100px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: var(--border-radius, 8px);
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.duration-select:focus {
+  border-color: var(--primary-color, #FFB200);
+  box-shadow: 0 0 0 2px rgba(255, 178, 0, 0.2);
+  outline: none;
+}
+
+/* Улучшаем расположение элементов в строке услуги */
+.service-item {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Адаптация под мобильные устройства */
+@media (max-width: 600px) {
+  .work-days-container {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+  
+  .service-item {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "name name"
+      "price duration"
+      "delete delete";
+    row-gap: 8px;
+  }
+  
+  .service-item .input-field {
+    grid-area: name;
+  }
+  
+  .service-item .price-input {
+    grid-area: price;
+    width: 100%;
+  }
+  
+  .service-item .duration-select {
+    grid-area: duration;
+    width: 100%;
+  }
+  
+  .service-item .delete-button {
+    grid-area: delete;
+    justify-self: end;
+  }
 }
