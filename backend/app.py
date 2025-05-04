@@ -582,12 +582,9 @@ def get_services():
 @app.route("/api/user-info", methods=["GET"])
 def get_user_info():
     client_id = request.args.get("client_id")
-    
-    if not client_id or not client_id.isdigit():
-        return jsonify({"success": False, "error": "Неверный client_id"}), 400
-    
-    client_id = int(client_id)
-    
+    if not client_id:
+        return jsonify({"success": False, "error": "client_id не указан"}), 400
+
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
             cursor.execute(
@@ -626,7 +623,7 @@ def get_user_info():
             return jsonify({"success": True, "user": user_data})
             
     except Exception as e:
-        print(f"Ошибка при получении информации о пользователе: {e}")
+        print(f"Ошибка при получении данных пользователя: {e}")
         return jsonify({"success": False, "error": "Ошибка сервера"}), 500
 
 #  обновление информации о пользователе
@@ -634,14 +631,11 @@ def get_user_info():
 def update_user_info():
     try:
         data = request.get_json()
-        user_id = data.get("id")
+        user_id = data.get("client_id")
         first_name = data.get("first_name")
         last_name = data.get("last_name")
         phone = data.get("phone")
         email = data.get("email")
-
-        # if not user_id or not all([first_name, last_name, phone, email]):
-        #     return jsonify({"success": False, "error": "Недостаточно данных"}), 400
 
         cursor.execute(
             """
@@ -672,7 +666,7 @@ def upload_photo():
     print(f"Файл получен: {file}")
     print(f"Тип файла: {file.content_type}")
 
-    user_id = request.form.get("user_id")
+    user_id = request.form.get("client_id")
     print(f"user_id: {user_id}")
     if not user_id:
         return jsonify({"success": False, "error": "ID пользователя не указан"}), 400
@@ -683,7 +677,7 @@ def upload_photo():
     if file and allowed_file(file.filename):
         try:
             filename = secure_filename(file.filename)
-            upload_folder = r'project_wash-car\public\images'
+            upload_folder = r'public\images'
             os.makedirs(upload_folder, exist_ok=True)
             file_path = os.path.join(upload_folder, filename)
             print(f"Сохраняем файл в: {file_path}")
@@ -710,15 +704,19 @@ def upload_photo():
 @app.route("/api/create-business-account", methods=["POST"])
 def create_business_account():
     try:
+        # Получение данных из запроса
         client_id = request.form.get("client_id")
         if not client_id or not client_id.isdigit():
             return jsonify({"success": False, "error": "Неверный client_id"}), 400
         client_id = int(client_id)
 
-        
-        if 'registrationCertificate' not in request.files or 'ownershipProof' not in request.files or 'logo' not in request.files:
+        # Проверка наличия файлов
+        if 'registrationCertificate' not in request.files or \
+           'ownershipProof' not in request.files or \
+           'car_wash_logo' not in request.files:
             return jsonify({"success": False, "error": "Не все файлы загружены"}), 400
 
+        # Получение остальных данных
         car_wash_name = request.form.get("carWashName")
         address = request.form.get("address")
         city_district = request.form.get("cityDistrict")
@@ -727,9 +725,11 @@ def create_business_account():
         if not all([car_wash_name, address, city_district, working_hours]):
             return jsonify({"success": False, "error": "Не все поля заполнены"}), 400
 
-        upload_folder = r'project_wash-car\public\images'
+        # Папка для загрузки файлов
+        upload_folder = r'public\business account information'
         os.makedirs(upload_folder, exist_ok=True)
 
+        # Сохранение файлов
         registration_certificate_file = request.files['registrationCertificate']
         registration_certificate_path = os.path.join(upload_folder, secure_filename(registration_certificate_file.filename))
         registration_certificate_file.save(registration_certificate_path)
@@ -738,10 +738,13 @@ def create_business_account():
         ownership_proof_path = os.path.join(upload_folder, secure_filename(ownership_proof_file.filename))
         ownership_proof_file.save(ownership_proof_path)
 
-        logo_file = request.files['logo']
-        logo_path = os.path.join(upload_folder, secure_filename(logo_file.filename))
-        logo_file.save(logo_path)
+        car_wash_logo_file = request.files['car_wash_logo']
+        car_wash_logo_path = os.path.join(upload_folder, secure_filename(car_wash_logo_file.filename))
+        car_wash_logo_file.save(car_wash_logo_path)
 
+        print(f"Файлы успешно сохранены: {registration_certificate_path}, {ownership_proof_path}, {car_wash_logo_path}")
+
+        # Вставка данных в базу
         cursor.execute(
             """
             INSERT INTO business_accounts (
@@ -752,7 +755,7 @@ def create_business_account():
                 city_district,
                 working_hours,
                 ownership_proof,
-                logo
+                car_wash_logo
             ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (
@@ -763,7 +766,7 @@ def create_business_account():
                 city_district,
                 working_hours,
                 f"business account information/{secure_filename(ownership_proof_file.filename)}",
-                f"business account information/{secure_filename(logo_file.filename)}"
+                f"business account information/{secure_filename(car_wash_logo_file.filename)}"
             )
         )
         conn.commit()
@@ -772,7 +775,124 @@ def create_business_account():
     except Exception as e:
         conn.rollback()
         print(f"Ошибка при создании бизнес-аккаунта: {e}")
-        return jsonify({"success": False, "error": "Ошибка при создании бизнес-аккаунта"}), 500
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/business-requests", methods=["GET"])
+def get_business_requests():
+    try:
+        cursor.execute("""
+            SELECT 
+                ba.id AS request_id,
+                c.first_name || ' ' || c.last_name AS client_name,
+                COALESCE(c.phone, c.email) AS contact_info,
+                ba.car_wash_name,
+                ba.address,
+                ba.city_district,
+                ba.working_hours,
+                ba.registration_certificate,
+                ba.ownership_proof,
+                ba.car_wash_logo,
+                ba.created_at,
+                ba.verified,
+                ba.status
+            FROM business_accounts ba
+            LEFT JOIN clients c ON ba.client_id = c.id
+            WHERE ba.verified = FALSE
+            ORDER BY ba.created_at DESC
+        """)
+        requests = cursor.fetchall()
+
+        result = [
+            {
+                "request_id": row[0],
+                "client_name": row[1],
+                "contact_info": row[2],
+                "car_wash_name": row[3],
+                "address": row[4],
+                "city_district": row[5],
+                "working_hours": row[6],
+                "registration_certificate": row[7],
+                "ownership_proof": row[8],
+                "car_wash_logo": row[9],
+                "created_at": row[10],
+                "verified": row[11],
+                "status": row[12]
+            }
+            for row in requests
+        ]
+
+        return jsonify({"success": True, "data": result}), 200
+    except Exception as e:
+        print(f"Ошибка при получении заявок на бизнес-аккаунты: {e}")
+        return jsonify({"success": False, "error": "Ошибка сервера"}), 500
+
+@app.route("/api/update-request-status/<int:request_id>", methods=["POST"])
+def update_request_status(request_id):
+    data = request.get_json()
+    status = data.get("status")
+
+    if status not in ["Принят", "Отклонен"]:
+        return jsonify({"success": False, "error": "Неверный статус"}), 400
+
+    try:
+        cursor.execute("""
+            UPDATE business_accounts 
+            SET verified = TRUE, status = %s 
+            WHERE id = %s
+        """, (status, request_id))
+        conn.commit()
+        return jsonify({"success": True, "message": f"Заявка {status.lower()}"}), 200
+    except Exception as e:
+        conn.rollback()
+        print(f"Ошибка при обновлении статуса заявки: {e}")
+        return jsonify({"success": False, "error": "Ошибка сервера"}), 500
+    
+@app.route("/api/verified-business-accounts", methods=["GET"])
+def get_verified_business_accounts():
+    try:
+        cursor.execute("""
+            SELECT 
+                ba.id AS request_id,
+                c.first_name || ' ' || c.last_name AS client_name,
+                COALESCE(c.phone, c.email) AS contact_info,
+                ba.car_wash_name,
+                ba.address,
+                ba.city_district,
+                ba.working_hours,
+                ba.registration_certificate,
+                ba.ownership_proof,
+                ba.car_wash_logo,
+                ba.created_at,
+                ba.status
+            FROM business_accounts ba
+            LEFT JOIN clients c ON ba.client_id = c.id
+            WHERE ba.verified = TRUE
+            ORDER BY ba.created_at DESC
+        """)
+        requests = cursor.fetchall()
+
+        result = [
+            {
+                "request_id": row[0],
+                "client_name": row[1],
+                "contact_info": row[2],
+                "car_wash_name": row[3],
+                "address": row[4],
+                "city_district": row[5],
+                "working_hours": row[6],
+                "registration_certificate": row[7],
+                "ownership_proof": row[8],
+                "car_wash_logo": row[9],
+                "created_at": row[10],
+                "status": row[11]
+            }
+            for row in requests
+        ]
+
+        return jsonify({"success": True, "data": result}), 200
+    except Exception as e:
+        print(f"Ошибка при получении проверенных заявок: {e}")
+        return jsonify({"success": False, "error": "Ошибка сервера"}), 500
     
 
 @app.route("/api/wash-history", methods=["GET"])

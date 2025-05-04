@@ -56,18 +56,17 @@ export default function CreateBusinessModal({ onClose }) {
     const clientId = localStorage.getItem("client_id");
   
     const formDataToSend = new FormData();
+    const clientId = localStorage.getItem("client_id");
+
     formDataToSend.append("client_id", clientId);
     formDataToSend.append("carWashName", formData.carWashName);
     formDataToSend.append("address", formData.address);
     formDataToSend.append("cityDistrict", formData.cityDistrict);
     formDataToSend.append("workingHours", formData.workingHours);
-    formDataToSend.append(
-      "registrationCertificate",
-      formData.registrationCertificate
-    );
+    formDataToSend.append("registrationCertificate", formData.registrationCertificate);
     formDataToSend.append("ownershipProof", formData.ownershipProof);
-    formDataToSend.append("logo", formData.logo);
-  
+    formDataToSend.append("car_wash_logo", formData.logo);
+
     try {
       const response = await fetch(
         "http://localhost:5000/api/create-business-account",

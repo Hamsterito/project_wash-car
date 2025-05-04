@@ -2,34 +2,38 @@ import React from 'react';
 import './CreateBusinessModal.css';
 
 const fields = [
-  { key: 'registration', label: 'Свидетельство о регистрации ИП или юр. лица', fileUrl: '/docs/registration.pdf' },
-  { key: 'name', label: 'Название автомойки' },
+  { key: 'registration_certificate', label: 'Свидетельство о регистрации ИП или юр. лица' },
+  { key: 'car_wash_name', label: 'Название автомойки' },
   { key: 'address', label: 'Адрес (физическое местоположение)' },
-  { key: 'region', label: 'Город и район' },
-  { key: 'schedule', label: 'График работы' },
-  { key: 'identity', label: 'Подтверждение личности / прав владения', fileUrl: '/docs/identity.pdf' },
-  { key: 'photo', label: 'Фото автомойки, логотип', fileUrl: '/docs/photo.jpg' },
+  { key: 'city_district', label: 'Город и район' },
+  { key: 'working_hours', label: 'График работы' },
+  { key: 'ownership_proof', label: 'Подтверждение личности / прав владения' },
+  { key: 'car_wash_logo', label: 'Фото автомойки, логотип' },
 ];
 
 const ViewApplicationDetailsModal = ({ data = {}, onClose }) => {
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <h2>Данные заявки</h2>
 
         {fields.map((field) => (
-          <label key={field.key}>
+          <label key={field.key} className="field-label">
             {field.label}
-            {field.fileUrl ? (
-              <a href={field.fileUrl} target="_blank" rel="noopener noreferrer">Открыть файл</a>
+            {data[field.key] ? (
+              field.key.includes('certificate') || field.key.includes('proof') || field.key.includes('logo') ? (
+                <a href={`/${data[field.key]}`} target="_blank" rel="noopener noreferrer">Открыть файл</a>
+              ) : (
+                <div className="input-view">{data[field.key]}</div>
+              )
             ) : (
-              <div className="input-view">{data[field.key] || 'Нет данных'}</div>
+              <div className="input-view">Данные отсутствуют</div>
             )}
           </label>
         ))}
 
         <div className="modal-buttons">
-          <button className="btnq" onClick={onClose}>Закрыть</button>
+          <button className="btnq close" onClick={onClose}>Закрыть</button>
         </div>
       </div>
     </div>
