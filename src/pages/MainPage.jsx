@@ -21,16 +21,17 @@ const MainPage = () => {
 
   return (
     <>
-      <BannerSlider />
+      <div id="banner">
+        <BannerSlider />
+      </div>
       <CitySelector />
-      <div id="car-wash-grid">
+      <div id="booking">
         <CarWashGrid />
       </div>
       <div id="about">
         <AboutUs />
       </div>
       <ContactUs />
-      <Footer />
     </>
   );
 };
