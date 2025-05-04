@@ -52,9 +52,11 @@ export default function CreateBusinessModal({ onClose }) {
       alert("Пожалуйста, заполните все поля!");
       return;
     }
-
+  
+    const clientId = localStorage.getItem("client_id");
+  
     const formDataToSend = new FormData();
-    formDataToSend.append("clientId", formData.clientId);
+    formDataToSend.append("client_id", clientId);
     formDataToSend.append("carWashName", formData.carWashName);
     formDataToSend.append("address", formData.address);
     formDataToSend.append("cityDistrict", formData.cityDistrict);
@@ -65,12 +67,8 @@ export default function CreateBusinessModal({ onClose }) {
     );
     formDataToSend.append("ownershipProof", formData.ownershipProof);
     formDataToSend.append("logo", formData.logo);
-
+  
     try {
-      const clientId = localStorage.getItem("client_id");
-      const formDataToSend = new FormData(formElement);
-      formDataToSend.append("client_id", clientId);
-
       const response = await fetch(
         "http://localhost:5000/api/create-business-account",
         {
@@ -78,7 +76,7 @@ export default function CreateBusinessModal({ onClose }) {
           body: formDataToSend,
         }
       );
-
+  
       const data = await response.json();
       if (data.success) {
         alert("Бизнес-аккаунт успешно создан!");
@@ -91,6 +89,7 @@ export default function CreateBusinessModal({ onClose }) {
       alert("Произошла ошибка при создании бизнес-аккаунта");
     }
   };
+  
 
   return (
     <div className="modal-overlay" onClick={onClose}>

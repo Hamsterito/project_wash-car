@@ -1,5 +1,6 @@
 import React from 'react';
 import defaultImage from '../assets/carwash.png';
+import "./WashHistorySection.css";
 
 export default function WashHistoryCard({ wash }) {
   const getStatusBadge = (status) => {

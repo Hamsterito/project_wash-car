@@ -60,11 +60,16 @@ body {
 }
 
 .card-header {
-  background-color: rgba(0, 0, 0, 0.6);
+  font-weight: 500;
+  font-size: 15px;
+  background-color: #ffc107;
+  color: #333;
   padding: 10px;
-  font-weight: bold;
-  color: white;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  width: fit-content;
 }
+
 
 .card-body {
   padding: 10px;

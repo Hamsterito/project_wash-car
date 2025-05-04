@@ -16,6 +16,7 @@
 
 
 .history-card {
+    position: relative;
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
@@ -26,16 +27,29 @@
     transition: transform 0.2s ease;
 }
 
-.history-card:hover {
-    transform: scale(1.01);
-}
+  .history-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.3); 
+    z-index: 0;
+  }
+  
+  .history-card > * {
+    position: relative;
+    z-index: 1;
+  }  
+
+    .history-card:hover {
+        transform: scale(1.01);
+    } */
 
 .card-header {
-    font-weight: bold;
-    font-size: 19px;
-    background-color: #343a40;
-    color: #fff;
-    padding: 12px;
+    font-weight: 500;
+    font-size: 15px;
+    background-color: #ffc107;
+    color: #333;
+    padding: 10px;
     border-radius: 6px;
     margin-bottom: 10px;
     width: fit-content;
