@@ -104,12 +104,50 @@ CREATE TABLE bookings (
     box_id INTEGER REFERENCES wash_boxes(id),
     start_time TIMESTAMP NOT NULL,
     end_time TIMESTAMP NOT NULL,
-    status TEXT CHECK (status IN ('забронировано', 'свободно'))
-	DEFAULT 'свободно',
+	total_minutes INTEGER,
+	status TEXT CHECK (status IN (
+	'забронировано', 'свободно', 'завершено', 'отменено')) DEFAULT 'свободно',
 	type_car TEXT CHECK (type_car  IN ('Представительский класс'
 	,'Легковой автомобиль','Малые внедорожники','Полноразмерные внедорожники',
-	'Сверхбольшие внедорожники и микроавтобусы','Грузовые'))
+	'Сверхбольшие внедорожники и микроавтобусы','Грузовые')),
+	comments_client TEXT
 );
+
+select * from wash_history_view
+select * from clients
+
+CREATE OR REPLACE VIEW wash_history_view AS
+SELECT 
+    b.id,
+    b.client_id,
+    b.box_id,
+    b.start_time,
+    b.end_time,
+    b.total_minutes,
+    b.status,
+    b.type_car AS vehicle_type,
+    b.comments_client,
+    wb.name AS wash_name,
+    wb.location AS wash_location,
+    wb.image_url AS wash_image,
+    string_agg(s.name, ', ') AS services,
+    sum(s.price) AS total_price
+FROM 
+    bookings b
+JOIN 
+    wash_boxes wb ON b.box_id = wb.id
+LEFT JOIN 
+    booking_services bs ON b.id = bs.booking_id
+LEFT JOIN 
+    services s ON bs.service_id = s.id
+WHERE 
+    b.client_id IS NOT NULL
+GROUP BY
+    b.id, b.client_id, b.box_id, b.start_time, b.end_time, 
+    b.total_minutes, b.status, b.type_car, b.comments_client,
+    wb.name, wb.location, wb.image_url
+ORDER BY 
+    b.start_time DESC;
 
 CREATE TABLE admins (
     id SERIAL PRIMARY KEY,
@@ -150,7 +188,11 @@ INSERT INTO booking_services (booking_id, service_id) VALUES
 select * from booking_services
 
 -- Услуги
-
+INSERT INTO services (name, description, price, duration_minutes) VALUES
+('Мойка кузова', 'Полная мойка внешней части автомобиля', 500.00, 20),
+('Химчистка салона', 'Глубокая чистка сидений и обивки', 1500.00, 60),
+('Полировка фар', 'Полировка передних фар', 800.00, 30),
+('Комплексная мойка', 'Мойка кузова и салона', 2000.00, 90);
 
 -- Мойки (боксы)
 INSERT INTO wash_boxes (name, location, image_url) VALUES

@@ -35,33 +35,57 @@ export default function UserProfile({
 
   useEffect(() => {
     if (!clientId) return;
-
-    async function fetchUserInfo() {
-      setLoading(true);
-      try {
-        const response = await fetch(`http://localhost:5000/api/user-info?client_id=${clientId}`);
-        const data = await response.json();
-
-        if (data.success) {
-          console.log("Полученные данные пользователя:", data.user); // Лог для проверки
-          setFormData({
-            lastName: data.user.last_name,
-            firstName: data.user.first_name,
-            phone: data.user.phone,
-            email: data.user.email,
+    
+    async function fetchUserInfo(retries = 3, delay = 1000) {
+      let attempt = 0;
+      
+      while (attempt < retries) {
+        try {
+          const response = await fetch(`http://localhost:5000/api/user-info?client_id=${clientId}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
           });
-          setUserStatus(data.user.status);
-
-          const photoPath = data.user.photo_url?.trim();
-          setAvatar(photoPath ? photoPath : defaultAvatar);
-        } else {
-          console.error("Ошибка API:", data.error);
-          alert("Ошибка: " + data.error); // Показываем сообщение об ошибке
+          
+          if (!response.ok) {
+            throw new Error(`Ошибка HTTP: ${response.status}`);
+          }
+          
+          const data = await response.json();
+    
+          if (data.success) {
+            setFormData({
+              lastName: data.user.last_name,
+              firstName: data.user.first_name,
+              phone: data.user.phone,
+              email: data.user.email,
+            });
+            setUserStatus(data.user.status);
+    
+            const photoPath = data.user.photo_url?.trim();
+            setAvatar(photoPath ? photoPath : defaultAvatar);
+            return;
+          } else {
+            console.error(data.error);
+            throw new Error(data.error || 'Неизвестная ошибка');
+          }
+        } catch (error) {
+          console.error(`Попытка ${attempt + 1} не удалась: ${error.message}`);
+          
+          if (error.message.includes('401') || error.message.includes('403')) {
+            handleLogout();
+            return;
+          }
+          
+          if (attempt === retries - 1) {
+            console.error('Ошибка при получении данных пользователя:', error);
+            return;
+          }
+          
+          await new Promise(resolve => setTimeout(resolve, delay));
+          attempt++;
         }
-      } catch (error) {
-        console.error("Ошибка при получении данных пользователя:", error);
-      } finally {
-        setLoading(false);
       }
     }
 

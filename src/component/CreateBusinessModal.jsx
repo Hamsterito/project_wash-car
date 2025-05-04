@@ -52,7 +52,9 @@ export default function CreateBusinessModal({ onClose }) {
       alert("Пожалуйста, заполните все поля!");
       return;
     }
-
+  
+    const clientId = localStorage.getItem("client_id");
+  
     const formDataToSend = new FormData();
     const clientId = localStorage.getItem("client_id");
 
@@ -73,7 +75,7 @@ export default function CreateBusinessModal({ onClose }) {
           body: formDataToSend,
         }
       );
-
+  
       const data = await response.json();
       if (data.success) {
         alert("Бизнес-аккаунт успешно создан!");
@@ -86,6 +88,7 @@ export default function CreateBusinessModal({ onClose }) {
       alert("Произошла ошибка при создании бизнес-аккаунта");
     }
   };
+  
 
   return (
     <div className="modal-overlay" onClick={onClose}>
