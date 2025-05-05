@@ -31,7 +31,7 @@ export default function BookingSystem({
   const [currentBoxId, setCurrentBoxId] = useState(null);
 
   const selectedServiceObjects = services.filter((s) =>
-    selectedServices.includes(s.name)
+    selectedServices.includes(s.id)
   );
 
   const totalPrice = selectedServiceObjects.reduce(
@@ -265,11 +265,11 @@ export default function BookingSystem({
     }
   };
 
-  const toggleService = (serviceName) => {
+  const toggleService = (serviceId) => {
     setSelectedServices((prev) =>
-      prev.includes(serviceName)
-        ? prev.filter((name) => name !== serviceName)
-        : [...prev, serviceName]
+      prev.includes(serviceId)
+        ? prev.filter((id) => id !== serviceId)
+        : [...prev, serviceId]
     );
   };
 
@@ -282,7 +282,7 @@ export default function BookingSystem({
         carType,
         date: selectedDate,
         time: selectedTimeSlot,
-        selectedServices,
+        selectedServiceIds: selectedServices,
         boxId: boxId || wash.id,
         clientId,
         comments: formData.comments,
@@ -627,13 +627,13 @@ export default function BookingSystem({
           <h3 className="section-title">Выберите услуги:</h3>
           <ul className="service-list">
             {services.length > 0 ? (
-              services.map((service, i) => {
-                const isSelected = selectedServices.includes(service.name);
+              services.map((service) => {
+                const isSelected = selectedServices.includes(service.id);
                 return (
                   <li
-                    key={i}
+                    key={service.id}
                     className={`service-item-menu ${isSelected ? "selected" : ""}`}
-                    onClick={() => toggleService(service.name)}
+                    onClick={() => toggleService(service.id)}
                   >
                     <span className="checkbox">{isSelected ? "☑" : "☐"}</span>
                     <div className="service-details">
@@ -700,12 +700,12 @@ export default function BookingSystem({
               </span>
               <span>
                 <ul className="services-list" id="list_services">
-                  {selectedServices.map((service, index) => (
+                  {selectedServiceObjects.map((service) => (
                     <li
-                      key={`${service}-${index}`}
+                      key={service.id}
                       className="service-list-item"
                     >
-                      {service}
+                      {service.name}
                     </li>
                   ))}
                 </ul>

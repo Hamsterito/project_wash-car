@@ -129,7 +129,7 @@ export default function CreateBusinessModal({ onClose }) {
 
         <div className="preview-card">
           <p className="preview-label">Пример:</p>
-          <div className="carwash-card">
+          <div className="carwash-card" id='carwash_example'>
             {formData.logo && (
               <img
                 src={URL.createObjectURL(formData.logo)}
