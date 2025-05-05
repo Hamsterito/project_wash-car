@@ -197,7 +197,7 @@
                 </tbody>
               </table>
             ) : (
-              <p>Нет бронирований</p>
+              <p className="no_book_text">Нет бронирований</p>
             )}
           </div>
         ) : (
