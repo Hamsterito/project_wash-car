@@ -2,11 +2,10 @@ import React, { useState } from 'react';
 import './CreateBusinessModal.css';
 
 const fields = [
-  { key: 'registration_certificate', label: 'Свидетельство о регистрации ИП или юр. лица' },
   { key: 'car_wash_name', label: 'Название автомойки' },
   { key: 'address', label: 'Адрес (физическое местоположение)' },
   { key: 'city_district', label: 'Город и район' },
-  { key: 'working_hours', label: 'График работы' },
+  { key: 'registration_certificate', label: 'Свидетельство о регистрации ИП или юр. лица' },
   { key: 'ownership_proof', label: 'Подтверждение личности / прав владения' },
   { key: 'car_wash_logo', label: 'Фото автомойки, логотип' },
 ];
@@ -26,23 +25,33 @@ const ViewApplicationModal = ({ data = {}, onClose, onApprove, onReject }) => {
         <h2>Проверка заявки</h2>
 
         {fields.map((field) => (
-          <label key={field.key} className="field-label">
-            {field.label}
-            {data[field.key] ? (
-              field.key.includes('certificate') || field.key.includes('proof') || field.key.includes('logo') ? (
-                <a href={`/${data[field.key]}`} target="_blank" rel="noopener noreferrer">Скачать файл</a>
+          <div key={field.key} className="field-label checkbox-container">
+            <div className="field-text">
+              <span>{field.label}</span>
+              {data[field.key] ? (
+                field.key.includes('certificate') || field.key.includes('proof') || field.key.includes('logo') ? (
+                  <a
+                    href={`/${data[field.key]}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="view-file-link"
+                  >
+                    Смотреть файл
+                  </a>
+                ) : (
+                  <div className="input-view">{data[field.key]}</div>
+                )
               ) : (
-                <div className="input-view">{data[field.key]}</div>
-              )
-            ) : (
-              <div className="input-view">Данные отсутствуют</div>
-            )}
+                <div className="input-view">Данные отсутствуют</div>
+              )}
+            </div>
             <input
               type="checkbox"
+              className="styled-checkbox"
               checked={!!checked[field.key]}
               onChange={() => handleToggle(field.key)}
             />
-          </label>
+          </div>
         ))}
 
         <div className="modal-buttons">

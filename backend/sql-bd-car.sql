@@ -9,6 +9,11 @@ CREATE TABLE clients (
 	    photo_url TEXT,
 		is_verified BOOLEAN
 );
+
+UPDATE clients
+SET status = 'user'
+WHERE id = 3;
+
 drop table clients cascade 
 select * from clients
 select * from verification_codes
@@ -87,14 +92,14 @@ CREATE TABLE bookings (
      car_wash_name TEXT NOT NULL,
      address TEXT NOT NULL,
      city_district TEXT NOT NULL,
-     working_hours TEXT NOT NULL,
      ownership_proof TEXT NOT NULL, 
      car_wash_logo TEXT,
      verified BOOLEAN DEFAULT FALSE,
      status TEXT DEFAULT 'На рассмотрении' CHECK (status IN ('На рассмотрении', 'Принят', 'Отклонен')),
      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
  );
- 
+
+SELECT * FROM business_accounts
  TRUNCATE TABLE business_accounts RESTART IDENTITY CASCADE;
  
 delete from bookings

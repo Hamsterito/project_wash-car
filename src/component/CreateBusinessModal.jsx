@@ -1,26 +1,12 @@
 import React, { useState } from 'react';
 import './CreateBusinessModal.css';
 
-function CarWashCard({ name, address, image }) {
-  return (
-    <div className="carwash-card">
-      <img src={image} alt="Автомойка" className="carwash-image" />
-      <div className="carwash-info">
-        <h3>{name || 'Название автомойки'}</h3>
-        <p>Адрес: {address || 'Адрес автомойки'}</p>
-        <button className="carwash-button">Забронировать</button>
-      </div>
-    </div>
-  );
-}
-
 export default function CreateBusinessModal({ onClose }) {
   const [formData, setFormData] = useState({
     registrationCertificate: null,
     carWashName: "",
     address: "",
     cityDistrict: "",
-    workingHours: "",
     ownershipProof: null,
     logo: null,
   });
@@ -42,7 +28,6 @@ export default function CreateBusinessModal({ onClose }) {
       formData.carWashName.trim() &&
       formData.address.trim() &&
       formData.cityDistrict.trim() &&
-      formData.workingHours.trim() &&
       formData.ownershipProof &&
       formData.logo
     );
@@ -62,26 +47,22 @@ export default function CreateBusinessModal({ onClose }) {
     formDataToSend.append("carWashName", formData.carWashName);
     formDataToSend.append("address", formData.address);
     formDataToSend.append("cityDistrict", formData.cityDistrict);
-    formDataToSend.append("workingHours", formData.workingHours);
     formDataToSend.append("registrationCertificate", formData.registrationCertificate);
     formDataToSend.append("ownershipProof", formData.ownershipProof);
     formDataToSend.append("car_wash_logo", formData.logo);
 
     try {
-      const response = await fetch(
-        "http://localhost:5000/api/create-business-account",
-        {
-          method: "POST",
-          body: formDataToSend,
-        }
-      );
+      const response = await fetch("http://localhost:5000/api/create-business-account", {
+        method: "POST",
+        body: formDataToSend,
+      });
 
       const data = await response.json();
       if (data.success) {
         setMessage("Бизнес-аккаунт успешно создан!");
         setTimeout(() => {
           onClose();
-          window.location.reload(); // Обновляем страницу ProfilePage
+          window.location.reload();
         }, 10);
       } else {
         setMessage(`Ошибка: ${data.error}`);
@@ -114,24 +95,28 @@ export default function CreateBusinessModal({ onClose }) {
               <input type="text" name="cityDistrict" value={formData.cityDistrict} onChange={handleChange} />
             </label>
 
-            <label>
-              График работы
-              <input type="text" name="workingHours" value={formData.workingHours} onChange={handleChange} />
-            </label>
-
-            <label>
+            <label className="file-upload">
               Свидетельство о регистрации ИП или юр. лица
-              <input type="file" name="registrationCertificate" onChange={handleChange} />
+              <div className="custom-file-input">
+                <span>{formData.registrationCertificate?.name || "Выберите файл"}</span>
+                <input type="file" name="registrationCertificate" onChange={handleChange} />
+              </div>
             </label>
 
-            <label>
+            <label className="file-upload">
               Подтверждение личности / прав владения
-              <input type="file" name="ownershipProof" onChange={handleChange} />
+              <div className="custom-file-input">
+                <span>{formData.ownershipProof?.name || "Выберите файл"}</span>
+                <input type="file" name="ownershipProof" onChange={handleChange} />
+              </div>
             </label>
 
-            <label>
+            <label className="file-upload">
               Фото автомойки, обложка
-              <input type="file" name="logo" onChange={handleChange} />
+              <div className="custom-file-input">
+                <span>{formData.logo?.name || "Выберите файл"}</span>
+                <input type="file" name="logo" onChange={handleChange} />
+              </div>
             </label>
 
             <div className="modal-buttons">
