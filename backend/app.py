@@ -27,6 +27,7 @@ cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 MAILJET_API_KEY = os.getenv('MAILJET_API_KEY')
 MAILJET_API_SECRET = os.getenv('MAILJET_API_SECRET')
 FROM_EMAIL = os.getenv('FROM_EMAIL')
+print(MAILJET_API_KEY)
 
 TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
 TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
@@ -77,6 +78,15 @@ def generate_code(length=6):
 
 # удаление старых кодов
 def delete_expired_codes():
+    cursor.execute("""
+        DELETE FROM clients 
+        WHERE id IN (
+            SELECT client_id FROM verification_codes 
+            WHERE expires_at < %s
+        ) AND is_verified = FALSE
+    """, (datetime.now(),))
+    conn.commit()
+
     cursor.execute("""
         DELETE FROM verification_codes 
         WHERE expires_at < %s
@@ -353,11 +363,10 @@ def get_wash_boxes():
 @app.route("/api/book", methods=["POST"])
 def create_booking():
     data = request.get_json()
-    
     car_type = data.get("carType")
     date = data.get("date")
     time = data.get("time")
-    selected_services = data.get("selectedServices", [])
+    selected_service_ids = data.get("selectedServiceIds", [])
     box_id = data.get("boxId")
     client_id = data.get("clientId")
     
@@ -369,7 +378,7 @@ def create_booking():
     if not all([car_type, date, time, box_id]):
         return jsonify({"error": "Недостаточно данных для бронирования"}), 400
     
-    if len(selected_services) == 0:
+    if len(selected_service_ids) == 0:
         return jsonify({"error": "Выберите хотя бы одну услугу"}), 400
     
     try:
@@ -383,11 +392,11 @@ def create_booking():
             )
             client_id = cursor.fetchone()[0]
         
-        if selected_services:
-            placeholders = ','.join(['%s'] * len(selected_services))
+        if selected_service_ids:
+            placeholders = ','.join(['%s'] * len(selected_service_ids))
             cursor.execute(
-                f"SELECT id, name, duration_minutes FROM services WHERE name IN ({placeholders})",
-                selected_services
+                f"SELECT id, name, duration_minutes FROM services WHERE id IN ({placeholders})",
+                selected_service_ids
             )
             service_rows = cursor.fetchall()
             
@@ -1112,38 +1121,19 @@ def get_bookings_by_box(box_id):
     try:
         cursor.execute("""
             SELECT 
-                b.id,
-                b.start_time,
-                b.end_time,
-                b.status,
-                COALESCE(CONCAT(c.first_name, ' ', c.last_name), 'Гость') as client_name,
-                b.type_car,
-                b.comments_client,
-                b.total_minutes,
-                COALESCE(SUM(s.price), 0) as total_price,
-                COALESCE(
-                    json_agg(
-                        json_build_object(
-                            'id', s.id,
-                            'name', s.name,
-                            'price', s.price,
-                            'duration', s.duration_minutes
-                        ) 
-                        ORDER BY s.name
-                    ) FILTER (WHERE s.id IS NOT NULL),
-                    '[]'::json
-                ) as services,
-                COALESCE(
-                    string_agg(s.name, ', ' ORDER BY s.name),
-                    ''
-                ) as service_names
-            FROM bookings b
-            LEFT JOIN clients c ON b.client_id = c.id
-            LEFT JOIN booking_services bs ON b.id = bs.booking_id
-            LEFT JOIN services s ON bs.service_id = s.id
-            WHERE b.box_id = %s
-            GROUP BY b.id, c.first_name, c.last_name
-            ORDER BY b.start_time
+                id,
+                start_time,
+                end_time,
+                status,
+                COALESCE(client_id::text, 'Гость') as client_name,
+                vehicle_type,
+                comments_client,
+                total_minutes,
+                COALESCE(total_price, 0),
+                services
+            FROM wash_history_view
+            WHERE box_id = %s
+            ORDER BY start_time
         """, (box_id,))
         
         bookings = cursor.fetchall()
@@ -1160,8 +1150,8 @@ def get_bookings_by_box(box_id):
                 "comments": booking[6],
                 "totalMinutes": booking[7],
                 "totalPrice": float(booking[8]),
-                "services": booking[10].split(', ') if booking[10] else [],
-                "servicesDetails": booking[9]
+                "services": booking[9].split(', ') if booking[9] else [],
+                "servicesDetails": None 
             })
         
         return jsonify(result), 200
@@ -1170,6 +1160,7 @@ def get_bookings_by_box(box_id):
         conn.rollback()
         print(f"Error getting bookings by box: {str(e)}")
         return jsonify({"error": "Ошибка при получении броней по боксу"}), 500
+
     
 @app.route("/api/bookings/<int:booking_id>/cancel", methods=["PUT"])
 def cancel_booking(booking_id):
@@ -1295,9 +1286,7 @@ def save_carwash():
             return jsonify({"success": False, "error": "Количество мест должно быть положительным числом"}), 400
         if not work_days:
             return jsonify({"success": False, "error": "Выберите хотя бы один рабочий день"}), 400
-        if not managers:
-            return jsonify({"success": False, "error": "Добавьте хотя бы одного менеджера"}), 400
-
+                
         manager_client_ids = []
         for manager in managers:
             contact = manager.get("contact", "").strip().lower()
@@ -1404,10 +1393,68 @@ def save_carwash():
 def create_carwash():
     return save_carwash()
 
-
 @app.route("/api/carwash-update", methods=["POST"])
 def update_carwash():
     return save_carwash()
+
+@app.route("/api/carwash-delete", methods=["POST"])
+def delete_carwash():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"success": False, "error": "Отсутствуют данные"}), 400
+
+        wash_box_id = data.get("id")
+        if not wash_box_id:
+            return jsonify({"success": False, "error": "Не указан ID автомойки"}), 400
+
+        with conn:
+            cursor.execute("SELECT id FROM wash_boxes WHERE id = %s", (wash_box_id,))
+            if not cursor.fetchone():
+                return jsonify({"success": False, "error": "Автомойка не найдена"}), 404
+
+            cursor.execute("DELETE FROM box_availability WHERE wash_box_id = %s", (wash_box_id,))
+            
+            cursor.execute("SELECT client_id FROM managers WHERE wash_box_id = %s", (wash_box_id,))
+            manager_client_ids = [row[0] for row in cursor.fetchall()]
+            
+            cursor.execute("DELETE FROM managers WHERE wash_box_id = %s", (wash_box_id,))
+            
+            for client_id in manager_client_ids:
+                cursor.execute(""" 
+                    SELECT 1 FROM managers WHERE client_id = %s LIMIT 1
+                """, (client_id,))
+                
+                if not cursor.fetchone():
+                    cursor.execute("""
+                        UPDATE clients
+                        SET status = 'user'
+                        WHERE id = %s AND status = 'business'
+                    """, (client_id,))
+
+            cursor.execute("DELETE FROM services WHERE wash_box_id = %s", (wash_box_id,))
+            
+            cursor.execute("SELECT id FROM bookings WHERE box_id = %s LIMIT 1", (wash_box_id,))
+            has_appointments = cursor.fetchone() is not None
+
+            if has_appointments:
+                conn.rollback()
+                return jsonify({
+                    "success": False, 
+                    "error": "Невозможно удалить автомойку, так как существуют связанные записи на услуги. Пожалуйста, удалите все записи перед удалением автомойки."
+                }), 400
+
+            cursor.execute("DELETE FROM wash_boxes WHERE id = %s", (wash_box_id,))
+            
+            return jsonify({
+                "success": True, 
+                "message": "Автомойка успешно удалена"
+            }), 200
+    
+    except Exception as e:
+        conn.rollback()
+        print(f"Ошибка удаление автомойки: {str(e)}")
+        return jsonify({"success": False, "error": "Внутренняя ошибка сервера"}), 500
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

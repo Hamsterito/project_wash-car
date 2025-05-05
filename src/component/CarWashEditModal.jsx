@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   MapPin,
   Users,
@@ -24,8 +24,18 @@ const CarWashEditModal = ({ data, onClose, onSave, isCreating = false }) => {
   const [expandedDay, setExpandedDay] = useState(null);
   const [previewImage, setPreviewImage] = useState(data.image || null);
   const fileInputRef = useRef(null);
+  const errorRef = useRef(null); 
+  const modalContainerRef = useRef(null); 
   const clientId = localStorage.getItem("client_id");
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (error && errorRef.current && modalContainerRef.current) {
+      setTimeout(() => {
+        errorRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+      }, 100);
+    }
+  }, [error]);
 
   const daysOfWeek = [
     { id: 0, name: "Понедельник" },
@@ -77,8 +87,8 @@ const CarWashEditModal = ({ data, onClose, onSave, isCreating = false }) => {
       }
     }
 
-    if (form.managers.length === 0) {
-      setError("Добавьте хотя бы одного менеджера");
+    if (form.workDays.length === 0) {
+      setError("Выберите хотя бы один рабочий день");
       return;
     }
 
@@ -87,11 +97,6 @@ const CarWashEditModal = ({ data, onClose, onSave, isCreating = false }) => {
         setError("Заполните контактные данные всех менеджеров");
         return;
       }
-    }
-
-    if (form.workDays.length === 0) {
-      setError("Выберите хотя бы один рабочий день");
-      return;
     }
 
     const payload = {
@@ -233,9 +238,7 @@ const CarWashEditModal = ({ data, onClose, onSave, isCreating = false }) => {
     fileInputRef.current.click();
   };
 
-  // Улучшенный компонент TimePicker
   const ModernTimePicker = ({ value, onChange, placeholder }) => {
-    // Предопределенные временные интервалы с шагом 30 минут
     const timeOptions = [];
     for (let hour = 0; hour < 24; hour++) {
       for (let min = 0; min < 60; min += 30) {
@@ -274,33 +277,13 @@ const CarWashEditModal = ({ data, onClose, onSave, isCreating = false }) => {
     );
   };
 
-  const DurationInput = ({ value, onChange }) => {
-    const handleDurationChange = (e) => {
-      const inputValue = e.target.value;
-
-      if (inputValue === "" || /^\d+$/.test(inputValue)) {
-        onChange(inputValue === "" ? "" : parseInt(inputValue, 10));
-      }
-    };
-
-    return (
-      <div className="duration-container">
-        <input
-          type="text"
-          value={value || ""}
-          onChange={handleDurationChange}
-          className="duration-input"
-          min="15"
-          step="15"
-        />
-        <span className="input-suffix">мин</span>
-      </div>
-    );
-  };
-
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+      <div 
+        className="modal-container" 
+        onClick={(e) => e.stopPropagation()}
+        ref={modalContainerRef}
+      >
         <h2 className="modal-header">
           {isCreating ? "Создание автомойки" : "Редактирование автомойки"}
         </h2>
@@ -454,7 +437,7 @@ const CarWashEditModal = ({ data, onClose, onSave, isCreating = false }) => {
         </div>
 
         <div className="form-section">
-          <label className="section-title-edit">Контакты менеджеров</label>
+          <label className="section-title-edit">Контакты менеджеров (необязательно)</label>
           <div className="managers-list">
             {form.managers.map((manager, index) => (
               <div key={index} className="manager-item">
@@ -508,14 +491,24 @@ const CarWashEditModal = ({ data, onClose, onSave, isCreating = false }) => {
                   className="input-field"
                   placeholder="Цена (тг)"
                 />
-                <DurationInput
-                  value={service.duration}
-                  onChange={(value) => {
-                    const updated = [...form.services];
-                    updated[index].duration = value;
-                    setForm((prev) => ({ ...prev, services: updated }));
-                  }}
-                />
+                <div className="duration-container">
+                  <input
+                    type="text"
+                    value={service.duration || ""}
+                    onChange={(e) => {
+                      const updated = [...form.services];
+                      const value = e.target.value;
+                      
+                      if (value === "" || /^\d+$/.test(value)) {
+                        updated[index].duration = value === "" ? "" : parseInt(value, 10);
+                        setForm((prev) => ({ ...prev, services: updated }));
+                      }
+                    }}
+                    className="input-field"
+                    placeholder="Время (мин)"
+                  />
+                  <span className="input-suffix">мин</span>
+                </div>
               </div>
             ))}
           </div>
@@ -535,7 +528,7 @@ const CarWashEditModal = ({ data, onClose, onSave, isCreating = false }) => {
         </div>
 
         {error === "manager_not_found" && (
-          <div className="error-message" id="carwash_edit_error">
+          <div className="error-message" id="carwash_edit_error" ref={errorRef}>
             <h3>❌ Ошибка регистрации менеджеров</h3>
             <p>
               Для управления автомойкой все указанные менеджеры должны быть
@@ -553,7 +546,7 @@ const CarWashEditModal = ({ data, onClose, onSave, isCreating = false }) => {
         )}
 
         {error && error !== "manager_not_found" && (
-          <div className="error-message" id="carwash_edit_error">
+          <div className="error-message" id="carwash_edit_error" ref={errorRef}>
             <h3>❌ Ошибка</h3>
             <p>{error}</p>
           </div>

@@ -15,7 +15,7 @@ export default function ProfilePage() {
   const { isLoggedIn, setIsLoggedIn } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
-  const {userRole, setUserRole} = useAuth('admin'); //'user', 'business', 'manager', 'admin'
+  const {userRole, setUserRole} = useAuth('admin');
   const [formData, setFormData] = useState({
     lastName: '',
     firstName: '',
@@ -25,7 +25,7 @@ export default function ProfilePage() {
   const [avatar, setAvatar] = useState('https://via.placeholder.com/150');
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [businessStatus, setBusinessStatus] = useState(null); // Новый state для проверки статуса бизнес-аккаунта
+  const [businessStatus, setBusinessStatus] = useState(null);
 
   
 

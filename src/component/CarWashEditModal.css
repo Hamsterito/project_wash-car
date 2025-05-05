@@ -249,6 +249,27 @@
   padding: var(--spacing-sm);
 }
 
+.retry-button{
+  padding: 0.7rem 2rem;
+  margin-top: 10px;
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #b71c1c;
+  border: 2px solid #b71c1c;
+  border-radius: 2rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(247, 201, 72, 0.3);
+  text-align: center;
+  min-width: 200px;
+  transition: all 0.3s ease;
+}
+
+.retry-button:hover{
+  background-color:#b71c1c;
+  color: #ffffff;
+}
+
 .schedule-day {
   margin-bottom: 6px;
 }
