@@ -181,6 +181,7 @@ def api_login():
             return jsonify({'success': False, 'message': 'Неверный пароль'}), 401
 
     except Exception as e:
+        conn.rollback()
         return jsonify({'success': False, 'message': 'Ошибка сервера'}), 500
 
 # верификация
@@ -342,6 +343,7 @@ def get_wash_boxes():
         return jsonify(boxes)
             
     except Exception as e:
+        conn.rollback()
         return jsonify({"error": "Ошибка сервера"}), 500
         
     finally:
@@ -391,11 +393,13 @@ def create_booking():
             
             total_minutes = sum(row[2] for row in service_rows)
         else:
+            conn.rollback()
             return jsonify({"error": "Выберите хотя бы одну услугу"}), 400
         
         try:
             start_time = datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M")
         except ValueError:
+            conn.rollback()
             return jsonify({"error": "Неверный формат даты или времени"}), 400
             
         end_time = start_time + timedelta(minutes=total_minutes)
@@ -549,6 +553,7 @@ def get_available_slots():
         return jsonify(available_slots), 200
 
     except Exception as e:
+        conn.rollback()
         print(f"Error getting available slots: {str(e)}")
         return jsonify({"error": "Не удалось получить доступные слоты"}), 500
     
@@ -571,6 +576,7 @@ def get_services():
         return jsonify({"services": result}), 200
         
     except Exception as e:
+        conn.rollback()
         print(f"Error fetching services: {str(e)}")
         return jsonify({"error": "Не удалось получить список услуг"}), 500
     
@@ -618,10 +624,10 @@ def get_user_info():
             return jsonify({"success": True, "user": user_data})
             
     except Exception as e:
+        conn.rollback()
         print(f"Ошибка при получении данных пользователя: {e}")
         return jsonify({"success": False, "error": "Ошибка сервера"}), 500
 
-#  обновление информации о пользователе
 @app.route("/api/update-user", methods=["PUT"])
 def update_user_info():
     try:
@@ -632,9 +638,6 @@ def update_user_info():
         phone = data.get("phone") or None
         email = data.get("email") or None
 
-        print(data)
-
-        # Проверка: хотя бы одно поле из email или phone должно быть заполнено
         if not phone and not email:
             return jsonify({
                 "success": False,
@@ -712,19 +715,16 @@ def upload_photo():
 @app.route("/api/create-business-account", methods=["POST"])
 def create_business_account():
     try:
-        # Получение данных из запроса
         client_id = request.form.get("client_id")
         if not client_id or not client_id.isdigit():
             return jsonify({"success": False, "error": "Неверный client_id"}), 400
         client_id = int(client_id)
 
-        # Проверка наличия файлов
         if 'registrationCertificate' not in request.files or \
            'ownershipProof' not in request.files or \
            'car_wash_logo' not in request.files:
             return jsonify({"success": False, "error": "Не все файлы загружены"}), 400
 
-        # Получение остальных данных
         car_wash_name = request.form.get("carWashName")
         address = request.form.get("address")
         city_district = request.form.get("cityDistrict")
@@ -733,11 +733,9 @@ def create_business_account():
         if not all([car_wash_name, address, city_district, working_hours]):
             return jsonify({"success": False, "error": "Не все поля заполнены"}), 400
 
-        # Папка для загрузки файлов
         upload_folder = r'public\business account information'
         os.makedirs(upload_folder, exist_ok=True)
 
-        # Сохранение файлов
         registration_certificate_file = request.files['registrationCertificate']
         registration_certificate_path = os.path.join(upload_folder, secure_filename(registration_certificate_file.filename))
         registration_certificate_file.save(registration_certificate_path)
@@ -759,7 +757,6 @@ def create_business_account():
         existing_account = cursor.fetchone()
 
         if existing_account:
-            # Обновление существующей отклонённой заявки
             cursor.execute(
                 """
                 UPDATE business_accounts
@@ -791,7 +788,6 @@ def create_business_account():
             return jsonify({"success": True, "message": "Заявка обновлена после отклонения"})
 
         else:
-            # Вставка новой заявки
             cursor.execute(
                 """
                 INSERT INTO business_accounts (
@@ -820,7 +816,7 @@ def create_business_account():
             return jsonify({"success": True, "message": "Бизнес-аккаунт успешно создан"})
 
     except Exception as e:
-        # Обработка ошибок
+        conn.rollback()
         return jsonify({"success": False, "error": str(e)}), 500
 
 
@@ -871,6 +867,7 @@ def get_business_requests():
 
             return jsonify({"success": True, "data": result}), 200
     except Exception as e:
+        conn.rollback()
         print(f"Ошибка при получении заявок на бизнес-аккаунты: {e}")
         return jsonify({"success": False, "error": "Ошибка сервера"}), 500
 
@@ -940,6 +937,7 @@ def get_verified_business_accounts():
 
             return jsonify({"success": True, "data": result}), 200
     except Exception as e:
+        conn.rollback()
         print(f"Ошибка при получении проверенных заявок: {e}")
         return jsonify({"success": False, "error": "Ошибка сервера"}), 500
     
@@ -1014,6 +1012,7 @@ def get_wash_history():
         })
         
     except Exception as e:
+        conn.rollback()
         return jsonify({"success": False, "error": "Ошибка сервера"}), 500
 
 @app.route("/api/wash-history/<int:history_id>", methods=["GET"])
@@ -1072,6 +1071,7 @@ def get_wash_history_detail(history_id):
         return jsonify({"success": True, "detail": history_detail})
         
     except Exception as e:
+        conn.rollback()
         print(f"Ошибка при получении детальной информации о мойке: {e}")
         return jsonify({"success": False, "error": "Ошибка сервера"}), 500
     
@@ -1091,6 +1091,7 @@ def get_role():
         
         return jsonify({"success": True, "role": row[0]})
     except Exception as e:
+        conn.rollback()
         print(f"[get_role] Ошибка: {e}")
         return jsonify({"success": False, "error": "Ошибка сервера"}), 500
     
@@ -1111,6 +1112,7 @@ def check_business_status():
         else:
             return jsonify({"success": True, "status": None}), 200
     except Exception as e:
+        conn.rollback()
         print(f"Ошибка при проверке статуса бизнес-аккаунта: {e}")
         return jsonify({"success": False, "error": "Ошибка сервера"}), 500
     
@@ -1174,6 +1176,7 @@ def get_bookings_by_box(box_id):
         return jsonify(result), 200
         
     except Exception as e:
+        conn.rollback()
         print(f"Error getting bookings by box: {str(e)}")
         return jsonify({"error": "Ошибка при получении броней по боксу"}), 500
     
@@ -1232,27 +1235,188 @@ def get_bookings_by_client(client_id):
         return jsonify(result), 200
 
     except Exception as e:
+        conn.rollback()
         print(f"Error getting client bookings: {str(e)}")
         return jsonify({"error": "Ошибка при получении истории клиента"}), 500
 
 @app.route("/api/carwashes", methods=["GET"])
 def get_carwashes():
+    client_id = request.args.get("client_id")
+    role = request.args.get("role") 
+    
     try:
-        cursor.execute("SELECT id, name, location, image_url FROM wash_boxes ORDER BY id")
-        rows = cursor.fetchall()
+        if role == "business":
+            cursor.execute("""
+                SELECT id, name, location, image_url
+                FROM wash_boxes
+                WHERE client_id = %s
+                ORDER BY id
+            """, (client_id,))
+        elif role == "manager":
+            cursor.execute("""
+                SELECT w.id, w.name, w.location, w.image_url
+                FROM wash_boxes w
+                JOIN managers m ON w.id = m.wash_box_id
+                WHERE m.client_id = %s
+                ORDER BY w.id
+            """, (client_id,))
+        else:
+            return jsonify({"error": "Неизвестная роль"}), 400
 
-        carwashes = []
-        for row in rows:
-            carwashes.append({
-                "id": row[0],
-                "name": row[1],
-                "address": row[2], 
-                "image": row[3] 
-            })
+        rows = cursor.fetchall()
+        carwashes = [{
+            "id": row[0],
+            "name": row[1],
+            "address": row[2],
+            "image": row[3]
+        } for row in rows]
+
         return jsonify(carwashes), 200
     except Exception as e:
+        conn.rollback()
         print(f"Error fetching carwashes: {str(e)}")
         return jsonify({"error": "Ошибка при получении списка автомоек"}), 500
+
+    
+@app.route("/api/carwash-save", methods=["POST"])
+def save_carwash():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"success": False, "error": "Отсутствуют данные"}), 400
+
+        wash_box_id = data.get("id") 
+        name = data.get("name", "").strip()
+        address = data.get("address", "").strip()
+        image = data.get("image")
+        client_id = data.get("clientId")
+        slots = int(data.get("slots", 1))
+        services = data.get("services", [])
+        schedule = data.get("schedule", {}) or {}
+        work_days = data.get("workDays", [])
+        managers = data.get("managers", [])
+        
+        if not name:
+            return jsonify({"success": False, "error": "Необходимо указать название"}), 400
+        if not address:
+            return jsonify({"success": False, "error": "Необходимо указать адрес"}), 400
+        if slots <= 0:
+            return jsonify({"success": False, "error": "Количество мест должно быть положительным числом"}), 400
+        if not work_days:
+            return jsonify({"success": False, "error": "Выберите хотя бы один рабочий день"}), 400
+        if not managers:
+            return jsonify({"success": False, "error": "Добавьте хотя бы одного менеджера"}), 400
+
+        manager_client_ids = []
+        for manager in managers:
+            contact = manager.get("contact", "").strip().lower()
+            if not contact:
+                return jsonify({"success": False, "error": "Контакт менеджера не может быть пустым"}), 400
+
+            cursor.execute("""
+                SELECT id FROM clients 
+                WHERE LOWER(phone) = %s OR LOWER(email) = %s
+            """, (contact, contact))
+            client_row = cursor.fetchone()
+            
+            if not client_row:
+                return jsonify({
+                    "success": False, 
+                    "error": "manager_not_found",
+                    "message": f"Менеджер с контактом '{contact}' не найден в системе"
+                }), 400
+                
+            manager_client_ids.append(client_row[0])
+
+        with conn:
+            if wash_box_id:
+                cursor.execute("""
+                    UPDATE wash_boxes 
+                    SET name = %s, location = %s, image_url = %s
+                    WHERE id = %s
+                    RETURNING id
+                """, (name, address, image, wash_box_id))
+            else:
+                cursor.execute("""
+                    INSERT INTO wash_boxes (name, location, image_url, client_id)
+                    VALUES (%s, %s, %s, %s)
+                    RETURNING id
+                """, (name, address, image, client_id))
+                wash_box_id = cursor.fetchone()[0]
+
+            cursor.execute("DELETE FROM services WHERE wash_box_id = %s", (wash_box_id,))
+            for service in services:
+                service_name = service.get("name", "").strip()
+                price = float(service.get("price", 0))
+                duration = int(service.get("duration", 30))
+                
+                if not service_name:
+                    raise ValueError("Название услуги не может быть пустым")
+                if price <= 0:
+                    raise ValueError("Цена услуги должна быть положительной")
+                if duration <= 0:
+                    raise ValueError("Длительность услуги должна быть положительной")
+                
+                cursor.execute("""
+                    INSERT INTO services (wash_box_id, name, price, duration_minutes)
+                    VALUES (%s, %s, %s, %s)
+                """, (wash_box_id, service_name, price, duration))
+
+            cursor.execute("DELETE FROM box_availability WHERE wash_box_id = %s", (wash_box_id,))
+            for day_id in work_days:
+                day_schedule = schedule.get(str(day_id), {}) if schedule else {}
+                from_time = day_schedule.get("from", "09:00") if day_schedule else "09:00"
+                to_time = day_schedule.get("to", "18:00") if day_schedule else "18:00"
+                
+                cursor.execute("""
+                    INSERT INTO box_availability (wash_box_id, weekday, work_start, work_end, max_slots)
+                    VALUES (%s, %s, %s, %s, %s)
+                """, (wash_box_id, day_id, from_time, to_time, slots))
+
+            cursor.execute("DELETE FROM managers WHERE wash_box_id = %s", (wash_box_id,))
+            for client_id in manager_client_ids:
+                cursor.execute("""
+                    UPDATE clients
+                    SET status = 'manager'
+                    WHERE id = %s
+                """, (client_id,))
+                
+                cursor.execute("""
+                    SELECT 1 FROM managers 
+                    WHERE client_id = %s AND wash_box_id = %s
+                """, (client_id, wash_box_id))
+                exists = cursor.fetchone()
+                
+                if not exists:
+                    cursor.execute("""
+                        INSERT INTO managers (client_id, wash_box_id)
+                        VALUES (%s, %s)
+                    """, (client_id, wash_box_id))
+
+        action = "обновлена" if data.get("id") else "создана"
+        return jsonify({
+            "success": True, 
+            "message": f"Автомойка успешно {action}", 
+            "carwashId": wash_box_id
+        }), 200
+        
+    except ValueError as e:
+        conn.rollback()
+        return jsonify({"success": False, "error": str(e)}), 400
+    except Exception as e:
+        conn.rollback()
+        print(f"Error saving carwash: {str(e)}")
+        return jsonify({"success": False, "error": "Внутренняя ошибка сервера"}), 500
+
+
+@app.route("/api/carwash-create", methods=["POST"])
+def create_carwash():
+    return save_carwash()
+
+
+@app.route("/api/carwash-update", methods=["POST"])
+def update_carwash():
+    return save_carwash()
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

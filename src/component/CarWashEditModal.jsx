@@ -24,6 +24,8 @@ const CarWashEditModal = ({ data, onClose, onSave, isCreating = false }) => {
   const [expandedDay, setExpandedDay] = useState(null);
   const [previewImage, setPreviewImage] = useState(data.image || null);
   const fileInputRef = useRef(null);
+  const clientId = localStorage.getItem("client_id");
+  const [error, setError] = useState(null);
 
   const daysOfWeek = [
     { id: 0, name: "Понедельник" },
@@ -34,6 +36,113 @@ const CarWashEditModal = ({ data, onClose, onSave, isCreating = false }) => {
     { id: 5, name: "Суббота" },
     { id: 6, name: "Воскресенье" },
   ];
+
+  const handleSubmit = async () => {
+    if (!form.name?.trim()) {
+      setError("Пожалуйста, укажите название автомойки");
+      return;
+    }
+
+    if (!form.address?.trim()) {
+      setError("Пожалуйста, укажите адрес автомойки");
+      return;
+    }
+
+    if (!form.slots || Number(form.slots) <= 0) {
+      setError("Количество мест должно быть положительным числом");
+      return;
+    }
+
+    if (form.services.length === 0) {
+      setError("Добавьте хотя бы одну услугу");
+      return;
+    }
+
+    for (const service of form.services) {
+      if (!service.name?.trim()) {
+        setError("Укажите название для всех услуг");
+        return;
+      }
+
+      if (isNaN(service.price) || Number(service.price) <= 0) {
+        setError(`Укажите корректную цену для услуги "${service.name}"`);
+        return;
+      }
+
+      if (isNaN(service.duration) || Number(service.duration) <= 0) {
+        setError(
+          `Укажите корректную длительность для услуги "${service.name}"`
+        );
+        return;
+      }
+    }
+
+    if (form.managers.length === 0) {
+      setError("Добавьте хотя бы одного менеджера");
+      return;
+    }
+
+    for (const manager of form.managers) {
+      if (!manager.contact?.trim()) {
+        setError("Заполните контактные данные всех менеджеров");
+        return;
+      }
+    }
+
+    if (form.workDays.length === 0) {
+      setError("Выберите хотя бы один рабочий день");
+      return;
+    }
+
+    const payload = {
+      id: isCreating ? null : form.id,
+      name: form.name.trim(),
+      address: form.address.trim(),
+      image: form.image,
+      clientId: clientId,
+      slots: Number(form.slots),
+      services: form.services.map((s) => ({
+        name: s.name.trim(),
+        price: parseFloat(s.price),
+        duration: parseInt(s.duration),
+      })),
+      schedule: form.schedule,
+      workDays: form.workDays,
+      managers: form.managers.map((m) => ({
+        contact: m.contact.trim(),
+      })),
+    };
+
+    try {
+      setError(null);
+      const response = await fetch("http://localhost:5000/api/carwash-save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        if (result.error === "manager_not_found") {
+          setError("manager_not_found");
+        } else {
+          throw new Error(result.message || "Ошибка сервера");
+        }
+        return;
+      }
+
+      if (result.success) {
+        onSave(result.data || payload);
+        onClose();
+      } else {
+        setError(result.error || "Неизвестная ошибка при сохранении");
+      }
+    } catch (error) {
+      console.error("Ошибка при сохранении:", error);
+      setError(error.message || "Ошибка при соединении с сервером");
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -399,15 +508,13 @@ const CarWashEditModal = ({ data, onClose, onSave, isCreating = false }) => {
                   className="input-field"
                   placeholder="Цена (тг)"
                 />
-                <input
+                <DurationInput
                   value={service.duration}
-                  onChange={(e) => {
+                  onChange={(value) => {
                     const updated = [...form.services];
-                    updated[index].duration = e.target.value;
+                    updated[index].duration = value;
                     setForm((prev) => ({ ...prev, services: updated }));
                   }}
-                  className="input-field"
-                  placeholder="Длительность (мин)"
                 />
               </div>
             ))}
@@ -422,10 +529,35 @@ const CarWashEditModal = ({ data, onClose, onSave, isCreating = false }) => {
           <button className="cancel-button" onClick={onClose}>
             Отмена
           </button>
-          <button className="submit-button" onClick={() => onSave(form)}>
+          <button className="submit-button" onClick={handleSubmit}>
             {isCreating ? "Создать" : "Сохранить"}
           </button>
         </div>
+
+        {error === "manager_not_found" && (
+          <div className="error-message" id="carwash_edit_error">
+            <h3>❌ Ошибка регистрации менеджеров</h3>
+            <p>
+              Для управления автомойкой все указанные менеджеры должны быть
+              зарегистрированы в системе как клиенты.
+            </p>
+            <p>Пожалуйста, убедитесь, что каждый менеджер:</p>
+            <ul>
+              <li>Указал тот же email или телефон, что и при регистрации</li>
+              <li>Прошел регистрацию в системе</li>
+            </ul>
+            <button onClick={() => setError(null)} className="retry-button">
+              Понятно
+            </button>
+          </div>
+        )}
+
+        {error && error !== "manager_not_found" && (
+          <div className="error-message" id="carwash_edit_error">
+            <h3>❌ Ошибка</h3>
+            <p>{error}</p>
+          </div>
+        )}
       </div>
     </div>
   );

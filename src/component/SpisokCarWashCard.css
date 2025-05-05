@@ -2,62 +2,113 @@
   display: flex;
   align-items: center;
   width: 65%;
-  height: 100px;
-  background: linear-gradient(to right, #ffb200 50%, rgba(255, 178, 0, 0) 100%);
+  height: 120px;
+  background: #f7c948;
   border: none;
   border-radius: 20px;
   overflow: hidden;
-  margin: 16px auto;
-  padding: 0; 
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin: 20px auto;
+  padding: 0;
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15); 
   cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.carwash-card {
+  transition: all 0.3s ease;
   position: relative;
   justify-content: space-between;
 }
 
 .carwash-card:hover {
-  background: linear-gradient(to right, #d99c0e 50%, rgba(217, 156, 14, 0) 100%);
+  background: #ffc013;
+  transform: translateY(-3px); 
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
 }
 
 .carwash-info {
   flex: 1;
-  padding: 16px;
+  padding: 20px 24px; 
   text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .carwash-name {
-  font-size: 20px;
-  font-weight: bold;
-  color: black;
+  font-size: 22px; 
+  font-weight: 700;
+  color: #1a1a1a;
   margin: 0;
+  letter-spacing: 0.5px; 
 }
 
 .carwash-address {
-  font-size: 14px;
-  color: black;
-  margin-top: 4px;
+  font-size: 15px; 
+  color: #333;
+  margin-top: 6px;
+  opacity: 0.9;
+  line-height: 1.4; 
 }
 
 .carwash-image {
-  width: 160px;
-  height: 100%;
+  width: 180px; 
+  height: 120px;
   object-fit: cover;
-  border-radius: 0;
+  border-top-right-radius: 20px;
+  border-bottom-right-radius: 20px;
   margin: 0;
+  transition: all 0.3s ease;
+  box-shadow: -4px 0 10px rgba(0, 0, 0, 0.1); 
+}
+
+.carwash-card:hover .carwash-image {
+  filter: brightness(1.05);
 }
 
 .settings-icon {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  font-size: 20px;
-  color: #444;
+  top: 14px;
+  right: 190px; 
+  font-size: 18px;
+  color: #333;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 6px;
+  border-radius: 50%;
   cursor: pointer;
   z-index: 10;
+  transition: all 0.2s ease;
+}
+
+.settings-icon:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: rotate(30deg);
+}
+
+.carwash-rating {
+  display: flex;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.carwash-rating .stars {
+  color: #ff9a00;
+  font-size: 14px;
+  margin-right: 6px;
+}
+
+.carwash-rating .rating-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.status-badge {
+  position: absolute;
+  top: 14px;
+  left: 24px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #2e7d32;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
 }
 
 .carwash-modal {
@@ -66,37 +117,62 @@
   left: 50%;
   transform: translate(-50%, -50%);
   background: #fff;
-  padding: 24px 28px;
-  border-radius: 12px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  padding: 28px 32px;
+  border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
   z-index: 999;
-  min-width: 300px;
+  min-width: 320px;
   max-width: 90%;
-  font-family: sans-serif;
+  font-family: 'Segoe UI', Roboto, sans-serif;
 }
 
 .carwash-modal h3 {
   margin-top: 0;
-  margin-bottom: 12px;
-  font-size: 20px;
+  margin-bottom: 16px;
+  font-size: 24px;
+  color: #1a1a1a;
+  font-weight: 700;
+  border-bottom: 2px solid #ffb200;
+  padding-bottom: 10px;
 }
 
 .carwash-modal p {
-  margin: 8px 0;
+  margin: 12px 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #333;
+}
+
+.carwash-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
 }
 
 .carwash-modal button {
-  margin-top: 16px;
-  background: #1976d2;
-  color: white;
+  background: #ffb200;
+  color: #1a1a1a;
   border: none;
-  padding: 8px 16px;
+  padding: 10px 20px;
   border-radius: 8px;
   cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.carwash-modal button.primary {
+  background: #ffb200;
+}
+
+.carwash-modal button.secondary {
+  background: #f5f5f5;
+  color: #333;
 }
 
 .carwash-modal button:hover {
-  background: #1565c0;
+  filter: brightness(0.9);
+  transform: translateY(-2px);
 }
 
 .modal-backdrop {
@@ -105,6 +181,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.5);
   z-index: 998;
+  backdrop-filter: blur(2px);
 }

@@ -34,6 +34,10 @@
   align-items: center;
 }
 
+.city-button:hover{
+  background-color: #ececec;
+}
+
 .arrow {
   position: absolute;
   margin-left: 8px;
@@ -64,6 +68,7 @@
 
 .city-list li:hover {
   background-color: #f0f0f0;
+  width: 100%;
 }
 
 .city-list li:last-child {

@@ -70,7 +70,6 @@ body {
   width: fit-content;
 }
 
-
 .card-body {
   padding: 10px;
 }
@@ -191,7 +190,7 @@ body {
 }
 
 .btnq.create:hover {
-  background-color: #ffdb4d;
+  background-color: #eeb200;
 }
 
 
