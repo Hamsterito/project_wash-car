@@ -1121,19 +1121,20 @@ def get_bookings_by_box(box_id):
     try:
         cursor.execute("""
             SELECT 
-                id,
-                start_time,
-                end_time,
-                status,
-                COALESCE(client_id::text, 'Гость') as client_name,
-                vehicle_type,
-                comments_client,
-                total_minutes,
-                COALESCE(total_price, 0),
-                services
-            FROM wash_history_view
-            WHERE box_id = %s
-            ORDER BY start_time
+                w.id,
+                w.start_time,
+                w.end_time,
+                w.status,
+                COALESCE(c.first_name || ' ' || c.last_name, 'Гость') AS client_name,
+                w.vehicle_type,
+                w.comments_client,
+                w.total_minutes,
+                COALESCE(w.total_price, 0),
+                w.services
+            FROM wash_history_view w
+            LEFT JOIN clients c ON w.client_id = c.id
+            WHERE w.box_id = %s
+            ORDER BY w.start_time
         """, (box_id,))
         
         bookings = cursor.fetchall()
@@ -1151,17 +1152,16 @@ def get_bookings_by_box(box_id):
                 "totalMinutes": booking[7],
                 "totalPrice": float(booking[8]),
                 "services": booking[9].split(', ') if booking[9] else [],
-                "servicesDetails": None 
+                "servicesDetails": None
             })
         
         return jsonify(result), 200
-        
+
     except Exception as e:
         conn.rollback()
         print(f"Error getting bookings by box: {str(e)}")
         return jsonify({"error": "Ошибка при получении броней по боксу"}), 500
 
-    
 @app.route("/api/bookings/<int:booking_id>/cancel", methods=["PUT"])
 def cancel_booking(booking_id):
     try:
