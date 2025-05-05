@@ -728,9 +728,8 @@ def create_business_account():
         car_wash_name = request.form.get("carWashName")
         address = request.form.get("address")
         city_district = request.form.get("cityDistrict")
-        working_hours = request.form.get("workingHours")
 
-        if not all([car_wash_name, address, city_district, working_hours]):
+        if not all([car_wash_name, address, city_district]):
             return jsonify({"success": False, "error": "Не все поля заполнены"}), 400
 
         upload_folder = r'public\business account information'
@@ -765,7 +764,6 @@ def create_business_account():
                     car_wash_name = %s,
                     address = %s,
                     city_district = %s,
-                    working_hours = %s,
                     ownership_proof = %s,
                     car_wash_logo = %s,
                     status = 'На рассмотрении',
@@ -778,7 +776,6 @@ def create_business_account():
                     car_wash_name,
                     address,
                     city_district,
-                    working_hours,
                     f"business account information/{secure_filename(ownership_proof_file.filename)}",
                     f"business account information/{secure_filename(car_wash_logo_file.filename)}",
                     existing_account[0]
@@ -796,10 +793,9 @@ def create_business_account():
                     car_wash_name,
                     address,
                     city_district,
-                    working_hours,
                     ownership_proof,
                     car_wash_logo
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """,
                 (
                     client_id,
@@ -807,7 +803,6 @@ def create_business_account():
                     car_wash_name,
                     address,
                     city_district,
-                    working_hours,
                     f"business account information/{secure_filename(ownership_proof_file.filename)}",
                     f"business account information/{secure_filename(car_wash_logo_file.filename)}"
                 )
@@ -832,7 +827,6 @@ def get_business_requests():
                     ba.car_wash_name,
                     ba.address,
                     ba.city_district,
-                    ba.working_hours,
                     ba.registration_certificate,
                     ba.ownership_proof,
                     ba.car_wash_logo,
@@ -854,13 +848,12 @@ def get_business_requests():
                     "car_wash_name": row[3],
                     "address": row[4],
                     "city_district": row[5],
-                    "working_hours": row[6],
-                    "registration_certificate": row[7],
-                    "ownership_proof": row[8],
-                    "car_wash_logo": row[9],
-                    "created_at": row[10],
-                    "verified": row[11],
-                    "status": row[12]
+                    "registration_certificate": row[6],
+                    "ownership_proof": row[7],
+                    "car_wash_logo": row[8],
+                    "created_at": row[9],
+                    "verified": row[10],
+                    "status": row[11]
                 }
                 for row in requests
             ]
@@ -904,7 +897,6 @@ def get_verified_business_accounts():
                     ba.car_wash_name,
                     ba.address,
                     ba.city_district,
-                    ba.working_hours,
                     ba.registration_certificate,
                     ba.ownership_proof,
                     ba.car_wash_logo,
@@ -925,12 +917,11 @@ def get_verified_business_accounts():
                     "car_wash_name": row[3],
                     "address": row[4],
                     "city_district": row[5],
-                    "working_hours": row[6],
-                    "registration_certificate": row[7],
-                    "ownership_proof": row[8],
-                    "car_wash_logo": row[9],
-                    "created_at": row[10],
-                    "status": row[11]
+                    "registration_certificate": row[6],
+                    "ownership_proof": row[7],
+                    "car_wash_logo": row[8],
+                    "created_at": row[9],
+                    "status": row[10]
                 }
                 for row in requests
             ]
