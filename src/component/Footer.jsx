@@ -1,52 +1,51 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import "./Footer.css";
 
 const Footer = () => {
+  const handleNavClick = (section) => {
+    if (section === null) {
+      window.scrollTo(0, 0);
+    } else {
+      const element = document.getElementById(section);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  };
+
   return (
-    <footer className="bg-[#2c2c2c] text-white py-10 px-6 mt-16 text-sm">
-      <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-4 gap-6 mb-6">
-        <div
-        className="footer-grid"
-        style={{
-          maxWidth: "1800px",
-          gap: "1px",
-        }}
-      >
-          <h4 className="font-bold mb-1">Адрес:</h4>
-          <p>
+    <footer className="footer">
+      <div className="footer-content">
+        <div className="footer-section">
+          <h3 className="footer-heading">Адрес:</h3>
+          <address className="footer-address">
             Улица Хорошая, 42<br />
             Хороший район, г.Хороший<br />
             7 этаж, 49 кабинет
-          </p>
+          </address>
         </div>
-
-        <div>
-          <h4 className="font-bold mb-1">Контакты:</h4>
-          <p>
-            +7(707) 111 11 11<br />
-            +7(700) 111 11 11
-          </p>
+        
+        <div className="footer-section">
+          <h3 className="footer-heading">Время работы:</h3>
+          <ul className="footer-hours">
+            <li>Понедельник - Пятница: 8:00 - 20:00</li>
+            <li>Суббота: 9:00 - 18:00</li>
+            <li>Воскресенье: 10:00 - 16:00</li>
+          </ul>
         </div>
-
-
-        <div className="text-right space-y-1">
-          <Link to="/" state={{ scrollTo: "banner" }} style={{ color: '#FFB200' }}>Главная</Link><br />
-          <Link to="/" state={{ scrollTo: "about" }} style={{ color: '#FFB200' }}>О нас</Link><br />
-          <Link to="/" state={{ scrollTo: "booking" }} style={{ color: '#FFB200' }}>Бронь</Link>
-        </div>
-
+        
+        <nav className="footer-nav">
+          <a onClick={() => handleNavClick(null)} className="footer-link">Главная</a>
+          <a onClick={() => handleNavClick("about")} className="footer-link">О нас</a>
+          <a onClick={() => handleNavClick("car-wash-grid")} className="footer-link">Бронь</a>
+        </nav>
       </div>
-
-      <div style={{ borderTop: '1px solid white', width: '75%', margin: '0 auto', paddingTop: '16px', textAlign: 'center', marginTop: '10px' }}>
-        <p>
-          © 2025 | Онлайн-запись на автомойку — учебный проект
-          <br />
-          Astana IT University, Колледж
-          <br />
-          Руководитель практики: Имя Преподавателя
-        </p>
+      
+      <div className="footer-bottom">
+        <p className="footer-copyright">© 2025 | Онлайн-запись на автомойку — учебный проект</p>
+        <p className="footer-university">Astana IT University, Колледж</p>
+        <p className="footer-mentor">Руководитель практики: Арсен Тимурович</p>
       </div>
-
     </footer>
   );
 };
