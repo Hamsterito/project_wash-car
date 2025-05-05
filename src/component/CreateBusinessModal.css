@@ -73,10 +73,6 @@
   .btnq:disabled {
     cursor: not-allowed;
   }
-
-  .btnq:hover {
-    filter: brightness(85%);
-  }
   
   .input-view {
     margin-top: 4px;

@@ -1,13 +1,12 @@
-/* CSS Variables for Better Maintainability */
 :root {
   --primary-color: #FFB200;
   --primary-color-second:#ffffff;
-  --primary-hover: #e29d00;
+  --primary-hover: #f5ab00;
   --text-dark: #333;
   --text-medium: #444;
   --text-light: #777;
   --border-color: #ddd;
-  --bg-light: #f7f7f7;
+  --bg-light: #ececec;
   --bg-lighter: #f9f9f9;
   --bg-white: #fff;
   --danger-color: #e74c3c;
@@ -244,6 +243,7 @@
 }
 
 .schedule-container {
+  border: 1px dashed var(--border-color);
   background-color: var(--bg-lighter);
   border-radius: var(--border-radius);
   padding: var(--spacing-sm);
@@ -515,8 +515,9 @@
   box-shadow: 0 6px 8px rgba(255, 178, 0, 0.3);
 }
 
-/* No workdays message */
 .no-workdays-message {
+  position: relative;
+  bottom: 12px;
   font-size: 14px;
   color: var(--text-light);
   text-align: center;
@@ -532,6 +533,11 @@
   flex-direction: column;
   gap: 8px;
   margin-bottom: 12px;
+}
+
+#carwash_edit_error{
+  margin: 0;
+  margin-top: 15px;
 }
 
 
