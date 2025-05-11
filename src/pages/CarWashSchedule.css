@@ -1,0 +1,410 @@
+:root {
+  --primary-color: #f7c948;
+  --light-color: #ffffff;
+  --dark-color: #333333;
+  --text-color: #444444;
+  --border-radius: 12px;
+  --shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  --booked-color: #f0ad4e;
+  --available-color: #5bc0de;
+  --completed-color: #5cb85c;
+  --canceled-color: #d9534f;
+}
+
+.schedule-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background-color: #f9f9f9;
+  border-radius: var(--border-radius);
+}
+
+.schedule-title {
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 2rem;
+  font-weight: 800;
+  color: var(--dark-color);
+  letter-spacing: -0.5px;
+  position: relative;
+  padding-bottom: 0.8rem;
+}
+
+.schedule-title:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background-color: var(--primary-color);
+  border-radius: 2px;
+}
+
+#totalPrice {
+  padding: 1rem;
+  background-color: var(--light-color);
+  border-radius: var(--border-radius);
+  margin: 1rem 0;
+  box-shadow: var(--shadow);
+  text-align: center;
+  color: var(--dark-color);
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+  position: relative;
+}
+
+.back-button {
+  position: absolute;
+  left: 0px;
+}
+
+
+.view-toggle-button,
+.back-button {
+  padding: 0.9rem 2rem;
+  background-color: rgba(255, 255, 255, 0.9);
+  color: var(--dark-color);
+  border: 2px solid var(--primary-color);
+  border-radius: 2rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(247, 201, 72, 0.3);
+  text-align: center;
+  min-width: 200px;
+  transition: all 0.3s ease;
+}
+
+.view-toggle-button:hover,
+.back-button:hover,
+#create_carwash:hover {
+  background-color: var(--primary-color);
+  color: var(--dark-color);
+  transform: translateY(-2px);
+}
+
+#create_carwash {
+  display: block;
+  margin: 2rem auto;
+  padding: 0.9rem 2rem;
+  background-color: rgba(255, 255, 255, 0.9);
+  color: var(--dark-color);
+  border: 2px solid var(--primary-color);
+  border-radius: 2rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(247, 201, 72, 0.3);
+  text-align: center;
+  min-width: 200px;
+  transition: all 0.3s ease;
+}
+
+.list_btn_carwash {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 1rem;
+  position: relative;
+  margin-bottom: -20px;
+}
+
+.text_list_carwash {
+  display: block;
+  margin: 0 auto;
+  font-size: 2.5rem;
+  text-align: center;
+  font-weight: 800;
+  color: var(--dark-color);
+  letter-spacing: -0.5px;
+  position: relative;
+  padding-bottom: 0.8rem;
+}
+
+.text_list_carwash:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 4px;
+  background-color: var(--primary-color);
+  border-radius: 2px;
+}
+
+#create_carwash {
+  margin: 0;
+  margin-top: 15px;
+  align-self: center;
+}
+
+#create_carwash:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(247, 201, 72, 0.4);
+}
+
+.schedule-section {
+  width: 100%;
+  margin-bottom: 3rem;
+  background: var(--light-color);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  transition: transform 0.3s ease;
+}
+
+.schedule-section:hover {
+  transform: translateY(-5px);
+}
+
+.schedule-date {
+  font-size: 1.7rem;
+  font-weight: 700;
+  padding-top: 0.5rem;
+  padding-left: 0.5rem;
+  margin-bottom: 1.5rem;
+  color: var(--dark-color);
+  border-left: 5px solid var(--primary-color);
+  padding-left: 1rem;
+}
+
+.schedule-table {
+  width: 100%;
+  table-layout: auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--light-color);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  font-size: 1rem;
+}
+
+#load_schedule {
+  text-align: center;
+  font-size: 1.5rem;
+  color: var(--dark-color);
+  font-weight: bold;
+  padding: 2rem;
+}
+
+.schedule-table thead {
+  background-color: var(--primary-color);
+  color: var(--dark-color);
+}
+
+.schedule-table th {
+  padding: 1rem 1rem;
+  text-align: center;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+}
+
+.center_align_text {
+  text-align: center !important;
+}
+
+.schedule-table td {
+  padding: 1.2rem 1rem;
+  border-bottom: 1px solid #eee;
+  color: var(--text-color);
+  vertical-align: middle;
+  line-height: 1.6;
+  font-size: 1.05rem;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  position: relative;
+}
+
+.schedule-table th:nth-child(1),
+.schedule-table td:nth-child(1) {
+  width: 15%;
+}
+
+.schedule-table th:nth-child(2),
+.schedule-table td:nth-child(2) {
+  width: 15%;
+}
+
+.schedule-table th:nth-child(3),
+.schedule-table td:nth-child(3) {
+  width: 20%;
+}
+
+.schedule-table th:nth-child(4),
+.schedule-table td:nth-child(4) {
+  width: 20%;
+}
+
+.schedule-table th:nth-child(5),
+.schedule-table td:nth-child(5) {
+  width: 30%;
+}
+
+.schedule-table tr:last-child td {
+  border-bottom: none;
+}
+
+.schedule-table tr:hover {
+  background-color: rgba(247, 201, 72, 0.05);
+}
+
+.status-cell {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: stretch;
+  justify-content: center;
+  padding: 0;
+}
+
+.status {
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 16px !important;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  margin: 0; 
+}
+
+.status:hover {
+  transform: scale(1.03);
+}
+
+.status.забронировано {
+  background-color: var(--booked-color);
+}
+
+.status.свободно {
+  background-color: var(--available-color);
+}
+
+.status.завершено {
+  background-color: var(--completed-color);
+}
+
+.status.отменено {
+  background-color: var(--canceled-color);
+}
+
+.all_book_text {
+  font-size: 1.7rem;
+  font-weight: 700;
+  padding-top: 0.5rem;
+  padding-left: 0.5rem;
+  margin-bottom: 1.5rem;
+  color: var(--dark-color);
+  border-left: 5px solid var(--primary-color);
+  padding-left: 1rem;
+}
+
+.no_book_text {
+  color: #807f7f;
+  font-size: 1.3rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 2rem 0;
+  display: block;
+  background-color: rgba(247, 201, 72, 0.05);
+  border-radius: var(--border-radius);
+  margin: 1rem 0;
+}
+
+/* Responsive styles */
+@media (max-width: 992px) {
+  .schedule-container {
+    padding: 1.5rem;
+  }
+
+  .schedule-title {
+    font-size: 2.2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .schedule-container {
+    padding: 1rem;
+  }
+
+  .schedule-title {
+    font-size: 1.9rem;
+  }
+
+  .schedule-date {
+    font-size: 1.5rem;
+  }
+
+  .button-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .back-button {
+    position: static;
+    margin-bottom: 1rem;
+  }
+
+  .view-toggle-button,
+  .back-button {
+    font-size: 1rem;
+    padding: 0.8rem 1.5rem;
+  }
+
+  #create_carwash {
+    font-size: 1.1rem;
+    padding: 0.9rem 2rem;
+  }
+
+  .status {
+    padding: 0.7rem 0;
+    font-size: 0.9rem;
+    height: 80px;
+  }
+
+  .schedule-table th {
+    padding: 1rem;
+    font-size: 0.9rem;
+  }
+
+  .schedule-table td {
+    padding: 1rem;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .schedule-title {
+    font-size: 1.7rem;
+  }
+
+  .schedule-table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .schedule-section {
+    padding: 1rem;
+  }
+
+  .no_book_text {
+    font-size: 1.1rem;
+  }
+}

@@ -1,10 +1,22 @@
 CREATE TABLE clients (
-    id SERIAL PRIMARY KEY,
-    name TEXT,
-	password TEXT ,
-    phone TEXT UNIQUE,
-    email TEXT
+	    id SERIAL PRIMARY KEY,
+	    first_name TEXT,
+	    last_name TEXT,
+	    password TEXT,
+	    phone TEXT UNIQUE,
+	    email TEXT,
+	    status TEXT DEFAULT 'user',
+	    photo_url TEXT,
+		is_verified BOOLEAN
 );
+
+UPDATE clients
+SET status = 'user'
+WHERE id = 3;
+
+drop table clients cascade 
+select * from clients
+select * from verification_codes
 
 CREATE TABLE verification_codes (
     id serial PRIMARY KEY,
@@ -14,50 +26,137 @@ CREATE TABLE verification_codes (
     expires_at timestamp 
 );
 
-truncate clients cascade
-select * from verification_codes
-
-CREATE TABLE book(
-    id SERIAL PRIMARY KEY,
-	client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE,
-	status TEXT CHECK (status IN ('забронировано', 'свободно'))
-	DEFAULT 'свободно'
-);
-
-DROP TABLE clients
-
-INSERT INTO clients (name,password,phone,email)
-VALUES('dima',123,'12345678','email')
-
-SELECT * FROM book
-
-TRUNCATE clients CASCADE
-
 CREATE TABLE services (
     id SERIAL PRIMARY KEY,
+    wash_box_id INTEGER NOT NULL REFERENCES wash_boxes(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     description TEXT,
     price NUMERIC(10,2) NOT NULL,
     duration_minutes INTEGER NOT NULL
 );
+select * from box_availability
+
 
 CREATE TABLE wash_boxes (
     id SERIAL PRIMARY KEY,
+	client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE DEFAULT NULL,
     name TEXT NOT NULL,
     location TEXT,
 	image_url TEXT
 );
 
+
+CREATE TABLE managers (
+  id SERIAL PRIMARY KEY,
+  client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE DEFAULT NULL,
+  wash_box_id INTEGER REFERENCES wash_boxes(id) ON DELETE SET NULL
+);
+
+CREATE TABLE box_availability (
+    id SERIAL PRIMARY KEY,
+    wash_box_id INTEGER REFERENCES wash_boxes(id) ON DELETE CASCADE,
+    weekday INTEGER CHECK (weekday BETWEEN 0 AND 6), -- 0 = Понедельник, 6 = Воскресенье
+    work_start TIME NOT NULL,
+    work_end TIME NOT NULL,
+	max_slots INTEGER DEFAULT 1
+);
+
+CREATE TABLE booking_services (
+    booking_id INTEGER NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
+    service_id INTEGER NOT NULL REFERENCES services(id),
+    PRIMARY KEY (booking_id, service_id)
+);
+
+select * from booking_services
+
 CREATE TABLE bookings (
     id SERIAL PRIMARY KEY,
     client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE DEFAULT NULL,
-    service_id INTEGER REFERENCES services(id),
     box_id INTEGER REFERENCES wash_boxes(id),
     start_time TIMESTAMP NOT NULL,
     end_time TIMESTAMP NOT NULL,
-    status TEXT CHECK (status IN ('забронировано', 'свободно'))
-	DEFAULT 'свободно'
+	total_minutes INTEGER,
+	status TEXT CHECK (status IN (
+	'забронировано', 'свободно', 'завершено', 'отменено')) DEFAULT 'свободно',
+	type_car TEXT CHECK (type_car  IN ('Представительский класс'
+	,'Легковой автомобиль','Малые внедорожники','Полноразмерные внедорожники',
+	'Сверхбольшие внедорожники и микроавтобусы','Грузовые')),
+	comments_client TEXT
 );
+
+
+ CREATE TABLE business_accounts (
+     id SERIAL PRIMARY KEY, 
+     client_id INTEGER UNIQUE REFERENCES clients(id) ON DELETE CASCADE, 
+     registration_certificate TEXT NOT NULL, 
+     car_wash_name TEXT NOT NULL,
+     address TEXT NOT NULL,
+     city_district TEXT NOT NULL,
+     ownership_proof TEXT NOT NULL, 
+     car_wash_logo TEXT,
+     verified BOOLEAN DEFAULT FALSE,
+     status TEXT DEFAULT 'На рассмотрении' CHECK (status IN ('На рассмотрении', 'Принят', 'Отклонен')),
+     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+ );
+
+SELECT * FROM business_accounts
+ TRUNCATE TABLE business_accounts RESTART IDENTITY CASCADE;
+ 
+delete from bookings
+ 
+ -- Тригер на смена статуса при принятие бизнес аккаунта
+ CREATE OR REPLACE FUNCTION set_client_status_to_business()
+ RETURNS TRIGGER AS $$
+ BEGIN
+   IF OLD.status = 'На рассмотрении' AND NEW.status = 'Принят' THEN
+     UPDATE clients
+     SET status = 'business'
+     WHERE id = NEW.client_id;
+   END IF;
+   RETURN NEW;
+ END;
+ $$ LANGUAGE plpgsql;
+ 
+ CREATE TRIGGER trigger_update_client_status
+ AFTER UPDATE ON business_accounts
+ FOR EACH ROW
+ WHEN (OLD.status IS DISTINCT FROM NEW.status)
+ EXECUTE FUNCTION set_client_status_to_business();
+
+
+select * from wash_history_view
+CREATE OR REPLACE VIEW wash_history_view AS
+SELECT 
+    b.id,
+    b.client_id,
+    b.box_id,
+    b.start_time,
+    b.end_time,
+    b.total_minutes,
+    b.status,
+    b.type_car AS vehicle_type,
+    b.comments_client,
+    wb.name AS wash_name,
+    wb.location AS wash_location,
+    wb.image_url AS wash_image,
+    string_agg(DISTINCT s.name, ', ') AS services,
+    sum(s.price) AS total_price
+FROM 
+    bookings b
+JOIN 
+    wash_boxes wb ON b.box_id = wb.id
+LEFT JOIN 
+    booking_services bs ON b.id = bs.booking_id
+LEFT JOIN 
+    services s ON bs.service_id = s.id
+WHERE 
+    b.client_id IS NOT NULL
+GROUP BY
+    b.id, b.client_id, b.box_id, b.start_time, b.end_time, 
+    b.total_minutes, b.status, b.type_car, b.comments_client,
+    wb.name, wb.location, wb.image_url
+ORDER BY 
+    b.start_time DESC;
 
 
 CREATE TABLE admins (
@@ -67,23 +166,4 @@ CREATE TABLE admins (
     phone TEXT
 );
 
--- Услуги
-INSERT INTO services (name, description, price, duration_minutes) VALUES
-('Мойка кузова', 'Полная мойка внешней части автомобиля', 500.00, 20),
-('Химчистка салона', 'Глубокая чистка сидений и обивки', 1500.00, 60),
-('Полировка фар', 'Полировка передних фар', 800.00, 30),
-('Комплексная мойка', 'Мойка кузова и салона', 2000.00, 90);
 
--- Мойки (боксы)
-INSERT INTO wash_boxes (name, location, image_url) VALUES
-('Бокс №1', 'Центральная мойка', 'img/images.jpeg'),
-('Бокс №2', 'Северная мойка', 'img/images.jpeg'),
-('Бокс №3', 'Южная мойка', 'img/images.jpeg');
-
-select * from wash_boxes
-
--- Бронирования
-INSERT INTO bookings (client_id, service_id, box_id, start_time, end_time, status) VALUES
-(Null, 1, 1, '2025-04-15 10:00:00', '2025-04-15 10:20:00', 'свободно'),
-(Null, 2, 2, '2025-04-15 11:00:00', '2025-04-15 12:00:00', 'свободно'),
-(Null, 3, 3, '2025-04-15 12:30:00', '2025-04-15 13:00:00', 'свободно');
