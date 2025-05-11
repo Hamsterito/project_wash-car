@@ -4,7 +4,7 @@ import ViewApplicationDetailsModal from './ViewApplicationDetailsModal';
 const HistoryApplicationsSection = () => {
   const [applications, setApplications] = useState([]);
   const [selectedApp, setSelectedApp] = useState(null);
-  const [loading, setLoading] = useState(true); // Состояние загрузки
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchVerifiedApplications() {
@@ -13,14 +13,14 @@ const HistoryApplicationsSection = () => {
         const response = await fetch("http://localhost:5000/api/verified-business-accounts");
         const data = await response.json();
 
-        setTimeout(() => { // Искусственная задержка
+        setTimeout(() => {
           if (data.success) {
             setApplications(data.data);
           } else {
             console.error("Ошибка при загрузке проверенных заявок:", data.error);
           }
           setLoading(false);
-        }, 500); // Задержка в 500 мс
+        }, 500);
       } catch (error) {
         console.error("Ошибка при загрузке проверенных заявок:", error);
         setLoading(false);

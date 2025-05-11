@@ -61,8 +61,8 @@ export default function ProfilePage() {
           email: data.user.email || '',
         });
       
-        setUserRole(data.user.status || 'user'); // передаём в глобальный контекст
-        localStorage.setItem("role", data.user.status || 'user'); // опционально
+        setUserRole(data.user.status || 'user');
+        localStorage.setItem("role", data.user.status || 'user');
       
         setAvatar(data.user.photo_url || 'https://via.placeholder.com/150');
       } else {
